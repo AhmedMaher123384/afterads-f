@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص SEO - غِيم</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; direction: rtl; }
+        .info { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .title { color: #333; font-weight: bold; }
+        .value { color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>معلومات SEO الحالية للموقع</h1>
+    
+    <div class="info">
+        <div class="title">اسم الموقع:</div>
+        <div class="value">غِيم - GHEM Store</div>
+    </div>
+    
+    <div class="info">
+        <div class="title">العنوان:</div>
+        <div class="value">غِيم - متجر عبايات وجاكيتات التخرج السعودي الأول</div>
+    </div>
+    
+    <div class="info">
+        <div class="title">الوصف:</div>
+        <div class="value">متجر غِيم السعودي المتخصص في عبايات وجاكيتات التخرج الفاخرة. تصاميم أنيقة وخامات عالية الجودة. توصيل سريع لجميع أنحاء المملكة العربية السعودية.</div>
+    </div>
+    
+    <div class="info">
+        <div class="title">الرابط:</div>
+        <div class="value">https://ghem.store</div>
+    </div>
+    
+    <div class="info">
+        <div class="title">اللوجو:</div>
+        <div class="value">https://ghem.store/logo1.png</div>
+        <img src="/logo1.png" alt="غِيم لوجو" style="max-width: 150px; margin-top: 10px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white;">
+        <div style="margin-top: 10px; font-size: 12px; color: #666;">
+            ✅ الصورة موجودة في المشروع: /public/logo1.png<br>
+            ✅ متاحة على الرابط: <a href="/logo1.png" target="_blank">https://ghem.store/logo1.png</a><br>
+            ✅ مضافة في جميع Meta Tags و JSON-LD
+        </div>
+    </div>
+    
+    <h2>فحص اللوجو:</h2>
+    <div class="info">
+        <div class="title">تحقق من اللوجو:</div>
+        <div style="margin-top: 10px;">
+            <button onclick="testLogo()" style="background: #ec4899; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                اختبر اللوجو
+            </button>
+            <div id="logoTest" style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px; display: none;">
+                <p id="logoResult">جاري الاختبار...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function testLogo() {
+            const testDiv = document.getElementById('logoTest');
+            const resultP = document.getElementById('logoResult');
+            testDiv.style.display = 'block';
+            
+            const img = new Image();
+            img.onload = function() {
+                resultP.innerHTML = `
+                    ✅ اللوجو يعمل بشكل صحيح!<br>
+                    📏 الأبعاد: ${this.width} x ${this.height} بكسل<br>
+                    🔗 الرابط: <a href="/logo1.png" target="_blank">https://ghem.store/logo1.png</a>
+                `;
+                resultP.style.color = 'green';
+            };
+            img.onerror = function() {
+                resultP.innerHTML = '❌ خطأ في تحميل اللوجو! تأكد من وجود الملف.';
+                resultP.style.color = 'red';
+            };
+            img.src = '/logo1.png';
+        }
+    </script>
+    
+    <div class="info">
+        <div class="title">الهاتف:</div>
+        <div class="value">+966551064118</div>
+    </div>
+    
+    <div class="info">
+        <div class="title">الإيميل:</div>
+        <div class="value">info@ghem.store</div>
+    </div>
+    
+    <div class="info">
+        <div class="title">حقوق الطبع:</div>
+        <div class="value">© 2025 غِيم - GHEM Store | تم التطوير بواسطة ArtCode</div>
+    </div>
+    
+    <h2>روابط مفيدة للفحص:</h2>
+    <ul>
+        <li><a href="https://search.google.com/test/rich-results?url=https://ghem.store" target="_blank">فحص البيانات المنظمة</a></li>
+        <li><a href="https://metatags.io/?url=https://ghem.store" target="_blank">فحص Meta Tags</a></li>
+        <li><a href="https://www.facebook.com/sharing/debugger/?id=https://ghem.store" target="_blank">فحص Facebook</a></li>
+        <li><a href="https://cards-dev.twitter.com/validator?url=https://ghem.store" target="_blank">فحص Twitter Cards</a></li>
+    </ul>
+    
+    <p><strong>آخر تحديث:</strong> 18 يناير 2025</p>
+</body>
+</html> 

@@ -1,0 +1,38 @@
+User-agent: *
+Allow: /
+
+# Site Information
+# Site: غِيم - GHEM Store
+# Description: متجر عبايات وجاكيتات التخرج السعودي
+# URL: https://ghem.store
+
+# Sitemap
+Sitemap: https://ghem.store/sitemap.xml
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bing specific  
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+
+# Allow important pages
+Allow: /products/
+Allow: /category/
+Allow: /product/
+Allow: /contact/
+Allow: /about/
+Allow: /privacy-policy/
+Allow: /return-policy/
+
+# Important files
+Allow: /logo1.png
+Allow: /manifest.json
+Allow: /google-site-info.txt 

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص المشكلة - المفضلة والسلة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .data {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تشخيص مشاكل المفضلة والسلة</h1>
+        
+        <div class="section">
+            <h3>بيانات localStorage الحالية</h3>
+            <button onclick="checkLocalStorage()">فحص localStorage</button>
+            <div id="localStorage-data" class="data"></div>
+        </div>
+        
+        <div class="section">
+            <h3>بيانات المستخدم</h3>
+            <button onclick="checkUserData()">فحص بيانات المستخدم</button>
+            <div id="user-data" class="data"></div>
+        </div>
+        
+        <div class="section">
+            <h3>اختبار إضافة منتج للمفضلة</h3>
+            <button onclick="testAddToWishlist()">إضافة منتج تجريبي للمفضلة</button>
+            <button onclick="testRemoveFromWishlist()">إزالة منتج من المفضلة</button>
+        </div>
+        
+        <div class="section">
+            <h3>اختبار إضافة منتج للسلة</h3>
+            <button onclick="testAddToCart()">إضافة منتج تجريبي للسلة</button>
+            <button onclick="testRemoveFromCart()">إزالة منتج من السلة</button>
+        </div>
+        
+        <div class="section">
+            <h3>مراقبة الأحداث</h3>
+            <button onclick="startEventMonitoring()">بدء مراقبة الأحداث</button>
+            <button onclick="stopEventMonitoring()">إيقاف مراقبة الأحداث</button>
+            <button onclick="clearLogs()">مسح السجلات</button>
+            <div id="event-logs" class="log"></div>
+        </div>
+        
+        <div class="section">
+            <h3>إعادة تحميل العدادات</h3>
+            <button onclick="triggerCounterUpdate()">تحديث العدادات</button>
+            <button onclick="clearAllData()">مسح جميع البيانات</button>
+        </div>
+    </div>
+
+    <script>
+        let eventMonitoring = false;
+        let eventListeners = [];
+        
+        function log(message) {
+            const logs = document.getElementById('event-logs');
+            const timestamp = new Date().toLocaleTimeString('ar-EG');
+            logs.innerHTML += `[${timestamp}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function checkLocalStorage() {
+            const data = {
+                cart: localStorage.getItem('cart'),
+                wishlist: localStorage.getItem('wishlist'),
+                user: localStorage.getItem('user'),
+                lastCartCount: localStorage.getItem('lastCartCount'),
+                lastWishlistCount: localStorage.getItem('lastWishlistCount'),
+                cartUpdated: localStorage.getItem('cartUpdated'),
+                wishlistUpdated: localStorage.getItem('wishlistUpdated')
+            };
+            
+            let output = '';
+            for (const [key, value] of Object.entries(data)) {
+                output += `${key}: ${value || 'null'}\n`;
+                if (value && (key === 'cart' || key === 'wishlist' || key === 'user')) {
+                    try {
+                        const parsed = JSON.parse(value);
+                        output += `  └─ parsed: ${JSON.stringify(parsed, null, 2)}\n`;
+                    } catch (e) {
+                        output += `  └─ parse error: ${e.message}\n`;
+                    }
+                }
+                output += '\n';
+            }
+            
+            document.getElementById('localStorage-data').textContent = output;
+        }
+        
+        function checkUserData() {
+            const userData = localStorage.getItem('user');
+            let output = 'بيانات المستخدم: ';
+            
+            if (!userData) {
+                output += 'غير موجود (مستخدم ضيف)';
+            } else {
+                try {
+                    const user = JSON.parse(userData);
+                    output += JSON.stringify(user, null, 2);
+                } catch (e) {
+                    output += `خطأ في التحليل: ${e.message}`;
+                }
+            }
+            
+            document.getElementById('user-data').textContent = output;
+        }
+        
+        function testAddToWishlist() {
+            const testProduct = {
+                id: 999,
+                name: 'منتج تجريبي',
+                price: 100,
+                mainImage: '/test-image.jpg'
+            };
+            
+            // محاكاة إضافة للمفضلة
+            let wishlist = [];
+            const savedWishlist = localStorage.getItem('wishlist');
+            if (savedWishlist) {
+                try {
+                    wishlist = JSON.parse(savedWishlist);
+                } catch (e) {
+                    wishlist = [];
+                }
+            }
+            
+            // التحقق من عدم وجود المنتج مسبقاً
+            const exists = wishlist.find(item => item.id === testProduct.id);
+            if (!exists) {
+                wishlist.push(testProduct);
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                
+                // إرسال حدث التحديث
+                window.dispatchEvent(new CustomEvent('wishlistUpdated', {
+                    detail: { currentWishlist: wishlist }
+                }));
+                
+                log(`تم إضافة منتج تجريبي للمفضلة. العدد الحالي: ${wishlist.length}`);
+            } else {
+                log('المنتج التجريبي موجود بالفعل في المفضلة');
+            }
+            
+            checkLocalStorage();
+        }
+        
+        function testRemoveFromWishlist() {
+            let wishlist = [];
+            const savedWishlist = localStorage.getItem('wishlist');
+            if (savedWishlist) {
+                try {
+                    wishlist = JSON.parse(savedWishlist);
+                } catch (e) {
+                    wishlist = [];
+                }
+            }
+            
+            const originalLength = wishlist.length;
+            wishlist = wishlist.filter(item => item.id !== 999);
+            
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            
+            // إرسال حدث التحديث
+            window.dispatchEvent(new CustomEvent('wishlistUpdated', {
+                detail: { currentWishlist: wishlist }
+            }));
+            
+            log(`تم إزالة المنتج التجريبي. العدد قبل: ${originalLength}, بعد: ${wishlist.length}`);
+            checkLocalStorage();
+        }
+        
+        function testAddToCart() {
+            const testCartItem = {
+                id: Date.now(),
+                productId: 999,
+                quantity: 1,
+                product: {
+                    id: 999,
+                    name: 'منتج تجريبي للسلة',
+                    price: 150,
+                    mainImage: '/test-cart-image.jpg'
+                }
+            };
+            
+            let cart = [];
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+                try {
+                    cart = JSON.parse(savedCart);
+                } catch (e) {
+                    cart = [];
+                }
+            }
+            
+            cart.push(testCartItem);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // إرسال حدث التحديث
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
+            window.dispatchEvent(new CustomEvent('productAddedToCart', {
+                detail: { product: testCartItem.product }
+            }));
+            
+            log(`تم إضافة منتج تجريبي للسلة. العدد الحالي: ${cart.length}`);
+            checkLocalStorage();
+        }
+        
+        function testRemoveFromCart() {
+            let cart = [];
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+                try {
+                    cart = JSON.parse(savedCart);
+                } catch (e) {
+                    cart = [];
+                }
+            }
+            
+            const originalLength = cart.length;
+            cart = cart.filter(item => item.productId !== 999);
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // إرسال حدث التحديث
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
+            
+            log(`تم إزالة المنتج التجريبي من السلة. العدد قبل: ${originalLength}, بعد: ${cart.length}`);
+            checkLocalStorage();
+        }
+        
+        function startEventMonitoring() {
+            if (eventMonitoring) return;
+            
+            eventMonitoring = true;
+            const events = [
+                'cartUpdated',
+                'productAddedToCart',
+                'cartCountChanged',
+                'forceCartUpdate',
+                'wishlistUpdated',
+                'productAddedToWishlist',
+                'productRemovedFromWishlist'
+            ];
+            
+            events.forEach(eventName => {
+                const listener = (e) => {
+                    log(`🔔 حدث: ${eventName}`);
+                    if (e.detail) {
+                        log(`   التفاصيل: ${JSON.stringify(e.detail)}`);
+                    }
+                };
+                
+                window.addEventListener(eventName, listener);
+                eventListeners.push({ name: eventName, listener });
+            });
+            
+            // مراقبة تغييرات localStorage
+            const storageListener = (e) => {
+                log(`💾 تغيير localStorage: ${e.key} = ${e.newValue}`);
+            };
+            
+            window.addEventListener('storage', storageListener);
+            eventListeners.push({ name: 'storage', listener: storageListener });
+            
+            log('🎯 بدأت مراقبة الأحداث');
+        }
+        
+        function stopEventMonitoring() {
+            eventMonitoring = false;
+            
+            eventListeners.forEach(({ name, listener }) => {
+                window.removeEventListener(name, listener);
+            });
+            
+            eventListeners = [];
+            log('⏹️ توقفت مراقبة الأحداث');
+        }
+        
+        function clearLogs() {
+            document.getElementById('event-logs').innerHTML = '';
+        }
+        
+        function triggerCounterUpdate() {
+            // إرسال أحداث لتحديث العدادات
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
+            window.dispatchEvent(new CustomEvent('wishlistUpdated'));
+            window.dispatchEvent(new CustomEvent('forceCartUpdate'));
+            
+            log('🔄 تم إرسال أحداث تحديث العدادات');
+        }
+        
+        function clearAllData() {
+            const keys = ['cart', 'wishlist', 'lastCartCount', 'lastWishlistCount', 'cartUpdated', 'wishlistUpdated'];
+            keys.forEach(key => localStorage.removeItem(key));
+            
+            log('🗑️ تم مسح جميع البيانات');
+            checkLocalStorage();
+            triggerCounterUpdate();
+        }
+        
+        // تحميل البيانات عند فتح الصفحة
+        window.onload = function() {
+            checkLocalStorage();
+            checkUserData();
+            log('📱 تم تحميل صفحة التشخيص');
+        };
+    </script>
+</body>
+</html>

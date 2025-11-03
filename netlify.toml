@@ -1,0 +1,24 @@
+[build]
+  publish = "dist"
+  command = "npm ci && npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--production=false"
+  VITE_API_BASE_URL = "https://afterads-b.onrender.com"
+  VITE_NODE_ENV = "production"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  VITE_API_BASE_URL = "https://afterads-b.onrender.com"
+
+[context.deploy-preview.environment]
+  VITE_API_BASE_URL = "https://afterads-b.onrender.com"
+
+[context.branch-deploy.environment]
+  VITE_API_BASE_URL = "https://afterads-b.onrender.com"
+  VITE_NODE_ENV = "production"

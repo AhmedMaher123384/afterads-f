@@ -1,0 +1,74 @@
+/* ULTRA FAST CART CSS - للسرعة القصوى */
+
+/* Critical CSS only - أهم الأنماط فقط */
+.cart-ultra-fast {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+/* Instant transitions */
+.cart-instant-transition {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Hardware acceleration */
+.cart-gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Fast hover effects */
+.cart-fast-hover:hover {
+  transform: translateY(-1px) translateZ(0);
+}
+
+/* Optimized buttons */
+.cart-btn-fast {
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease-out;
+}
+
+.cart-btn-fast:active {
+  transform: scale(0.98) translateZ(0);
+}
+
+/* Instant modal */
+.cart-modal-fast {
+  animation: cartModalShow 0.1s ease-out;
+}
+
+@keyframes cartModalShow {
+  from { opacity: 0; transform: scale(0.98) translateZ(0); }
+  to { opacity: 1; transform: scale(1) translateZ(0); }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .cart-fast-hover:hover {
+    transform: none;
+  }
+  
+  .cart-modal-fast {
+    animation: none;
+  }
+}
+
+/* Critical layout */
+.cart-grid-fast {
+  display: grid;
+  contain: layout;
+}
+
+/* Fast loading placeholder */
+.cart-loading-fast {
+  background: #f0f0f0;
+  animation: cartPulse 1s infinite;
+}
+
+@keyframes cartPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+} 

@@ -1,0 +1,14 @@
+Site Name: غِيم - GHEM Store
+Site Title: غِيم - متجر عبايات وجاكيتات التخرج السعودي الأول
+Description: متجر غِيم السعودي المتخصص في عبايات وجاكيتات التخرج الفاخرة. تصاميم أنيقة وخامات عالية الجودة. توصيل سريع لجميع أنحاء المملكة العربية السعودية.
+URL: https://ghem.store
+Logo: https://ghem.store/logo1.png
+Logo File: /public/logo1.png (copied from /src/assets/logo1.png)
+Logo Verified: YES - File exists and accessible
+Contact: +201069006131
+Email: info@ghem.store
+Country: Saudi Arabia
+Language: Arabic
+Category: E-commerce Store - Fashion - Graduation Wear
+Copyright: © 2025 غِيم - GHEM Store | تم التطوير بواسطة ArtCode
+Last Updated: 2025-01-18 

@@ -1,0 +1,205 @@
+/* INSTANT CART CSS - للسرعة الفائقة */
+
+/* Critical performance optimizations */
+.cart-instant {
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  
+  /* Disable expensive effects */
+  will-change: auto;
+  contain: layout style paint;
+}
+
+/* Remove all transitions for instant response */
+.cart-no-transition,
+.cart-no-transition * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Instant button responses */
+.cart-btn-instant {
+  user-select: none;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
+.cart-btn-instant:active {
+  transform: scale(0.98) translateZ(0);
+}
+
+/* Instant modal display */
+.cart-modal-instant {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Instant quantity controls */
+.quantity-instant {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.quantity-instant button {
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: none;
+}
+
+.quantity-instant button:hover {
+  background: #f3f4f6;
+}
+
+.quantity-instant input {
+  border: none;
+  text-align: center;
+  width: 60px;
+  padding: 8px 4px;
+  font-weight: 500;
+}
+
+/* Instant cart item animations */
+.cart-item-instant {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Remove loading states */
+.cart-no-loading {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+/* Instant checkout button */
+.checkout-btn-instant {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  width: 100%;
+  transition: none;
+}
+
+.checkout-btn-instant:hover {
+  background: linear-gradient(135deg, #111827 0%, #000000 100%);
+  transform: translateY(-1px) translateZ(0);
+}
+
+.checkout-btn-instant:active {
+  transform: translateY(0) scale(0.98) translateZ(0);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .cart-instant {
+    /* Disable expensive effects on mobile */
+    transform: none;
+    perspective: none;
+  }
+  
+  .cart-btn-instant:hover {
+    transform: none;
+  }
+  
+  .checkout-btn-instant:hover {
+    transform: none;
+  }
+}
+
+/* Instant empty cart display */
+.cart-empty-instant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Instant cart counter */
+.cart-counter-instant {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  transform: translateZ(0);
+}
+
+/* Instant option selects */
+.option-select-instant {
+  appearance: none;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: none;
+  width: 100%;
+}
+
+.option-select-instant:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Instant price display */
+.price-instant {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 18px;
+}
+
+/* Critical path CSS - load first */
+.cart-critical {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Preload styles for instant display */
+.cart-preload {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px;
+}
+
+/* Instant scroll performance */
+.cart-scroll-instant {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto;
+}
+
+/* Remove all delays */
+.cart-no-delay,
+.cart-no-delay * {
+  transition-delay: 0s !important;
+  animation-delay: 0s !important;
+} 

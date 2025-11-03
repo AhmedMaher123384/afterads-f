@@ -1,0 +1,119 @@
+/* Mobile-specific optimizations for ImageSlider */
+
+/* Smooth touch interactions */
+.image-slider-container {
+  touch-action: pan-y pinch-zoom;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Optimize image rendering on mobile */
+@media (max-width: 768px) {
+  .slider-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Reduce motion for better performance on mobile */
+  .slider-image.reduced-motion {
+    transition: opacity 0.5s ease-out;
+  }
+  
+  /* Better touch targets */
+  .slider-controls button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Optimize overlay for mobile */
+  .slider-overlay-mobile {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .image-slider-container {
+    height: 250px !important;
+  }
+  
+  .slider-content {
+    padding: 1rem;
+  }
+  
+  .slider-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .slider-image {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .slider-indicator {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .slider-image,
+  .slider-overlay,
+  .slider-controls * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Better focus indicators for accessibility */
+.slider-controls button:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent zoom on double tap for slider area */
+.image-slider-container * {
+  touch-action: manipulation;
+}
+
+/* Animation for AuthModal sliding from right */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Animation for mobile menu sliding from top */
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+} 

@@ -1,0 +1,59 @@
+{
+  "name": "غِيم - GHEM Store",
+  "short_name": "غِيم",
+  "description": "غِيم – براند سعودي متخصص في تصميم عبايات وجاكيتات التخرج بخامات فاخرة وتصاميم أنيقة",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ec4899",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/favi.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/favi.ico",
+      "sizes": "72x72",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/favi.ico",
+      "sizes": "96x96",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/favi.ico",
+      "sizes": "144x144",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/favi.ico",
+      "sizes": "192x192",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favi.ico",
+      "sizes": "512x512",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "lifestyle", "fashion"],
+  "screenshots": [
+    {
+      "src": "/logo1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

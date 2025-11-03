@@ -1,0 +1,187 @@
+/* Shopping Cart Speed Optimizations - للسرعة القصوى */
+
+/* Instant cart animations */
+.cart-instant {
+  transition: none !important;
+  animation: none !important;
+}
+
+.cart-fast-transition {
+  transition: all 0.1s ease-out !important;
+}
+
+/* Optimized cart item animations */
+.cart-item {
+  contain: layout style paint;
+  will-change: auto;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.cart-item:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Fast quantity controls */
+.quantity-control {
+  user-select: none;
+  touch-action: manipulation;
+  transition: background-color 0.1s ease-out, transform 0.1s ease-out;
+}
+
+.quantity-control:active {
+  transform: scale(0.95) translateZ(0);
+}
+
+/* Instant modal animations */
+.cart-modal {
+  animation: cartModalFadeIn 0.15s ease-out;
+}
+
+@keyframes cartModalFadeIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95) translateZ(0);
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateZ(0);
+  }
+}
+
+/* Optimized option selects */
+.cart-option-select {
+  transition: border-color 0.1s ease-out, box-shadow 0.1s ease-out;
+  will-change: auto;
+}
+
+.cart-option-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Fast loading states */
+.cart-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: cartLoading 1s infinite;
+}
+
+@keyframes cartLoading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Optimized buttons */
+.cart-button {
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease-out, background-color 0.1s ease-out;
+  will-change: transform;
+}
+
+.cart-button:active {
+  transform: scale(0.98) translateZ(0);
+}
+
+/* Hardware acceleration for cart */
+.cart-hw-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Instant image loading */
+.cart-image {
+  object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  will-change: auto;
+}
+
+/* Fast scrolling */
+.cart-scroll {
+  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimized grid layout */
+.cart-grid {
+  display: grid;
+  will-change: auto;
+  contain: layout;
+}
+
+/* Performance-first responsive */
+@media (max-width: 768px) {
+  .cart-item:hover {
+    transform: none;
+  }
+  
+  .cart-button:active {
+    transform: scale(0.98) translateZ(0);
+  }
+  
+  /* Disable expensive effects on mobile */
+  .cart-modal {
+    animation: none;
+  }
+}
+
+/* Critical CSS for cart */
+.cart-critical {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+/* Instant validation feedback */
+.cart-validation-error {
+  animation: cartShake 0.3s ease-out;
+}
+
+@keyframes cartShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Fast checkout button */
+.cart-checkout-btn {
+  transition: all 0.15s ease-out;
+  will-change: transform;
+}
+
+.cart-checkout-btn:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Optimized empty state */
+.cart-empty {
+  animation: cartFadeInUp 0.3s ease-out;
+}
+
+@keyframes cartFadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) translateZ(0);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+/* No animation class for instant display */
+.cart-no-animation {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Instant class for immediate response */
+.cart-instant-response {
+  transition-duration: 0ms !important;
+  animation-duration: 0ms !important;
+} 

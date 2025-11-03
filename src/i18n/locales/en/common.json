@@ -1,0 +1,1216 @@
+{
+  "close": "Close",
+  "current": "Current",
+  "language": "Language",
+  "currency": "Currency",
+  "select_language": "Select Language",
+  "select_currency": "Select Currency",
+  "online": "Online",
+  "search_and_settings": "Search & Settings",
+  "pages": "Pages",
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "dashboard": "Dashboard",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "profile": "Profile",
+    "orders": "Orders",
+    "settings": "Settings",
+    "language": "Language",
+    "search": "Search",
+    "menu": "Menu",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "add": "Add",
+    "remove": "Remove",
+    "update": "Update",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "portfolio": "Portfolio",
+    "blog": "Blog",
+    "categories": "Categories",
+    "shopping_cart": "Shopping Cart",
+    "close_menu": "Close Menu",
+    "guest": "Guest",
+    "online": "Online",
+    "pages": "Pages",
+    "search_and_settings": "Search & Settings",
+    "categories": "Categories",
+    "theme_malak": "Theme Malak",
+    "our_work": "Our Work",
+    "blog": "Blog"
+  },
+  "currency": {
+    "egp": "Egyptian Pound",
+    "usd": "US Dollar",
+    "eur": "Euro",
+    "sar": "Saudi Riyal"
+  },
+  "home": {
+    "hero_title": "Welcome to Our Store",
+    "hero_subtitle": "Discover the best products at amazing prices",
+    "hero_cta": "Shop Now",
+    "hero": {
+      "title": "AfterAds",
+      "subtitle": "We make the difference in the advertising world",
+      "contact_us": "Contact Us"
+    },
+    "faq": {
+      "frequent_questions": "Frequently Asked Questions",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Answers to the most common questions"
+    },
+    "featured_products": "Featured Products",
+    "latest_products": "Latest Products",
+    "categories": "Categories",
+    "testimonials": "Testimonials",
+    "newsletter": "Newsletter",
+    "newsletter_text": "Subscribe to our newsletter for the latest offers",
+    "newsletter_placeholder": "Enter your email",
+    "newsletter_button": "Subscribe",
+    "contact": {
+      "contact_us_now": "Contact Us Now",
+      "lets_talk_business": "Let's Talk Business",
+      "subtitle": "We're here to help you",
+      "send_message": "Send Message",
+      "team_ready": "Our team is ready to help you",
+      "name_placeholder": "Enter your name",
+      "email_placeholder": "Enter your email",
+      "message_placeholder": "Write your message here",
+      "send_button": "Send"
+    },
+    "testimonials": {
+      "title": "Customer Reviews",
+      "subtitle": "What our customers say about our services",
+      "no_testimonials": "No testimonials available at the moment"
+    },
+    "categories": {
+      "featured_products": "Featured Products",
+      "title": "Categories",
+      "subtitle": "Browse our products by category",
+      "discover_product": "Discover Product",
+      "discover_category": "Discover Category"
+    },
+    "about": {
+      "main_title": "About Us",
+      "main_description": "We are a specialized team dedicated to providing the best services and products to our valued customers",
+      "what_we_offer": "What We Offer",
+      "what_we_offer_description": "We provide a diverse range of high-quality services and products",
+      "start_now": "Start Now",
+      "services": [
+        "Website Design and Development",
+        "Digital Marketing and Social Media Management",
+        "Mobile App Development",
+        "Visual Identity and Graphic Design",
+        "Specialized Technical Consulting",
+        "Hosting and Technical Support Services"
+      ],
+      "features": {
+        "expert_team": "Expert Team",
+        "expert_team_desc": "A team of highly experienced specialists",
+        "quality_assurance": "Quality Assurance",
+        "quality_assurance_desc": "We guarantee the highest quality standards in all our services",
+        "premium_service": "Premium Service",
+        "premium_service_desc": "We provide exceptional 24/7 customer service",
+        "fast_delivery": "Fast Delivery",
+        "fast_delivery_desc": "We commit to specified delivery deadlines",
+        "wide_experience": "Wide Experience",
+        "wide_experience_desc": "Years of experience in various fields",
+        "global_standards": "Global Standards",
+        "global_standards_desc": "We follow best practices and global standards",
+        "competitive_prices": "Competitive Prices",
+        "competitive_prices_desc": "Affordable prices with high quality",
+        "superior_performance": "Superior Performance",
+        "superior_performance_desc": "We achieve results that exceed expectations"
+      },
+      "why_choose_us": "Why Choose Us?",
+      "why_choose_us_description": "We provide the best innovative solutions to achieve your goals",
+      "work_with_us": "Work With Us",
+      "work_with_us_points": [
+        "We believe that success comes through true partnership with our clients",
+        "Our team is ready to turn your ideas into tangible reality",
+        "We provide innovative solutions that suit your specific needs"
+      ],
+      "stats": {
+        "completed_projects": "Completed Projects",
+        "satisfied_clients": "Satisfied Clients",
+        "years_experience": "Years Experience",
+        "technical_support": "Technical Support"
+      },
+      "project_journey": "Your Project Journey",
+      "project_journey_description": "We follow a clear methodology to ensure your project's success",
+      "steps": {
+        "discovery": "Discovery",
+        "discovery_desc": "Understanding your needs and goals",
+        "discovery_details": [
+          "Requirements Analysis",
+          "Market Research",
+          "Goal Definition"
+        ],
+        "approach": "Approach",
+        "approach_desc": "Developing a suitable strategy",
+        "approach_details": [
+          "Strategy Development",
+          "Resource Allocation",
+          "Timeline Planning"
+        ],
+        "planning": "Planning",
+        "planning_desc": "Detailed project planning",
+        "planning_details": [
+          "Structure Design",
+          "Phase Definition",
+          "Task Distribution"
+        ],
+        "creativity": "Creativity",
+        "creativity_desc": "Creative design and development",
+        "creativity_details": [
+          "Creative Design",
+          "Technical Development",
+          "Testing and Optimization"
+        ],
+        "assembly": "Assembly",
+        "assembly_desc": "Assembling and integrating elements",
+        "assembly_details": [
+          "Component Integration",
+          "Integration Testing",
+          "Quality Assurance"
+        ],
+        "launch": "Launch",
+        "launch_desc": "Project launch and follow-up",
+        "launch_details": [
+          "Deployment and Launch",
+          "Training and Support",
+          "Follow-up and Maintenance"
+        ]
+      },
+      "ready_to_start": "Ready to Start?",
+      "ready_to_start_description": "Start your journey with us today and get the best results",
+      "start_now": "Start Now"
+    },
+    "themes": {
+      "salla_themes": "Salla Themes",
+      "malak_theme": "Malak Theme",
+      "most_popular_theme": "Most Popular Theme",
+      "enjoy_unlimited_features": "Enjoy Unlimited Features",
+      "most_advanced_theme": "The most advanced and modern theme",
+      "add_to_cart": "Add to Cart",
+      "live_preview": "Live Preview",
+      "professional_elements": "Professional Elements",
+      "control_options": "Control Options",
+      "technical_support": "Technical Support",
+      "active_store": "Active Store",
+      "malak_description": "Malak theme is the perfect solution for your online store with modern design and advanced features",
+      "coming_soon": "Coming Soon",
+      "coming_soon_description": "New and exciting themes coming soon",
+      "subscribe_notification": "Subscribe for Notification",
+      "learn_more": "Learn More",
+      "ready_to_develop": "Ready to Develop Your Store?",
+      "join_successful_merchants": "Join Thousands of Successful Merchants",
+      "guarantees": "Guarantees and Services",
+      "loading": "Loading Theme",
+      "loading_message": "Please wait while we load the theme details...",
+      "error_loading": "Error Loading Theme",
+      "not_found": "Theme not found or an error occurred while loading",
+      "back_to_home": "Back to Home",
+      "number_one": "The #1 Theme for Salla Stores",
+      "video_explanation": "Video Explanation",
+      "preview_theme": "Preview Theme",
+      "discover_features": "Discover Features",
+      "why_choose_malak": "Why Choose Malak?",
+      "optimal_solution": "The optimal solution for your online store",
+      "responsive_design": "Responsive Design",
+      "responsive_description": "Works perfectly on all devices and screen sizes",
+      "arabic_support": "Arabic Language Support",
+      "arabic_description": "Full support for Arabic language and RTL direction",
+      "seo_optimization": "SEO Optimization",
+      "seo_description": "Optimized for search engines to increase your visibility",
+      "free_updates": "Free Updates",
+      "updates_description": "Get all future updates and improvements for free",
+      "advanced_element": "Advanced Element",
+      "easy_to_use": "Easy to Use",
+      "customizable": "Fully Customizable",
+      "not_everything": "That's Not Everything",
+      "discover_more_features": "Discover more amazing features that will make your store stand out",
+      "more_creativity_awaits": "More creativity awaits you",
+      "quantity": "Quantity",
+      "faq": "Frequently Asked Questions",
+      "platform_features": "Designed specifically for Salla platform • Speed optimized • Responsive on all devices",
+      "features": {
+        "advanced_elements": {
+          "title": "Advanced Elements",
+          "desc": "A comprehensive collection of professional elements designed specifically to enhance user experience and increase conversion rates"
+        },
+        "homepage_elements": {
+          "title": "Homepage Elements",
+          "desc": "A comprehensive collection of professional elements designed specifically to enhance user experience and increase conversion rates"
+        },
+        "professional_elements": {
+          "title": "Professional Elements Collection",
+          "desc": "A comprehensive collection of professional elements designed specifically to enhance user experience and increase conversion rates"
+        },
+        "advanced_customization": {
+          "title": "Advanced Customization Option",
+          "desc": "A comprehensive collection of professional elements designed specifically to enhance user experience and increase conversion rates"
+        },
+        "faq_answers": {
+          "title": "FAQ Answers",
+          "desc": "Answers to the most frequently asked questions about {{themeName}} theme and its features"
+        }
+      },
+      "components": {
+        "animated_images": {
+          "title": "Animated Images Element (Malak)",
+          "desc": "The animated images element (Malak) can be used to add (static banner - animated banners - auto-play video). The element also contains a set of new options such as adding banners with custom size for mobile devices, adding animation effects to banner elements and the freedom to choose banner size without cropping parts of it."
+        },
+        "square_images": {
+          "title": "Square Images Element (Malak)",
+          "desc": "The square images element (Malak) is used to add any number of images or banners with full control over dividing them according to the number of columns for both mobile and computer separately. You can also switch between slider mode (images in one moving row) and grid mode (images under each other in more than one row) to get a consistent look. Each image is also linked with a special link or linked with the window element (Malak)."
+        },
+        "store_features": {
+          "title": "Store Features Element (Malak)",
+          "desc": "Highlight your store's features professionally and add unlimited features with the ability to change the feature icon to any other icon or image. You can also activate the ascending number counter to add effects to store statistics. The element also fully supports the Lordicon.com icon library which contains more than 17 thousand customizable animated icons."
+        },
+        "quick_links": {
+          "title": "Quick Links Element (Malak)",
+          "desc": "Add quick links with an icon or thumbnail for each link. You can combine this element with the animated images element (Malak) to appear distinctive and elegant."
+        },
+        "featured_product": {
+          "title": "Featured Product Element (Malak)",
+          "desc": "Highlight your best-selling product with this new element, add an image of the product or offer and control the element's distinctive options (titles - product features - discount counter) and add a button with any link you want to direct the visitor to."
+        },
+        "separator": {
+          "title": "Separator Element (Malak)",
+          "desc": "You can combine any two homepage elements using the separator element (Malak) and get an element with a new and distinctive design. The separator element (Malak) is also used as a title for any element that follows it with the ability to add an icon, link and discount counter."
+        },
+        "modal_window": {
+          "title": "Modal Window Element (Malak)",
+          "desc": "Link images and banners to a popup window full of elements instead of using a link to another page. You can link Malak window with square images element (Malak) only instead of a link, and it also contains many features such as adding images, animation, controlling design and colors and others."
+        },
+        "faq": {
+          "title": "FAQ Element (Malak)",
+          "desc": "Share with your store visitors answers to the most frequently asked questions from customers about the store, products, ordering method or others. You can add a brief answer with a link to an introductory page or a button for direct communication."
+        },
+        "animated_articles": {
+          "title": "Animated Articles Element (Malak)",
+          "desc": "You can use the animated articles element (Malak) to display blog article links in an attractive and elegant way, and you can also use it for any other purpose as you wish. Add an image with a title and subtitle then add a button to direct the customer to the required page."
+        },
+        "customer_reviews": {
+          "title": "Customer Reviews Element (Malak)",
+          "desc": "A space to display customer reviews manually instead of Salla's automatic reviews. Through this element you can control the details of each review (image - city - number of stars - review text). You can also attach an image or short video with each review."
+        },
+        "store_locations": {
+          "title": "Store Locations Element (Malak)",
+          "desc": "Make it easy for your customer to reach your site by adding branch locations on Google Maps in the main store interface."
+        },
+        "store_stories": {
+          "title": "Store Stories Element (Malak)",
+          "desc": "Instagram stories with the same distinctive design can now be added to your store and share with your visitors the most important moments and offers."
+        },
+        "brand_showcase": {
+          "title": "Brand Showcase Element",
+          "desc": "Display your global product brands automatically through the brand showcase element. Choose the brands to be displayed then save and they will be displayed directly."
+        }
+      }
+    }
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "What our customers say about our services",
+    "customer": "Customer",
+    "rating": "Rating",
+    "review": "Review"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We're here to help you",
+    "contact_us_now": "Contact Us Now",
+    "lets_talk_business": "Let's Talk Business",
+    "send_message": "Send Message",
+    "team_ready": "Our team is ready to help you",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "message": "Message",
+    "send": "Send",
+    "send_button": "Send",
+    "name_placeholder": "Enter your name",
+    "email_placeholder": "Enter your email",
+    "message_placeholder": "Write your message here",
+    "address": "Address",
+    "working_hours": "Working Hours",
+    "social_media": "Social Media"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Answers to the most common questions",
+    "frequent_questions": "Frequently Asked Questions",
+    "question": "Question",
+    "answer": "Answer",
+    "search_placeholder": "Search in FAQ"
+  },
+  "clients": {
+    "title": "Our Clients",
+    "subtitle": "We're proud of our clients' trust",
+    "partners": "& Partners",
+    "client_name": "Client Name",
+    "client_logo": "Client Logo",
+    "partnership_date": "Partnership Date"
+  },
+  "scroll_progress": {
+    "reading_progress": "Reading Progress"
+  },
+  "scroll_to_top": {
+    "button_text": "Back to Top",
+    "scroll_up": "Scroll Up"
+  },
+  "categories": {
+    "title": "Our Categories",
+    "subtitle": "Discover a wide range of products and services",
+    "featured_products": "Featured Products",
+    "discover_product": "Discover Product",
+    "discover_category": "Discover Category",
+    "all_categories": "All Categories",
+    "available": "Available",
+    "search_placeholder": "Search categories...",
+    "search_aria_label": "Search categories",
+    "sort_aria_label": "Sort categories",
+    "sort_name_asc": "Name (A-Z)",
+    "sort_name_desc": "Name (Z-A)",
+    "sort_newest": "Newest",
+    "sort_oldest": "Oldest",
+    "view_label": "View",
+    "grid_view_aria": "Grid view",
+    "list_view_aria": "List view",
+    "clear_search_aria": "Clear search",
+    "clear_search": "Clear Search",
+    "loading": "Loading...",
+    "loading_message": "Please wait while we load categories",
+    "no_categories": "No Categories",
+    "no_search_results": "No search results found",
+    "no_categories_available": "No categories available at the moment",
+    "default_description": "Discover our featured products in this category",
+    "explore_products": "Explore Products",
+    "themes": "Themes",
+    "error_loading": "Error loading categories",
+    "view_all": "View All",
+    "products_count": "Products Count",
+    "count": "{{count}} categories"
+  },
+  "all_products": {
+    "title": "All Products",
+    "title_highlight": "Available",
+    "description": "Discover our complete collection of high-quality products",
+    "search_placeholder": "Search products...",
+    "all_categories": "All Categories",
+    "sort_by_name": "Name",
+    "sort_by_price_low": "Price: Low to High",
+    "sort_by_price_high": "Price: High to Low",
+    "clear_filters": "Clear Filters"
+  },
+  "products": {
+    "grid_view": "Grid View",
+    "list_view": "List View",
+    "no_products": "No Products",
+    "no_products_search": "No products match your search",
+    "no_products_available": "No products available at the moment",
+    "clear_filters": "Clear Filters",
+    "product_count": "{{count}} products"
+  },
+  "footer": {
+    "company_description": "We are a specialized company dedicated to providing the best services and products to our valued customers",
+    "important_links": "Important Links",
+    "quick_links": "Quick Links",
+    "contact_us": "Contact Us",
+    "location": "Location",
+    "partners": "Partners",
+    "copyright": "All rights reserved",
+    "tax_number": "Tax Number",
+    "scroll_to_top": "Back to Top"
+  },
+  "addToCart": "Add to Cart",
+  "available": "Available",
+  "unavailable": "Unavailable",
+  "new": "New",
+  "outOfStock": "Out of Stock",
+  "language": "Language",
+  "currency": "Currency",
+  "current": "Current",
+  "category_load_error": "Failed to load category data",
+  "loading": "Loading...",
+  "loading_category_data": "Loading category data",
+  "products": "Products",
+  "sort_by_name": "Sort by Name",
+  "price_low_to_high": "Price: Low to High",
+  "price_high_to_low": "Price: High to Low",
+  "product": "Product",
+  "no_products_in_category": "No products in this category",
+  "products_coming_soon": "New products will be added to this category soon",
+  "back_to_home": "Back to Home",
+  "search_placeholder": "Search...",
+  "addons": "Add-ons",
+  "product_options": "Product Options",
+  "base_price": "Base Price",
+  "total_price": "Total Price",
+  "price_breakdown": "Price Breakdown",
+  "additional_attachments": "Additional Attachments",
+  "image": "Image",
+  "no_comments": "No comments",
+  "scroll_progress": {
+    "beginning": "Beginning",
+    "theme_malak": "Theme Malak",
+    "why_us": "Why Us",
+    "our_clients": "Our Clients",
+    "our_products": "Our Products",
+    "client_reviews": "Client Reviews",
+    "faq": "FAQ",
+    "contact_us": "Contact Us"
+  },
+  "footer": {
+    "company_description": "We are a company specialized in providing innovative and advanced advertising solutions for our clients",
+    "stay_connected": "Stay connected with us",
+    "email_placeholder": "Enter your email",
+    "subscribe_now": "Subscribe Now",
+    "important_links": "Important Links",
+    "quick_links": "Quick Links",
+    "home": "Home",
+    "products": "Products",
+    "about_us": "About Us",
+    "contact_us": "Contact Us",
+    "privacy_policy": "Privacy Policy",
+    "terms_conditions": "Terms & Conditions",
+    "our_work": "Our Work",
+    "blog": "Blog",
+    "partners": "Our Partners",
+    "partners_salla": "Our Partners - Salla",
+    "scroll_to_top": "Scroll to Top",
+    "tax_number": "Tax Number: 067-347-623",
+    "copyright": "© 2024 AfterAds. All rights reserved",
+    "location": "Riyadh, Saudi Arabia"
+  },
+  "user_profile": {
+    "error_loading_user_data": "Error loading user data",
+    "connection_error": "Server connection error - check your connection",
+    "error_loading_orders": "Error loading orders",
+    "unexpected_error_orders": "Unexpected error loading orders",
+    "data_updated_successfully": "Data updated successfully",
+    "error_updating_data": "Error updating data",
+    "image_size_error": "Image size must be less than 5 MB",
+    "avatar_updated_successfully": "Profile picture updated successfully",
+    "error_uploading_image": "Error uploading image",
+    "password_mismatch": "New passwords do not match",
+    "password_length_error": "Password must be at least 6 characters",
+    "password_changed_successfully": "Password changed successfully",
+    "error_changing_password": "Error changing password",
+    "logout_success": "Logged out successfully",
+    "loading_data": "Loading data...",
+    "user_not_found": "User data not found",
+    "login": "Login",
+    "user": "User",
+    "loyalty_points": "loyalty points",
+    "personal_data": "Personal Data",
+    "my_orders": "My Orders",
+    "settings": "Settings",
+    "logout": "Logout",
+    "edit": "Edit",
+    "saving": "Saving...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "not_specified": "Not specified",
+    "account_stats": "Account Statistics",
+    "total_orders": "Total Orders",
+    "total_spent": "Total Spent",
+    "member_since": "Member Since",
+    "recent_orders": "My Recent Orders",
+    "order": "Order",
+    "unspecified_product": "Unspecified product",
+    "and_more_products": "and {{count}} more product(s)...",
+    "additional_products": "Additional Products",
+    "total": "Total",
+    "track_order": "Track Order",
+    "view_all_orders": "View All Orders",
+    "no_orders_yet": "No orders yet",
+    "start_shopping": "Start shopping and order your favorite products",
+    "browse_products": "Browse Products",
+    "change_password": "Change Password",
+    "hide": "Hide",
+    "change": "Change",
+    "current_password": "Current Password",
+    "new_password": "New Password",
+    "confirm_new_password": "Confirm New Password",
+    "updating": "Updating...",
+    "update_password": "Update Password",
+    "account_security": "Account Security",
+    "email_verified": "Email Verified",
+    "email_confirmed": "Your email address has been confirmed",
+    "verified": "Verified",
+    "not_verified": "Not Verified"
+  },
+  "order_status": {
+    "pending": "Pending",
+    "processing": "Processing",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
+  },
+  "privacy_policy": {
+    "title_part1": "Privacy",
+    "title_part2": "& Usage Policy",
+    "last_updated": "Last updated: August 25, 2025",
+    "introduction": "Welcome to AfterAds Agency, specialized in providing distinguished digital products. We are committed to protecting your privacy and providing a safe user experience that complies with the regulations in force in the Kingdom of Saudi Arabia, including the E-commerce System and the Personal Data Protection Law (PDPL).",
+    "definitions_title": "First: General Definitions",
+    "definitions": {
+      "agency_label": "Agency:",
+      "agency_text": "afterads.com, including the website and all its digital services.",
+      "user_label": "User/Customer:",
+      "user_text": "Any natural or legal person who uses the store to browse or purchase digital products.",
+      "personal_data_label": "Personal Data:",
+      "personal_data_text": "Information that identifies the user such as name, mobile number, email."
+    },
+    "agreement_title": "Second: Agreement to Terms",
+    "agreement": {
+      "point1": "By using the website or purchasing through it, you acknowledge your full agreement to this policy.",
+      "point2": "If you do not agree to any part of these terms, please do not use the website."
+    },
+    "data_collection_title": "Third: Data Collection and Usage",
+    "data_collection": {
+      "subtitle": "We collect the following data:",
+      "full_name": "Full name",
+      "contact_info": "Mobile number and email",
+      "payment_info": "Payment information (through secure payment gateways)",
+      "technical_info": "IP address, browser type and device"
+    },
+    "data_usage": {
+      "subtitle": "We use this data for:",
+      "process_orders": "Processing digital product orders",
+      "communication": "Communicating with you about order status",
+      "improve_experience": "Improving user experience",
+      "compliance": "Compliance with regulatory requirements"
+    },
+    "data_protection_note": "We do not collect any unnecessary data or data unrelated to the service, and we do not share your data with any third party for marketing purposes without your permission.",
+    "data_sharing_title": "Fourth: Data Sharing",
+    "data_sharing": {
+      "subtitle": "Your data is shared only with the following parties:",
+      "payment_providers_label": "Electronic payment providers",
+      "payment_providers_text": "Such as HyperPay, Apple Pay, Tamara",
+      "authorities_label": "Official authorities",
+      "authorities_text": "In case of a binding legal request"
+    },
+    "data_protection_title": "Fifth: Data Protection",
+    "data_protection": {
+      "ssl": "We use encrypted security protocols (SSL)",
+      "no_disclosure": "We are committed to not disclosing user data to any unauthorized party",
+      "access_control": "We limit access to data within the system according to strict internal controls"
+    },
+    "user_rights_title": "Sixth: User Rights",
+    "user_rights": {
+      "subtitle": "According to the Personal Data Protection Law, you have the right to:",
+      "know_data": "Know the data we keep",
+      "correct_delete": "Request correction or deletion of your data",
+      "object_marketing": "Object to the use of your data in advertisements or offers",
+      "file_complaint": "File a complaint with the competent authorities (such as the Saudi Data Authority - SDAIA)",
+      "contact_note": "To request any of the above, please contact us via:"
+    },
+    "terms_of_use_title": "Seventh: Website Usage Terms",
+    "terms_of_use": {
+      "age_requirement": "The user must be 18 years or older",
+      "account_responsibility": "The user is responsible for using their account and maintaining their login data",
+      "legal_use": "Using the website for any illegal purpose or contrary to public morals is prohibited",
+      "account_suspension": "The store reserves the right to suspend or cancel violating accounts without notice"
+    },
+    "intellectual_property_title": "Eighth: Intellectual Property",
+    "intellectual_property": {
+      "ownership": "All content displayed on the website is owned by the agency",
+      "usage_prohibition": "Using any of this content without prior written permission is prohibited"
+    },
+    "policy_updates_title": "Ninth: Policy Updates",
+    "policy_updates": {
+      "modification_right": "The store reserves the right to modify or update this policy at any time",
+      "notification": "Any changes will be published on this page, and continued use of the website after modification is considered implicit consent"
+    },
+    "applicable_law_title": "Tenth: Applicable Law",
+    "applicable_law": {
+      "content": "This policy is subject to the laws and regulations of the Kingdom of Saudi Arabia, and any dispute related to it shall be under the jurisdiction of the competent judicial authorities in the Kingdom."
+    },
+    "contact_title": "Contact Us",
+    "contact": {
+      "subtitle": "For any inquiries regarding this policy, please contact via:",
+      "email_label": "Email:",
+      "phone_label": "Mobile / WhatsApp:"
+    },
+    "back_to_home": "Back to Home"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "We're here to support you! Contact us for any inquiries about our products or to get help.",
+    "whatsapp": {
+      "title": "For Faster Communication",
+      "subtitle": "WhatsApp - Instant Response",
+      "button": "Start Chat Now"
+    },
+    "whatsapp_button": {
+      "message": "Hello! I'm interested in your services. Can you help me?",
+      "contact_us": "Contact us via WhatsApp",
+      "contact_now": "Contact Now"
+    },
+    "info": {
+      "title": "Contact Information",
+      "phone": "Phone Number",
+      "email": "Email",
+      "location": "Location",
+      "location_value": "Saudi Arabia",
+      "hours": "Working Hours",
+      "hours_value": "Saturday - Thursday: 9 AM - 6 PM"
+    },
+    "notice": {
+      "title": "Important Note",
+      "message": "Implementation time varies from product to product"
+    },
+    "form": {
+      "title": "Send Us a Message",
+      "name": "Full Name",
+      "name_placeholder": "Enter your full name",
+      "email": "Email",
+      "email_placeholder": "Enter your email",
+      "phone": "Phone Number",
+      "phone_placeholder": "Enter your phone number",
+      "subject": "Subject",
+      "subject_placeholder": "Message subject",
+      "message": "Message",
+      "message_placeholder": "Write your message here...",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success_title": "Successfully Sent!",
+      "success_message": "Thank you! We'll contact you soon."
+    },
+    "social": {
+      "title": "Follow Us on Social Media",
+      "description": "We provide the best services and products for our valued customers",
+      "tagline": "Your partner in success and excellence"
+    }
+  },
+  "about": {
+    "title": "AfterAds Agency",
+    "description": "We specialize in providing comprehensive and innovative digital solutions that help companies grow and thrive in the digital age",
+    "services": {
+      "title": "Our Distinguished Products",
+      "digital_marketing": {
+        "title": "Digital Marketing",
+        "description": "Advanced marketing strategies to increase sales and reach your target audience"
+      },
+      "web_development": {
+        "title": "Web Development",
+        "description": "Developing high-performance websites and web applications using the latest technologies"
+      },
+      "creative_design": {
+        "title": "Creative Design",
+        "description": "Designing distinctive visual identities and attractive, user-friendly interfaces"
+      },
+      "ecommerce": {
+        "title": "E-commerce",
+        "description": "Building integrated online stores with secure payment systems and advanced inventory management"
+      }
+    },
+    "stats": {
+      "title": "Our Achievements in Numbers",
+      "projects": {
+        "number": "500+",
+        "label": "Completed Projects"
+      },
+      "clients": {
+        "number": "200+",
+        "label": "Satisfied Clients"
+      },
+      "experience": {
+        "number": "5+",
+        "label": "Years of Experience"
+      },
+      "countries": {
+        "number": "15+",
+        "label": "Countries We Serve"
+      }
+    },
+    "tabs": {
+      "vision": "Our Vision",
+      "mission": "Our Mission",
+      "values": "Our Values"
+    },
+    "vision": {
+      "title": "Our Vision for the Future",
+      "description1": "We strive to be the leading digital agency in the region, helping companies achieve exceptional success through innovative and creative technical solutions.",
+      "description2": "We believe that every project carries a unique story, and we are here to help you tell it in a way that captivates the audience and achieves your goals."
+    },
+    "mission": {
+      "title": "Our Sacred Mission",
+      "description": "Providing comprehensive and advanced digital solutions that enable our clients to excel in the digital market and achieve sustainable and remarkable growth.",
+      "point1": "Developing effective marketing strategies",
+      "point2": "Building high-quality websites and applications",
+      "point3": "Designing distinctive visual identities",
+      "point4": "Creating successful commercial platforms"
+    },
+    "values": {
+      "title": "Our Core Values",
+      "creativity": {
+        "title": "Creativity",
+        "description": "We always strive to provide innovative and creative solutions that exceed expectations"
+      },
+      "quality": {
+        "title": "Quality",
+        "description": "We are committed to the highest quality standards in every detail of our work"
+      },
+      "collaboration": {
+        "title": "Collaboration",
+        "description": "We believe in the power of teamwork and true partnership with our clients"
+      },
+      "speed": {
+        "title": "Speed",
+        "description": "We appreciate the importance of time and strive to deliver results on schedule"
+      }
+    },
+    "team": {
+      "member1": {
+        "name": "Ahmed Mohammed",
+        "role": "Development Manager"
+      },
+      "member2": {
+        "name": "Fatima Ahmed",
+        "role": "Design Manager"
+      },
+      "member3": {
+        "name": "Mohammed Ali",
+        "role": "Marketing Manager"
+      }
+    },
+    "testimonials": {
+      "title": "Client Reviews",
+      "testimonial1": {
+        "text": "Professional and outstanding team, they helped us develop our website and significantly increase our sales",
+        "name": "Abdullah Al-Saeed"
+      },
+      "testimonial2": {
+        "text": "Excellent customer service and high quality in design and development, I recommend dealing with them",
+        "name": "Maryam Al-Ahmad"
+      },
+      "testimonial3": {
+        "text": "Our online store was developed professionally and on time, thank you",
+        "name": "Khalid Mohammed"
+      }
+    },
+    "cta": {
+      "title": "Are you ready to start your project?",
+      "description": "Join hundreds of clients who trusted us to develop their digital businesses. Let us help you achieve your goals and turn your vision into an amazing digital reality.",
+      "start_project": "Start Your Project Now",
+      "back_home": "Back to Home"
+    }
+  },
+  "cart_notification": {
+    "product_added": "Product added to cart",
+    "added": "Added",
+    "selected_options": "Selected options",
+    "options": "Options",
+    "others": "others",
+    "addons": "Add-ons",
+    "addons_short": "Add-ons",
+    "total_products_in_cart": "Total products in cart",
+    "product": "product",
+    "view_cart": "View Cart",
+    "cart": "Cart",
+    "checkout": "Checkout",
+    "order": "Order",
+    "cart_empty_error": "Cart is empty! Please add products first",
+    "success_message": "Product added successfully!",
+    "error_message": "Error occurred while adding product"
+  },
+  "terms_and_conditions": {
+    "title": "Terms and Conditions",
+    "last_updated": "Last Updated",
+    "introduction": "Welcome to AfterAds Digital Advertising Agency. By using our website or purchasing our digital products, you agree to comply with the following terms and conditions. Please read these terms carefully before using our products.",
+    "definitions": {
+      "title": "First: Definitions",
+      "agency": "Agency:",
+      "agency_text": "afterads.com, including the website and all its digital products.",
+      "user": "User/Client:",
+      "user_text": "Any natural or legal person who uses the agency to browse or purchase products or digital products.",
+      "products": "Products:",
+      "products_text": "Digital products and products offered through the site such as digital advertisements or subscriptions."
+    },
+    "agreement": {
+      "title": "Second: Agreement to Terms",
+      "point1": "By using the site or purchasing through it, you acknowledge your complete agreement to these terms and conditions.",
+      "point2": "If you do not agree to any part of these terms, please do not use the site or its products."
+    },
+    "user_responsibilities": {
+      "title": "Third: User Responsibilities",
+      "point1": "The user must be 18 years old or older.",
+      "point2": "The user is responsible for maintaining the confidentiality of their account data.",
+      "point3": "Using the site for illegal purposes or violating public morals is prohibited.",
+      "point4": "The user must provide accurate and updated information when registering or purchasing."
+    },
+    "payment_terms": {
+      "title": "Fourth: Payment Terms",
+      "point1": "Payments are processed through secure payment gateways such as HyperPay, Apple Pay, and Tamara.",
+      "point2": "All displayed prices include applicable taxes according to the laws of the Kingdom of Saudi Arabia.",
+      "point3": "The agency is not responsible for any additional fees imposed by banks or payment providers."
+    },
+    "cancellation_refunds": {
+      "title": "Fifth: Cancellation and Refunds",
+      "point1": "Digital products are non-returnable or refundable after electronic delivery, according to their nature.",
+      "point2": "Order cancellation can be requested before digital product delivery, by contacting support@afterads.com.",
+      "point3": "In case of a technical problem with the product, technical support or refund can be requested within 7 days."
+    },
+    "intellectual_property": {
+      "title": "Sixth: Intellectual Property",
+      "point1": "All content displayed on the site (images, texts, designs, logos, digital products) is owned by AfterAds Agency.",
+      "point2": "Using any of this content or redistributing it without prior written permission from the agency is prohibited."
+    },
+    "limitation_liability": {
+      "title": "Seventh: Limitation of Liability",
+      "point1": "The agency is not responsible for any direct or indirect damages resulting from using the site or products.",
+      "point2": "We reserve the right to suspend or terminate products at any time without prior notice.",
+      "point3": "The user is responsible for ensuring the suitability of products for their needs before purchase."
+    },
+    "modifications": {
+      "title": "Eighth: Modifications to Terms",
+      "point1": "The agency reserves the right to modify these terms and conditions at any time.",
+      "point2": "Any changes will be published on this page, and continued use of the site is considered implicit agreement to the modifications."
+    },
+    "applicable_law": {
+      "title": "Ninth: Applicable Law",
+      "text": "These terms and conditions are subject to the regulations and laws of the Kingdom of Saudi Arabia, and any dispute related to them shall be under the jurisdiction of the competent judicial authorities in the Kingdom."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "description": "For any inquiries regarding these terms and conditions, please contact via:",
+      "email_label": "Email:",
+      "phone_label": "Mobile / WhatsApp:"
+    },
+    "back_to_home": "Back to Home"
+  },
+  "cart_dropdown": {
+    "shopping_cart": "Shopping Cart",
+    "cart": "Cart",
+    "product": "product",
+    "cart_empty": "Your cart is empty",
+    "cart_empty_error": "Cart is empty! Add products first",
+    "product_removed": "Product removed from cart",
+    "other_options": "other options",
+    "added_products": "Added Products",
+    "products": "Products",
+    "others": "others",
+    "available_to_add": "Available to add",
+    "other_products": "other products",
+    "total": "Total",
+    "view_cart": "View Cart",
+    "checkout": "Checkout",
+    "buy": "Buy"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "yourCart": "Your Cart",
+    "description": "Review your selected products before placing your order",
+    "clearCart": "Clear Cart",
+    "clearCartAriaLabel": "Clear all products from cart",
+    "loading": "Loading...",
+    "emptyTitle": "Shopping Cart is Empty",
+    "emptyDescription": "You haven't added any products to your cart yet. Start shopping now!",
+    "browseProducts": "Browse Products",
+    "backToHome": "Back to Home",
+    "additionalProducts": "Additional Products",
+    "selectedOptions": "Selected Options",
+    "productOptions": "Product Options",
+    "basePrice": "Base Price",
+    "additionalProductsPrice": "Additional Products Price",
+    "quantity": "Quantity",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "removeFromCart": "Remove from cart",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "proceedToCheckout": "Proceed to Checkout",
+    "continueShopping": "Continue Shopping",
+    "saveError": "Error saving cart",
+    "quantityUpdated": "Quantity updated successfully",
+    "quantityUpdatedLocallyOnly": "Quantity updated locally only",
+    "itemRemoved": "Item removed from cart",
+    "itemRemovedLocallyOnly": "Item removed locally only",
+    "cartCleared": "Cart cleared successfully",
+    "clearCartError": "Error clearing cart"
+  },
+  "auth": {
+    "login": "Login",
+    "createNewAccount": "Create New Account",
+    "newAccount": "New Account",
+    "enterAccountData": "Enter your account details to login",
+    "completeDataForNewAccount": "Complete the data to create a new account",
+    "noAccount": "Don't have an account? Register now",
+    "haveAccount": "Already have an account? Login",
+    "createAccount": "Create Account",
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "phone": "Phone Number"
+    },
+    "placeholders": {
+      "enterEmail": "Enter your email",
+      "enterPassword": "Enter password",
+      "password": "Password",
+      "passwordMinLength": "Password (at least 6 characters)",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "firstNameExample": "Ahmed",
+      "lastNameExample": "Mohammed",
+      "strongPassword": "Strong password"
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "fieldRequired": "This field is required",
+      "nameRequired": "{{field}} is required",
+      "nameMinLength": "{{field}} must be at least 2 characters",
+      "phoneRequired": "Phone number is required",
+      "phoneLength": "Phone number must be 9 digits",
+      "phoneStartsWith5": "Phone number must start with 5",
+      "phoneFormat": "Phone number must start with 5"
+    },
+    "messages": {
+      "loginSuccess": "Login successful",
+      "registerSuccess": "Account created successfully",
+      "loggingIn": "Logging in...",
+      "creatingAccount": "Creating account...",
+      "loginFailed": "Login failed",
+      "registerFailed": "Account creation failed",
+      "emailNotRegistered": "Email not registered",
+      "incorrectPassword": "Incorrect password",
+      "emailAlreadyExists": "Email already registered",
+      "invalidData": "Invalid data entered",
+      "serverError": "Server error, please try again",
+      "userDataNotReturned": "User data not returned"
+    }
+  },
+  "checkout": {
+    "checkout": "Checkout",
+    "reviewOrder": "Review your order before confirming",
+    "backToCart": "Back to Cart",
+    "order_summary": "Order Summary",
+    "couponApplied": "Coupon Applied",
+    "subtotal": "Subtotal",
+    "items": "items",
+    "item_total": "Item Total",
+    "discount": "Discount",
+    "total": "Total",
+    "deliveryInfo": "Delivery Information",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "email": "Email",
+    "address": "Address",
+    "addressPlaceholder": "Enter your full address",
+    "addressNote": "Please enter a detailed address to ensure proper delivery",
+    "notes": "Additional Notes",
+    "notesPlaceholder": "Any special notes for your order (optional)",
+    "paymentMethod": "Payment Method",
+    "cashOnDelivery": "Cash on Delivery",
+    "cashOnDeliveryDesc": "Pay cash when you receive your order",
+    "processingOrder": "Processing order...",
+    "confirmOrder": "Confirm Order",
+    "termsAgreement": "By proceeding, I agree to the terms and conditions",
+    "loginOrRegister": "Login or Create Account",
+    "loginOrRegisterDesc": "Login or create a new account to complete your order",
+    "continueAsGuest": "Continue as Guest",
+    "continueAsGuestDesc": "Complete your order without creating an account",
+    "completeOrder": "Complete Order",
+    "chooseMethod": "Choose how to proceed",
+    "methodDescription": "You can complete your order as a guest or login to get additional benefits",
+    "quickMethod": "Quick and simple method",
+    "existingAccount": "Already have an account",
+    "additionalFeatures": "Get additional benefits",
+    "accountFeatures": "Account Benefits",
+    "orderTracking": "Order Tracking",
+    "favoriteProducts": "Favorite Products",
+    "saveAddresses": "Save Addresses"
+    
+  },
+  "blog": {
+    "error_loading_posts": "Failed to load articles",
+    "system_error": "System Error",
+    "retry": "Retry",
+    "hero_title": "Blog",
+    "hero_highlight": "After Ads",
+    "hero_description": "Discover the latest articles and tips in e-commerce and digital marketing",
+    "tag_technology": "Technology",
+    "tag_ecommerce": "E-commerce",
+    "tag_digital_marketing": "Digital Marketing",
+    "search_placeholder": "Search articles...",
+    "all_categories": "All",
+    "articles_available": "articles available",
+    "articles_title": "Articles",
+    "read_article": "Read Article",
+    "read_now": "Read Now",
+    "loading_post": "Loading article...",
+    "error_loading_post": "Failed to load article",
+    "post_not_found": "Article Not Found",
+    "post_not_found_description": "The requested article was not found",
+    "article_author": "Article Author",
+    "reading_time": "{{time}} min read",
+    "share_article": "Share Article",
+    "related_articles": "Related Articles",
+    "explore_other_articles": "Explore Other Articles"
+  },
+  "thankYou": {
+    "title": "Congratulations!",
+    "subtitle": "Your order has been created successfully",
+    "thankYouMessage": "Thank you",
+    "excitedToServe": "We are excited to serve you and will contact you soon",
+    "orderNumber": "Order Number",
+    "orderProcessing": "Your order is being processed",
+    "orderDetails": "Order Details",
+    "products": "products",
+    "product": "product",
+    "total": "Total",
+    "additionalProducts": "Additional Products",
+    "productOptions": "Product Options",
+    "attachments": "Attachments",
+    "attachedImages": "Attached Images",
+    "attachedText": "Attached Text",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "finalTotal": "Final Total",
+    "customerInfo": "Customer Information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "paymentMethod": "Payment Method",
+    "orderDate": "Order Date",
+    "orderStatus": "Order Status",
+    "notes": "Notes",
+    "nextSteps": "Next Steps",
+    "contactInfo": "Contact Information",
+    "backToHome": "Back to Home",
+    "continueShopping": "Continue Shopping",
+    "trackOrder": "Track Order",
+    "loading": "Preparing your amazing order details...",
+    "noOrderFound": "Sorry!",
+    "noOrderDescription": "Order details not found. The session may have expired or a technical error occurred.",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "preparing": "Preparing",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "paymentMethods": {
+      "cash": "Cash on Delivery",
+      "card": "Credit Card",
+      "bank": "Bank Transfer"
+    },
+    "invoiceSummary": "Invoice Summary",
+    "couponDiscount": "Coupon Discount",
+
+    "saudiRiyal": "Saudi Riyal",
+    "yourInfo": "Your Information",
+    "phoneNumber": "Phone Number",
+    "deliveryAddress": "Delivery Address",
+    "additionalNotes": "Additional Notes",
+    "needHelp": "Need Help?",
+    "supportAvailable": "Support team available 24/7 to help you with any inquiry",
+    "callNow": "Call Us Now",
+    "messageUs": "Message Us",
+    "continueShopping": "Continue Shopping",
+    "thankYouForChoosing": "Thank You for Choosing Us!",
+    "footerMessage": "Thank you for trusting our products. Our team has received your order and will contact you soon to provide the best digital solutions that meet your needs.",
+    "qualityGuarantee": "Quality Guarantee",
+    "fastProducts": "Fast Products",
+    "customerSatisfaction": "Customer Satisfaction",
+    "required_option_missing": "Please select {{option}}",
+    "required_option_empty": "Please fill in {{option}}",
+    "theme": {
+      "loading": "Loading theme...",
+      "loading_message": "Please wait",
+      "error_loading": "Error loading theme",
+      "not_found": "Theme not found",
+      "back_to_home": "Back to Home",
+      "number_one": "Theme #1 on Salla Platform",
+      "add_to_cart": "Add to Cart",
+      "video_explanation": "Complete Video Tutorial",
+      "preview_theme": "Preview Theme",
+      "discover_features": "Discover Features",
+      "why_choose_malak": "Why Choose Malak Theme?",
+      "optimal_solution": "The optimal solution for your online store",
+      "responsive_design": "Responsive Design",
+      "responsive_description": "Adapts to all screen sizes and different devices",
+      "arabic_support": "Arabic Language Support",
+      "arabic_description": "Full Arabic language support with perfect RTL layout",
+      "seo_optimization": "SEO Optimization",
+      "seo_description": "Optimized for search engines to increase your store visibility",
+      "free_updates": "Free Updates",
+      "updates_description": "Get free lifetime updates",
+      "advanced_elements": "Advanced Elements",
+      "homepage_elements": "Homepage Elements",
+      "easy_to_use": "Easy to Use",
+      "customizable": "Customizable",
+      "responsive": "Responsive",
+      "not_everything": "And that's not all!",
+      "discover_more_features": "Discover more amazing features",
+      "more_creativity_awaits": "More creativity awaits you",
+      "and_more": "And that's not all!",
+      "themes_title": "Salla Themes",
+      "malak_theme": "Malak Theme",
+      "most_popular": "The most popular and trusted best-selling theme",
+      "discover_malak": "Discover Malak theme specially designed to provide a luxurious and advanced shopping experience on Salla platform",
+      "coming_soon": "Coming Very Soon",
+      "coming_soon_message": "Malak theme will be available soon with exceptional features",
+      "subscribe_notification": "Subscribe for Notification",
+      "learn_more": "Learn More",
+      "ready_to_develop": "Ready to Develop Your Store?",
+      "join_successful_merchants": "Join thousands of successful merchants and get Malak theme today",
+      "guarantees": "Money Back Guarantee • Free Technical Support • Lifetime Updates",
+      "unlimited_features": "Enjoy Unlimited Features",
+      "with_malak_theme": "With Malak Theme on Salla Platform",
+      "most_advanced": "The most advanced and creative theme for an exceptional shopping experience",
+      "perfect_rating": "Perfect Rating",
+      "professional_element": "Professional Element",
+      "control_option": "Control Option",
+      "technical_support": "Technical Support",
+      "active_store": "Active Store",
+      "designed_for_salla": "Specially designed for Salla platform • Speed optimized • Responsive on all devices",
+      "live_preview": "Live Preview",
+      "salla_themes": "Salla Themes",
+      "most_popular_theme": "The most popular and best-selling theme",
+      "malak_description": "Discover Malak theme specially designed to provide a luxurious and advanced shopping experience on Salla platform",
+      "coming_soon_description": "Malak theme will be available soon with exceptional features",
+      "professional_elements": "Professional Elements",
+      "advanced_element": "Advanced Element",
+      "quantity": "Quantity",
+      "faq": "Frequently Asked Questions",
+      "enjoy_unlimited_features": "Enjoy unlimited features with Malak theme on Salla platform",
+      "most_advanced_theme": "The most advanced and creative theme for an exceptional shopping experience",
+      "control_options": "Control Options"
+    }
+  }
+}
