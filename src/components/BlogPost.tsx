@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Calendar, User, Tag, ArrowLeft, BookOpen, Clock, Share2, Eye } from 'lucide-react';
+import { Calendar, User, Tag, ArrowLeft, Clock, Share2, Eye, X, Heart, Bookmark, MessageCircle, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BlogService, buildImageUrl } from '../config/api';
+import LoadingSpinner from './ui/LoadingSpinner';
+import RichTextDisplay from './ui/RichTextDisplay';
+import notfoundImg from '../assets/search_not_found.png';
 
 interface BlogPost {
   id: number;
   title: string;
   slug: string;
   excerpt: string;
-  content: string;
+  content: any;
   featuredImage: string;
   author: string;
   categories: string[];
@@ -31,19 +34,31 @@ const BlogPost: React.FC = () => {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [related, setRelated] = useState<BlogPost[]>([]);
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
   useEffect(() => {
-    if (slug) {
-      fetchPost(slug);
-    }
+    if (slug) fetchPost(slug);
   }, [slug]);
 
   const fetchPost = async (postSlug: string) => {
     try {
       setLoading(true);
       const response = await BlogService.getPostBySlug(postSlug);
-      console.log('Post content:', response.content); // Debug content
       setPost(response);
+
+      const all = await BlogService.getAllPosts({ limit: 24 });
+      const postsList: BlogPost[] = all.posts || [];
+      const byCategory = postsList.filter((p: BlogPost) => {
+        if (p.slug === response.slug) return false;
+        const a = new Set((response.categories || []).map((c: string) => c.toLowerCase()));
+        const b = (p.categories || []).map(c => c.toLowerCase());
+        return b.some(c => a.has(c));
+      });
+      const fallback = postsList.filter(p => p.slug !== response.slug);
+      setRelated((byCategory.length > 0 ? byCategory : fallback).slice(0, 3));
     } catch (err) {
       console.error('Error fetching post:', err);
       setError(t('blog.error_loading_post'));
@@ -54,45 +69,30 @@ const BlogPost: React.FC = () => {
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: post?.title,
-        url: window.location.href,
-      });
+      navigator.share({ title: post?.title, url: window.location.href });
     }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center relative overflow-hidden" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1e1e1e] via-[#3a3a3a] to-[#0f0f0f] opacity-85"></div>
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute font-mono text-base text-[#18b5d8]/50 animate-pulse" style={{ top: '8%', left: '8%' }}>
-            &lt;Loading state=&quot;active&quot;&gt;
-          </div>
-          <div className="absolute font-mono text-base text-[#18b5d8]/50 animate-pulse" style={{ bottom: '12%', right: '12%', animationDelay: '800ms' }}>
-            await post.fetch();
-          </div>
-        </div>
-        <div className="text-center z-10">
-          <div className="w-24 h-24 border-4 border-[#18b5d8] border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
-          <p className="text-[#18b5d8] text-xl font-semibold">{t('blog.loading_post')}</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message={t('blog.loading_post')} />;
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center relative overflow-hidden" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1e1e1e] via-[#3a3a3a] to-[#0f0f0f] opacity-85"></div>
-        <div className="text-center max-w-md mx-auto p-8 z-10">
-          <div className="relative w-28 h-28 mx-auto mb-8">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#18b5d8]/30 to-[#1ab5d5]/30 backdrop-blur-md border border-[#18b5d8]/40 rounded-full animate-pulse"></div>
-            <BookOpen className="w-14 h-14 text-[#18b5d8] absolute inset-0 m-auto" />
+      <div className="min-h-screen bg-[#292929] flex items-center justify-center" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="w-24 h-24 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Eye className="w-12 h-12 text-red-400" />
           </div>
-          <h3 className="text-3xl font-bold text-white mb-6">{t('blog.post_not_found')}</h3>
-            <p className="text-gray-300 mb-8 leading-relaxed">{error || t('blog.post_not_found_description')}</p>
-
+          <h3 className="text-3xl font-bold text-gray-100 mb-4">المقال غير موجود</h3>
+          <p className="text-gray-300 mb-8">{error || 'لم نتمكن من العثور على المقال المطلوب'}</p>
+          <Link
+            to="/blog"
+            className="inline-flex items-center px-8 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            <ArrowLeft className="w-5 h-5 ml-2" />
+            العودة للمدونة
+          </Link>
         </div>
       </div>
     );
@@ -100,9 +100,8 @@ const BlogPost: React.FC = () => {
 
   const siteUrl = window.location.origin;
   const postUrl = `${siteUrl}/blog/${post.slug}`;
-  const imageUrl = post.featuredImage ? buildImageUrl(post.featuredImage) : `${siteUrl}/images/default-blog.jpg`;
+  const imageUrl = post.featuredImage ? buildImageUrl(post.featuredImage) : notfoundImg;
   const publishedDate = new Date(post.createdAt).toISOString();
-  const modifiedDate = new Date(post.createdAt).toISOString();
 
   return (
     <>
@@ -117,425 +116,276 @@ const BlogPost: React.FC = () => {
         <meta property="og:description" content={post.ogDescription || post.metaDescription || post.excerpt} />
         <meta property="og:image" content={imageUrl} />
         <meta property="og:url" content={postUrl} />
-        <meta property="og:site_name" content="مدونة AfterAds" />
         <meta property="article:author" content={post.author} />
         <meta property="article:published_time" content={publishedDate} />
-        <meta property="article:modified_time" content={modifiedDate} />
-        {post.categories.map((category, index) => (
-          <meta key={index} property="article:tag" content={category} />
-        ))}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.twitterTitle || post.ogTitle || post.metaTitle || post.title} />
-        <meta name="twitter:description" content={post.twitterDescription || post.ogDescription || post.metaDescription || post.excerpt} />
-        <meta name="twitter:image" content={imageUrl} />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            "headline": post.metaTitle || post.title,
-            "description": post.metaDescription || post.excerpt,
-            "image": imageUrl,
-            "author": {
-              "@type": "Person",
-              "name": post.author
-            },
-            "publisher": {
-              "@type": "Organization",
-              "name": "AfterAds",
-              "logo": {
-                "@type": "ImageObject",
-                "url": `${siteUrl}/favi.ico`
-              }
-            },
-            "datePublished": publishedDate,
-            "dateModified": modifiedDate,
-            "mainEntityOfPage": {
-              "@type": "WebPage",
-              "@id": postUrl
-            },
-            "keywords": post.categories.join(', '),
-            "articleSection": post.categories[0] || 'عام',
-            "url": postUrl
-          })}
-        </script>
       </Helmet>
 
-      <section className="min-h-screen bg-[#0f0f0f] relative overflow-hidden" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1e1e1e] via-[#3a3a3a] to-[#0f0f0f] opacity-85"></div>
-          <div className="absolute inset-0 opacity-15">
-            <div className="absolute font-mono text-sm text-[#18b5d8]/50 animate-pulse" style={{ top: '5%', left: '5%' }}>
-              &lt;BlogPost title=&quot;{post.title}&quot;&gt;
-            </div>
-            <div className="absolute font-mono text-sm text-[#18b5d8]/50 animate-pulse" style={{ top: '15%', right: '10%', animationDelay: '500ms' }}>
-              useEffect(() =&gt; fetchPost());
-            </div>
-            <div className="absolute font-mono text-sm text-[#18b5d8]/50 animate-pulse" style={{ bottom: '20%', left: '15%', animationDelay: '1000ms' }}>
-              const [post, setPost] =
-            </div>
-            <div className="absolute font-mono text-sm text-[#18b5d8]/50 animate-pulse" style={{ bottom: '10%', right: '5%', animationDelay: '1500ms' }}>
-              renderContent(post);
-            </div>
-          </div>
-          <div className="absolute inset-0">
-            <div className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#18b5d8]/30 to-transparent animate-pulse"></div>
-            <div className="absolute bottom-1/3 right-0 w-full h-px bg-gradient-to-l from-transparent via-[#1ab5d5]/30 to-transparent animate-pulse delay-1000"></div>
-            <div className="absolute left-1/4 top-0 w-px h-full bg-gradient-to-b from-transparent via-[#18b5d8]/30 to-transparent animate-pulse delay-500"></div>
-          </div>
-          <div className="absolute inset-0">
-            <div className="absolute top-20 left-20 w-2 h-2 bg-[#18b5d8]/50 rounded-full animate-ping"></div>
-            <div className="absolute bottom-32 right-40 w-1.5 h-1.5 bg-[#1ab5d5]/50 rounded-full animate-ping delay-1200"></div>
-            <div className="absolute top-1/2 left-1/3 w-1 h-1 bg-[#18b5d8]/70 rounded-full animate-ping delay-300"></div>
-          </div>
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-20 text-[#18b5d8]/50 font-mono text-base leading-6 animate-pulse">
-              1<br/>0<br/>1<br/>0<br/>1
-            </div>
-            <div className="absolute bottom-0 right-20 text-[#18b5d8]/50 font-mono text-base leading-6 animate-pulse delay-500">
-              0<br/>1<br/>0<br/>1<br/>0
-            </div>
-          </div>
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute text-[#18b5d8]/50 text-3xl animate-[float_6s_ease-in-out_infinite]" style={{ top: '10%', left: '10%' }}>
-              <span role="img" aria-label="book">📚</span>
-            </div>
-            <div className="absolute text-[#1ab5d5]/50 text-3xl animate-[float_6s_ease-in-out_infinite]" style={{ bottom: '15%', right: '15%', animationDelay: '600ms' }}>
-              <span role="img" aria-label="pen">✍️</span>
-            </div>
-            <div className="absolute text-[#18b5d8]/50 text-2xl animate-[glow_3s_ease-in-out_infinite]" style={{ top: '30%', left: '20%', animationDelay: '1200ms' }}>
-              <span role="img" aria-label="sparkles">✨</span>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#292929]" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-20 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent"></div>
+          
+          <div className="max-w-5xl mx-auto px-6 sm:px-8 relative z-10">
+            {/* Breadcrumb */}
+            <Link to="/blog" className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 font-medium mb-8 group">
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              العودة للمدونة
+            </Link>
 
-        <style>
-          {`
-            @keyframes float {
-              0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-              50% { transform: translateY(-10px) rotate(3deg) scale(1.05); }
-            }
-            @keyframes glow {
-              0%, 100% { filter: drop-shadow(0 0 5px rgba(92, 255, 237, 0.3)); transform: scale(1); }
-              50% { filter: drop-shadow(0 0 10px rgba(92, 255, 237, 0.7)); transform: scale(1.1); }
-            }
-            @keyframes fadeInUp {
-              0% { opacity: 0; transform: translateY(20px); }
-              100% { opacity: 1; transform: translateY(0); }
-            }
-            .parallax {
-              transform: translateZ(0);
-              will-change: transform;
-            }
-            .hover-grow:hover {
-              transform: scale(1.05);
-              transition: transform 0.3s ease-in-out;
-            }
-            .content-section {
-              animation: fadeInUp 0.8s ease-out;
-            }
-            .content-section p, .content-section li, .content-section blockquote {
-              animation: fadeInUp 1s ease-out;
-              animation-delay: calc(var(--index) * 0.1s);
-            }
-            .underline-glow {
-              position: relative;
-              display: inline-block;
-            }
-            .underline-glow::after {
-              content: '';
-              position: absolute;
-              bottom: -4px;
-              left: 0;
-              right: 0;
-              height: 2px;
-              background-image: linear-gradient(to right, #18b5d8, #1ab5d5);
-              transition: all 0.3s ease-in-out;
-            }
-            .underline-glow:hover::after {
-              height: 4px;
-              filter: drop-shadow(0 0 8px rgba(92, 255, 237, 0.7));
-            }
-            .content-hover:hover {
-              background: rgba(92, 255, 237, 0.05);
-              transform: scale(1.02);
-              transition: all 0.3s ease-in-out;
-            }
-          `}
-        </style>
-
-        <div className="relative max-w-6xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-12">
-      
-
-          {/* Hero Section */}
-          <div className="relative mt-16 sm:mt-24 mb-8 sm:mb-16">
-            <div className="relative w-full h-[40vh] sm:h-[50vh] lg:h-[60vh] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl parallax">
-              <img
-                src={post.featuredImage ? buildImageUrl(post.featuredImage) : '/images/default-blog.jpg'}
-                alt={post.title}
-                className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-110"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIzMiIgZmlsbD0iIzVjZmZlZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtiz2YjYsdipINin2YTZhdmC2KfZhDwvdGV4dD48L3N2Zz4=';
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f]/80 via-[#0f0f0f]/50 to-transparent"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-12 h-12 sm:w-16 sm:h-16">
-                  <div className="absolute -inset-2 bg-gradient-to-br from-[#18b5d8]/30 to-[#1ab5d5]/30 blur-md animate-pulse"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#18b5d8]/20 to-[#1ab5d5]/20 backdrop-blur-sm border border-[#18b5d8]/40 rounded-full"></div>
-                  <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-[#18b5d8] absolute inset-0 m-auto" />
-                </div>
-              </div>
+            {/* Categories */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {post.categories.map((cat, i) => (
+                <span key={i} className="px-4 py-2 bg-gray-800 text-indigo-400 rounded-full text-sm font-semibold shadow-md">
+                  {cat}
+                </span>
+              ))}
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 text-center">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6 drop-shadow-[0_4px_8px_rgba(92,255,237,0.5)] px-2">
-                {post.title}
-              </h1>
-              <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
-                {post.categories.map((category, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-2 sm:px-4 py-1 sm:py-2 bg-gradient-to-r from-[#18b5d8]/30 to-[#1ab5d5]/30 backdrop-blur-sm border border-[#18b5d8]/40 rounded-full text-white text-xs sm:text-sm font-medium hover-grow"
-                  >
-                    <Tag className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    {category}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Article Content */}
-          <div className="relative max-w-4xl mx-auto bg-[#0f0f0f]/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 lg:p-12 shadow-2xl border border-[#18b5d8]/20 content-section">
-            {/* Meta Information */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-12 border-b border-[#18b5d8]/20 pb-4 sm:pb-6 content-section">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18b5d8]/30 to-[#1ab5d5]/30 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-base sm:text-lg font-semibold text-white">{post.author}</p>
-                  <p className="text-[#18b5d8]/80 text-xs sm:text-sm">{t('blog.article_author')}</p>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[#18b5d8]" />
-                  <span className="text-white text-xs sm:text-sm">
-                    {new Date(post.createdAt).toLocaleDateString('ar-EG', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#18b5d8]" />
-                  <span className="text-white text-xs sm:text-sm">{t('blog.reading_time', { time: 5 })}</span>
-                </div>
-              </div>
-            </div>
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-100 leading-tight mb-8">
+              {post.title}
+            </h1>
 
             {/* Excerpt */}
             {post.excerpt && (
-              <div className="relative mb-8 sm:mb-12 p-4 sm:p-6 bg-gradient-to-r from-[#18b5d8]/10 to-[#1ab5d5]/10 rounded-xl sm:rounded-2xl border-r-4 border-[#18b5d8] hover-grow content-section">
-                <p className="text-base sm:text-lg text-[#e6f7f9] leading-relaxed font-medium" style={{ textShadow: '0 0 5px rgba(92, 255, 237, 0.3)' }}>
-                  {post.excerpt}
-                </p>
-              </div>
+              <p className="text-xl text-gray-300 leading-relaxed mb-8 max-w-3xl">
+                {post.excerpt}
+              </p>
             )}
 
-            {/* Main Content */}
-            <article
-              className="prose prose-lg max-w-none min-h-[400px] overflow-visible"
-              style={{
-                direction: 'rtl',
-                textAlign: 'right',
-                lineHeight: '2',
-                visibility: 'visible',
-                opacity: 1
-              }}
-            >
-              <style>
-                {`
-                  .prose h2, .prose h3, .prose h4 {
-                    color: #ffffff;
-                    font-weight: bold;
-                    margin-bottom: 1.5rem;
-                    position: relative;
-                    display: inline-block;
-                  }
-                  .prose h2 {
-                    font-size: 1.5rem;
-                    padding-right: 0.75rem;
-                    background-image: linear-gradient(to right, #18b5d8, #1ab5d5);
-                    background-position: bottom;
-                    background-size: 100% 3px;
-                    background-repeat: no-repeat;
-                    transition: background-size 0.3s ease-in-out;
-                  }
-                  @media (min-width: 640px) {
-                    .prose h2 {
-                      font-size: 1.875rem;
-                      padding-right: 1rem;
-                      background-size: 100% 4px;
-                    }
-                  }
-                  .prose h2:hover {
-                    background-size: 100% 6px;
-                    filter: drop-shadow(0 0 8px rgba(92, 255, 237, 0.7));
-                  }
-                  .prose h3 {
-                    font-size: 1.25rem;
-                  }
-                  .prose h4 {
-                    font-size: 1.125rem;
-                  }
-                  @media (min-width: 640px) {
-                    .prose h3 {
-                      font-size: 1.5rem;
-                    }
-                    .prose h4 {
-                      font-size: 1.25rem;
-                    }
-                  }
-                  .prose p, .prose li {
-                    color: #e6f7f9;
-                    line-height: 1.8;
-                    margin-bottom: 1.25rem;
-                    font-size: 1rem;
-                    text-shadow: 0 0 5px rgba(92, 255, 237, 0.3);
-                    transition: all 0.3s ease-in-out;
-                  }
-                  @media (min-width: 640px) {
-                    .prose p, .prose li {
-                      line-height: 2;
-                      margin-bottom: 1.5rem;
-                      font-size: 1.125rem;
-                    }
-                  }
-                  .prose p:hover, .prose li:hover {
-                    background: rgba(92, 255, 237, 0.05);
-                    transform: scale(1.02);
-                  }
-                  .prose a {
-                    color: #18b5d8;
-                    text-decoration: none;
-                    font-weight: 500;
-                  }
-                  .prose a:hover {
-                    text-decoration: underline;
-                    text-decoration-color: #18b5d8;
-                    text-decoration-thickness: 2px;
-                    text-underline-offset: 4px;
-                  }
-                  .prose strong {
-                    color: #ffffff;
-                    font-weight: bold;
-                  }
-                  .prose blockquote {
-                    border-right: 3px solid #18b5d8;
-                    background: linear-gradient(to right, rgba(92, 255, 237, 0.1), rgba(26, 181, 213, 0.1));
-                    border-radius: 0 8px 8px 0;
-                    padding: 1rem;
-                    margin: 1.5rem 0;
-                    transition: all 0.3s ease-in-out;
-                  }
-                  @media (min-width: 640px) {
-                    .prose blockquote {
-                      border-right: 4px solid #18b5d8;
-                      border-radius: 0 12px 12px 0;
-                      padding: 1.5rem;
-                      margin: 2rem 0;
-                    }
-                  }
-                  .prose blockquote:hover {
-                    border-right-color: #1ab5d5;
-                    filter: drop-shadow(0 0 8px rgba(92, 255, 237, 0.5));
-                  }
-                  .prose ul {
-                    margin-bottom: 1rem;
-                    list-style-type: none;
-                  }
-                  .prose li {
-                    position: relative;
-                    padding-right: 1.5rem;
-                  }
-                  .prose li::before {
-                    content: '•';
-                    position: absolute;
-                    right: 0;
-                    color: #18b5d8;
-                    font-size: 1.25rem;
-                  }
-                  .prose img {
-                    border-radius: 8px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                    margin: 1.5rem 0;
-                    max-width: 100%;
-                    height: auto;
-                    transition: all 0.3s ease-in-out;
-                  }
-                  @media (min-width: 640px) {
-                    .prose img {
-                      border-radius: 12px;
-                      margin: 2rem 0;
-                    }
-                  }
-                  .prose img:hover {
-                    filter: drop-shadow(0 0 12px rgba(92, 255, 237, 0.5));
-                    transform: scale(1.03);
-                  }
-                `}
-              </style>
-              {post.content ? (
-                <div
-                  dangerouslySetInnerHTML={{ __html: post.content }}
-                  style={{ '--index': 0 } as React.CSSProperties}
-                />
-              ) : (
-                <p
-                  className="text-[#e6f7f9] text-lg content-hover"
-                  style={{ textShadow: '0 0 5px rgba(92, 255, 237, 0.3)', '--index': 0 } as React.CSSProperties}
-                >
-                  عذرًا، محتوى المقال غير متاح حاليًا. يرجى المحاولة لاحقًا أو التواصل مع الدعم.
-                </p>
-              )}
-            </article>
-
-            {/* Article Footer */}
-            <div className="mt-8 sm:mt-12 pt-4 sm:pt-6 border-t border-[#18b5d8]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 content-section">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#18b5d8]/30 rounded-full flex items-center justify-center">
-                  <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            {/* Meta Info */}
+            <div className="flex flex-wrap items-center gap-6 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                  <User className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-[#e6f7f9] text-xs sm:text-sm" style={{ textShadow: '0 0 5px rgba(92, 255, 237, 0.3)' }}>
-                  تم النشر في {new Date(post.createdAt).toLocaleDateString('ar-EG')}
-                </span>
+                <div>
+                  <p className="font-semibold text-gray-100">{post.author}</p>
+                  <p className="text-sm text-gray-400">كاتب ومحرر</p>
+                </div>
               </div>
+
+              <div className="h-8 w-px bg-gray-700"></div>
+
+              <div className="flex items-center gap-2 text-gray-300">
+                <Calendar className="w-5 h-5 text-indigo-400" />
+                <span>{new Date(post.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+
+               
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3">
+           
+
               <button
                 onClick={handleShare}
-                className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#18b5d8] to-[#1ab5d5] text-white rounded-lg sm:rounded-xl hover:from-[#1ab5d5] hover:to-[#18b5d8] transition-all duration-300 font-semibold text-xs sm:text-sm hover-grow w-full sm:w-auto justify-center"
+                className="flex items-center gap-2 px-5 py-3 bg-gray-800 text-gray-300 rounded-full font-semibold hover:bg-gray-700 transition-all duration-300 shadow-md hover:shadow-lg"
               >
-                <Share2 className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
-                {t('blog.share_article')}
+                <Share2 className="w-5 h-5" />
+                <span>مشاركة</span>
               </button>
             </div>
           </div>
+        </section>
 
-          {/* Back to Blog Button */}
-          <div className="text-center mt-12 sm:mt-16 content-section px-4">
+        {/* Featured Image */}
+        <section className="max-w-6xl mx-auto px-6 sm:px-8 mb-16">
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl cursor-zoom-in" onClick={() => setZoomSrc(post.featuredImage ? buildImageUrl(post.featuredImage) : notfoundImg)}>
+            <img
+              src={post.featuredImage ? buildImageUrl(post.featuredImage) : notfoundImg}
+              alt={post.title}
+              className="w-full h-[500px] object-cover"
+              onError={e => {
+                const t = e.target as HTMLImageElement;
+                t.src = notfoundImg;
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+          </div>
+        </section>
+
+        {/* Content with Sidebar Layout */}
+        <section className="max-w-7xl mx-auto px-6 sm:px-8 pb-20">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <article className="lg:col-span-2 bg-gray-800 rounded-3xl shadow-xl p-8 md:p-12">
+              <div className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-100 prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline prose-img:rounded-2xl prose-img:shadow-lg">
+                {Array.isArray(post.content) ? (
+                  <div className="space-y-8">
+                    {(post.content as any[]).map((block: any, idx: number) => {
+                      const hasImages = Array.isArray(block.images) && block.images.length > 0;
+                      const isHorizontal = hasImages && block.images.every((img: any) => img.orientation === 'horizontal');
+                      return (
+                        <div key={idx} className="space-y-6">
+                          {block.text && <div     className="text-white"
+ dangerouslySetInnerHTML={{ __html: block.text }} />}
+                          {hasImages && (
+                            isHorizontal ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {block.images.map((img: any, i: number) => (
+                                  <img
+                                    key={i}
+                                    src={buildImageUrl(img.url)}
+                                    alt=""
+                                    className="w-full h-64 object-cover rounded-2xl shadow-lg cursor-zoom-in hover:shadow-2xl transition-shadow"
+                                    loading="lazy"
+                                    onError={e => { const t = e.target as HTMLImageElement; t.src = notfoundImg; }}
+                                    onClick={() => setZoomSrc(buildImageUrl(img.url))}
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-6 items-center">
+                                {block.images.map((img: any, i: number) => (
+                                  <img
+                                    key={i}
+                                    src={buildImageUrl(img.url)}
+                                    alt=""
+                                    className="max-w-full max-h-[600px] object-contain rounded-2xl shadow-lg cursor-zoom-in"
+                                    loading="lazy"
+                                    onError={e => { const t = e.target as HTMLImageElement; t.src = notfoundImg; }}
+                                    onClick={() => setZoomSrc(buildImageUrl(img.url))}
+                                  />
+                                ))}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : post.content ? (
+                  <RichTextDisplay content={post.content as any} className="prose-lg max-w-none" />
+                ) : (
+                  <p className="text-gray-400">محتوى المقال غير متاح حاليًا.</p>
+                )}
+              </div>
+
+              {/* Tags */}
+              <div className="mt-12 pt-8 border-t-2 border-gray-700">
+                <div className="flex flex-wrap gap-3">
+                  <span className="text-gray-300 font-semibold">الوسوم:</span>
+                  {post.categories.map((cat, i) => (
+                    <span key={i} className="px-4 py-2 bg-gray-700 text-indigo-400 rounded-full text-sm font-medium hover:bg-gray-600 transition-colors cursor-pointer">
+                      #{cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Author Card */}
+              <div className="mt-12 p-8 bg-gradient-to-br from-indigo-900/30 to-purple-900/30 rounded-2xl border border-gray-700">
+                <div className="flex items-start gap-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                    <User className="w-10 h-10 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-100 mb-2">{post.author}</h3>
+                    <p className="text-gray-400 mb-4">كاتب ومحرر متخصص في المحتوى التقني والتسويق الرقمي</p>
+                    <div className="flex gap-3">
+                      <button className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-colors shadow-md">
+                        متابعة
+                      </button>
+                      <button className="px-6 py-2 bg-gray-700 text-gray-300 rounded-full font-semibold hover:bg-gray-600 transition-colors shadow-md">
+                        المزيد من المقالات
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* Sidebar for Related Posts */}
+            <aside className="lg:col-span-1 space-y-8">
+              {/* Related Posts */}
+              {related.length > 0 && (
+                <div className="bg-gray-800 rounded-2xl p-6 shadow-xl sticky top-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <TrendingUp className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-xl font-bold text-gray-100">مقالات ذات صلة</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {related.map(item => (
+                      <Link
+                        key={item.id}
+                        to={`/blog/${item.slug}`}
+                        className="group block bg-gray-700 rounded-xl overflow-hidden hover:bg-gray-600 transition-all duration-300 p-4"
+                      >
+                        <div className="relative h-32 overflow-hidden mb-3 rounded-lg">
+                          <img
+                            src={item.featuredImage ? buildImageUrl(item.featuredImage) : notfoundImg}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={e => {
+                              const t = e.target as HTMLImageElement;
+                              t.src = notfoundImg;
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                        </div>
+                        <h4 className="font-semibold text-gray-100 group-hover:text-indigo-400 transition-colors line-clamp-2 mb-2">
+                          {item.title}
+                        </h4>
+                        <p className="text-sm text-gray-400 line-clamp-1 mb-3">{item.excerpt}</p>
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <User className="w-3 h-3" />
+                            {item.author}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(item.createdAt).toLocaleDateString('ar-EG')}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Sidebar Content if Needed */}
+              {/* يمكن إضافة المزيد من العناصر هنا مثل الإعلانات أو الوسوم الشائعة */}
+            </aside>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="max-w-6xl mx-auto px-6 sm:px-8 pb-20">
+          <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-3xl p-12 text-center shadow-xl">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              استمتعت بالمقال؟
+            </h2>
+            <p className="text-xl text-indigo-100 mb-8">
+              اكتشف المزيد من المقالات المميزة في مدونتنا
+            </p>
             <Link
               to="/blog"
-              className="inline-flex items-center px-6 sm:px-8 lg:px-10 py-3 sm:py-4 lg:py-5 bg-gradient-to-r from-[#18b5d8] to-[#1ab5d5] text-white text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl hover:from-[#1ab5d5] hover:to-[#18b5d8] transition-all duration-500 shadow-2xl hover:shadow-3xl hover:-translate-y-1 group w-full sm:w-auto justify-center"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-white text-indigo-600 rounded-full font-bold hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 ml-3 sm:ml-4 group-hover:-translate-x-2 transition-transform duration-300" />
-              {t('blog.explore_other_articles')}
+              <ArrowLeft className="w-5 h-5" />
+              تصفح جميع المقالات
             </Link>
           </div>
+        </section>
+      </div>
+
+      {/* Zoom Modal */}
+      {zoomSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setZoomSrc(null)}
+        >
+          <button
+            className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center transition-all"
+            onClick={() => setZoomSrc(null)}
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+          <img src={zoomSrc} alt="" className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl" />
         </div>
-      </section>
+      )}
     </>
   );
 };

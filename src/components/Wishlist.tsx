@@ -6,6 +6,8 @@ import { createProductSlug } from '../utils/slugify';
 import { addToCartUnified, removeFromWishlistUnified } from '../utils/cartUtils';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
 import PriceDisplay from './ui/PriceDisplay';
+import notfoundImg from '../assets/search_not_found.png';
+import ConfirmationModal from './modals/ConfirmationModal';
 
 interface Product {
   id: number;
@@ -21,6 +23,7 @@ interface Product {
 const Wishlist: React.FC = () => {
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -126,8 +129,6 @@ const Wishlist: React.FC = () => {
   };
 
   const clearWishlist = async () => {
-    if (!window.confirm('هل أنت متأكد من إفراغ قائمة المفضلة؟')) return;
-
     try {
       const userData = localStorage.getItem('user');
       if (userData) {
@@ -155,15 +156,14 @@ const Wishlist: React.FC = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#292929] relative overflow-hidden overflow-x-hidden" dir="rtl">
+    <section className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] relative overflow-hidden overflow-x-hidden" dir="rtl">
       {/* Animated Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#18b5d8] via-transparent to-[#16a2c7]"></div>
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 25% 25%, #18b5d8 0%, transparent 50%), 
-                           radial-gradient(circle at 75% 75%, #16a2c7 0%, transparent 50%)`,
-          backgroundSize: '100px 100px',
-          animation: 'float 20s ease-in-out infinite'
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a]/80 via-[#2a2a2a]/60 to-[#0f0f0f]/80"></div>
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06) 0%, transparent 50%), 
+                           radial-gradient(circle at 80% 70%, rgba(255,255,255,0.06) 0%, transparent 50%)`,
+          backgroundSize: '120px 120px'
         }}></div>
       </div>
 
@@ -222,7 +222,7 @@ const Wishlist: React.FC = () => {
         {wishlistProducts.length > 0 && (
           <div className="relative flex mb-12 justify-center">
             <button
-              onClick={clearWishlist}
+              onClick={() => setShowConfirmClear(true)}
               className="relative flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-black rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               aria-label="إفراغ قائمة المفضلة"
             >
@@ -231,6 +231,14 @@ const Wishlist: React.FC = () => {
             </button>
           </div>
         )}
+
+        <ConfirmationModal
+          isOpen={showConfirmClear}
+          title="تأكيد الإجراء"
+          message="هل أنت متأكد من إفراغ قائمة المفضلة؟"
+          onConfirm={async () => { await clearWishlist(); setShowConfirmClear(false); }}
+          onCancel={() => setShowConfirmClear(false)}
+        />
 
         {/* Loading State */}
         {loading && (
@@ -299,7 +307,7 @@ const Wishlist: React.FC = () => {
                     alt={product.name}
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    onError={(e) => (e.currentTarget.src = '/placeholder-image.png')}
+                    onError={(e) => { e.currentTarget.src = notfoundImg; }}
                   />
                   <button
                     onClick={() => removeFromWishlist(product.id, product.name)}

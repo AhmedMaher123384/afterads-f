@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Phone, Mail, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import contact from '../../assets/contact.webp';
+import { FaWhatsapp, FaInstagram, FaTwitter, FaFacebookF } from 'react-icons/fa';
 
 interface FormData {
   name: string;
@@ -54,52 +54,126 @@ const ContactSection: React.FC = () => {
   };
 
   return (
-    <section data-section="contact" className="py-12 sm:py-16 md:py-24 bg-[#292929] relative overflow-hidden">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8 sm:mb-12 md:mb-20">
-          <div className="inline-flex items-center gap-2 sm:gap-4 bg-[#ffffff]/10 backdrop-blur-lg border border-[#18b5d5]/30 text-[#18b5d5] px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-full mb-6 sm:mb-8 md:mb-10 shadow-lg shadow-[#18b5d5]/10">
-            <Send className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 animate-pulse" />
-            <span className="font-bold text-sm sm:text-base md:text-lg">{t('home.contact.contact_us_now')}</span>
+    <section data-section="contact" className="py-8 sm:py-12 bg-[#292929] relative overflow-hidden">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Compact Header */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center gap-2 bg-[#ffffff]/10 backdrop-blur-lg border border-[#18b5d5]/30 text-[#18b5d5] px-4 py-2 rounded-full mb-4 shadow-lg shadow-[#18b5d5]/10">
+            <Send className="w-4 h-4 animate-pulse" />
+            <span className="font-bold text-sm">{t('home.contact.contact_us_now')}</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-white mb-4 sm:mb-6 md:mb-8 leading-tight px-2">
-            LET'S TALK <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#18b5d5] to-[#0d8aa3] animate-pulse">BUSINESS</span>
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-3 leading-tight">
+            {t('home.contact.lets_talk_business')}
           </h2>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-[#ffffff]/80 max-w-4xl mx-auto leading-relaxed font-light px-4">
+          <p className="text-sm text-[#ffffff]/80 max-w-2xl mx-auto leading-relaxed font-light">
             {t('home.contact.subtitle')}
           </p>
         </div>
 
-        <div className="relative max-w-3xl mx-auto px-2 sm:px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Contact Information Side */}
+          <div className="flex flex-col">
+            <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] rounded-xl p-6 border border-[#18b5d5]/20 h-full">
+              <h3 className="text-xl font-bold text-[#18b5d5] mb-6 text-right">
+                {t('home.contact.contact_info')}
+              </h3>
+              
+              <div className="space-y-4">
+                {/* Phone */}
+                <div className="flex items-center gap-3 group hover:bg-[#18b5d5]/10 p-3 rounded-lg transition-all duration-300">
+                  <div className="w-10 h-10 bg-[#18b5d5] rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 text-right">
+                    <p className="text-white font-medium text-base">01069006131</p>
+                    <p className="text-gray-400 text-sm">الهاتف</p>
+                  </div>
+                </div>
 
+                {/* Email */}
+                <div className="flex items-center gap-3 group hover:bg-[#18b5d5]/10 p-3 rounded-lg transition-all duration-300">
+                  <div className="w-10 h-10 bg-[#18b5d5] rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 text-right">
+                    <p className="text-white font-medium text-base break-all">info@afterads.com</p>
+                    <p className="text-gray-400 text-sm">البريد الإلكتروني</p>
+                  </div>
+                </div>
 
-          {/* الصورة فوق النموذج */}
-          <div className="mb-4 sm:mb-6 md:mb-8 flex justify-center">
-            <div className="relative">
-              <img
-                src={contact}
-                alt="Theme Cover"
-                className="w-full max-w-[250px] sm:max-w-[300px] md:max-w-[400px] mx-auto rounded-xl sm:rounded-2xl"
-              />
+                {/* Location */}
+                <div className="flex items-center gap-3 group hover:bg-[#18b5d5]/10 p-3 rounded-lg transition-all duration-300">
+                  <div className="w-10 h-10 bg-[#18b5d5] rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 text-right">
+                    <p className="text-white font-medium text-base">المملكة العربية السعودية</p>
+                    <p className="text-gray-400 text-sm">الموقع</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Media */}
+              <div className="mt-6 pt-6 border-t border-[#18b5d5]/20">
+                <h4 className="text-lg font-bold text-[#18b5d5] mb-4 text-right">
+                  {t('home.contact.follow_us')}
+                </h4>
+                <div className="flex justify-center gap-3">
+                  <a
+                    href="https://wa.me/201069006131"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-[#2a2a2a] border border-[#18b5d5]/30 rounded-lg flex items-center justify-center hover:bg-[#18b5d5] transition-all duration-300 group"
+                  >
+                    <FaWhatsapp className="w-4 h-4 text-[#18b5d5] group-hover:text-white transition-colors" />
+                  </a>
+                  <a
+                    href="https://www.instagram.com/afteradscom"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-[#2a2a2a] border border-[#18b5d5]/30 rounded-lg flex items-center justify-center hover:bg-[#18b5d5] transition-all duration-300 group"
+                  >
+                    <FaInstagram className="w-4 h-4 text-[#18b5d5] group-hover:text-white transition-colors" />
+                  </a>
+                  <a
+                    href="https://x.com/afteradscom"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-[#2a2a2a] border border-[#18b5d5]/30 rounded-lg flex items-center justify-center hover:bg-[#18b5d5] transition-all duration-300 group"
+                  >
+                    <FaTwitter className="w-4 h-4 text-[#18b5d5] group-hover:text-white transition-colors" />
+                  </a>
+                  <a
+                    href="https://www.facebook.com/afteradscom"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-[#2a2a2a] border border-[#18b5d5]/30 rounded-lg flex items-center justify-center hover:bg-[#18b5d5] transition-all duration-300 group"
+                  >
+                    <FaFacebookF className="w-4 h-4 text-[#18b5d5] group-hover:text-white transition-colors" />
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* الفورم */}
+          {/* Compact Form Side */}
           <div
             ref={formRef}
-            className="relative z-10 backdrop-blur-lg bg-[#ffffff]/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 lg:p-12 border border-[#18b5d5]/30 shadow-xl shadow-[#18b5d5]/20 opacity-0 scale-95 will-change-transform transition-all duration-700"
+            className="backdrop-blur-lg bg-[#ffffff]/10 rounded-xl p-6 border border-[#18b5d5]/30 shadow-lg shadow-[#18b5d5]/20 opacity-0 scale-95 will-change-transform transition-all duration-700 h-full flex flex-col"
           >
-            <div className="mb-6 sm:mb-8 md:mb-10 text-right">
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3">{t('home.contact.send_message')}</h3>
-              <p className="text-[#ffffff]/80 text-sm sm:text-base md:text-lg lg:text-xl">{t('home.contact.team_ready')}</p>
+            <div className="mb-6 text-right">
+              <h3 className="text-xl font-bold text-white mb-2">{t('home.contact.send_message')}</h3>
+              <p className="text-[#ffffff]/80 text-sm">{t('home.contact.team_ready')}</p>
             </div>
-            <div className="space-y-4 sm:space-y-6 md:space-y-8 flex flex-col">
+            
+            <div className="space-y-4 flex-1 flex flex-col">
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder={t('home.contact.name_placeholder')}
-                className="w-full bg-[#ffffff]/10 backdrop-blur-md border border-[#18b5d5]/30 rounded-xl sm:rounded-2xl px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 text-white placeholder-[#ffffff]/50 focus:border-[#18b5d5]/50 focus:bg-[#18b5d5]/10 focus:outline-none focus:ring-2 focus:ring-[#18b5d5]/30 transition-all duration-300 text-base sm:text-lg md:text-xl text-right"
+                className="w-full bg-[#ffffff]/10 backdrop-blur-md border border-[#18b5d5]/30 rounded-lg px-4 py-3 text-white placeholder-[#ffffff]/50 focus:border-[#18b5d5]/50 focus:bg-[#18b5d5]/10 focus:outline-none focus:ring-2 focus:ring-[#18b5d5]/30 transition-all duration-300 text-base text-right"
               />
               <input
                 type="email"
@@ -107,22 +181,22 @@ const ContactSection: React.FC = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder={t('home.contact.email_placeholder')}
-                className="w-full bg-[#ffffff]/10 backdrop-blur-md border border-[#18b5d5]/30 rounded-xl sm:rounded-2xl px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 text-white placeholder-[#ffffff]/50 focus:border-[#18b5d5]/50 focus:bg-[#18b5d5]/10 focus:outline-none focus:ring-2 focus:ring-[#18b5d5]/30 transition-all duration-300 text-base sm:text-lg md:text-xl text-right"
+                className="w-full bg-[#ffffff]/10 backdrop-blur-md border border-[#18b5d5]/30 rounded-lg px-4 py-3 text-white placeholder-[#ffffff]/50 focus:border-[#18b5d5]/50 focus:bg-[#18b5d5]/10 focus:outline-none focus:ring-2 focus:ring-[#18b5d5]/30 transition-all duration-300 text-base text-right"
               />
               <textarea
                 name="message"
                 value={formData.message}
                 onChange={handleInputChange}
                 placeholder={t('home.contact.message_placeholder')}
-                rows={6}
-                className="w-full bg-[#ffffff]/10 backdrop-blur-md border border-[#18b5d5]/30 rounded-xl sm:rounded-2xl px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 text-white placeholder-[#ffffff]/50 focus:border-[#18b5d5]/50 focus:bg-[#18b5d5]/10 focus:outline-none focus:ring-2 focus:ring-[#18b5d5]/30 transition-all duration-300 resize-none text-base sm:text-lg md:text-xl text-right sm:rows-8 md:rows-10"
+                rows={5}
+                className="w-full bg-[#ffffff]/10 backdrop-blur-md border border-[#18b5d5]/30 rounded-lg px-4 py-3 text-white placeholder-[#ffffff]/50 focus:border-[#18b5d5]/50 focus:bg-[#18b5d5]/10 focus:outline-none focus:ring-2 focus:ring-[#18b5d5]/30 transition-all duration-300 resize-none text-base text-right flex-1"
               />
               <button
                 onClick={handleSubmit}
-                className="w-full bg-gradient-to-r from-[#18b5d5] to-[#0d8aa3] text-white font-bold py-3 sm:py-4 md:py-5 px-4 sm:px-6 md:px-8 rounded-xl sm:rounded-2xl hover:bg-gradient-to-r hover:from-[#0d8aa3] hover:to-[#18b5d5] hover:shadow-lg hover:shadow-[#18b5d5]/50 transition-all duration-300 text-base sm:text-lg md:text-xl flex items-center justify-center gap-2 sm:gap-3 group transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-[#18b5d5] to-[#0d8aa3] text-white font-bold py-3 px-4 rounded-lg hover:bg-gradient-to-r hover:from-[#0d8aa3] hover:to-[#18b5d5] hover:shadow-lg hover:shadow-[#18b5d5]/30 transition-all duration-300 text-base flex items-center justify-center gap-2 group transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span>{t('home.contact.send_button')}</span>
-                <Send className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white group-hover:-translate-x-1 transition-transform" />
+                <Send className="w-4 h-4 text-white group-hover:-translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
@@ -130,26 +204,6 @@ const ContactSection: React.FC = () => {
       </div>
 
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-25px); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
-        }
         @keyframes card-reveal {
           0% { 
             opacity: 0; 
@@ -164,17 +218,7 @@ const ContactSection: React.FC = () => {
             transform: translateY(0) scale(1);
           }
         }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-float { animation: float 4s ease-in-out infinite; }
-        .animate-float-delayed { animation: float-delayed 5s ease-in-out infinite; }
-        .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
-        .animate-bounce-slow { animation: bounce-slow 4s ease-in-out infinite; }
-        .animate-pulse { animation: pulse 3s ease-in-out infinite; }
         .animate-card-reveal { animation: card-reveal 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
         .will-change-transform { will-change: transform, opacity; }
       `}</style>
     </section>

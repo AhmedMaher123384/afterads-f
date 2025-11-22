@@ -91,6 +91,13 @@ const Checkout: React.FC = () => {
   const [couponCode, setCouponCode] = useState<string>('');
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponValidating, setCouponValidating] = useState<boolean>(false);
+  const [applyLoyalty, setApplyLoyalty] = useState<boolean>(false);
+const [loyaltyPointsToRedeem, setLoyaltyPointsToRedeem] = useState<number>(0);
+const [availableLoyaltyPoints, setAvailableLoyaltyPoints] = useState<number>(0);
+  const [serverSubtotal, setServerSubtotal] = useState<number | null>(null);
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
+  const [serverLoyaltyDiscount, setServerLoyaltyDiscount] = useState<number | null>(null);
+  const [serverLoyaltyAvailable, setServerLoyaltyAvailable] = useState<number | null>(null);
   
   const navigate = useNavigate();
 
@@ -109,6 +116,23 @@ const Checkout: React.FC = () => {
           const data = await apiCall(API_ENDPOINTS.USER_CART(user.id));
           if (Array.isArray(data) && data.length > 0) {
             setCartItems(data);
+            setServerSubtotal(null);
+            setServerTotal(null);
+            setServerLoyaltyDiscount(null);
+            setServerLoyaltyAvailable(null);
+            return;
+          } else if (data && typeof data === 'object') {
+            if (Array.isArray((data as any).cart) && (data as any).cart.length > 0) {
+              setCartItems((data as any).cart);
+            } else if (Array.isArray((data as any).items) && (data as any).items.length > 0) {
+              setCartItems((data as any).items);
+            } else {
+              setCartItems([]);
+            }
+            setServerSubtotal(typeof (data as any).subtotal === 'number' ? (data as any).subtotal : null);
+            setServerTotal(typeof (data as any).total === 'number' ? (data as any).total : null);
+            setServerLoyaltyDiscount(typeof (data as any).loyaltyDiscount === 'number' ? (data as any).loyaltyDiscount : null);
+            setServerLoyaltyAvailable(typeof (data as any).loyaltyAvailable === 'number' ? (data as any).loyaltyAvailable : null);
             return;
           }
         } catch (error) {
@@ -179,9 +203,45 @@ const Checkout: React.FC = () => {
     }
   }, []);
 
+  // Fetch customer loyalty points
+useEffect(() => {
+  const fetchLoyaltyPoints = async () => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        if (user?.id) {
+          const customerData = await apiCall(API_ENDPOINTS.CUSTOMER_BY_ID(user.id));
+          const points = (customerData && customerData.customer && typeof customerData.customer.loyaltyPoints === 'number')
+            ? customerData.customer.loyaltyPoints
+            : (typeof customerData?.loyaltyPoints === 'number' ? customerData.loyaltyPoints : 0);
+          setAvailableLoyaltyPoints(points || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching loyalty points:', error);
+      }
+    }
+  };
+  fetchLoyaltyPoints();
+}, []);
+
+useEffect(() => {
+  if (!applyLoyalty) return;
+  const subtotal = getTotalPrice();
+  const couponDiscount = getDiscountAmount();
+  const maxRedeemable = Math.max(0, Math.min(availableLoyaltyPoints, Math.max(0, subtotal - couponDiscount)));
+  if (loyaltyPointsToRedeem > maxRedeemable) {
+    setLoyaltyPointsToRedeem(maxRedeemable);
+  }
+  if (loyaltyPointsToRedeem === 0 && maxRedeemable > 0) {
+    setLoyaltyPointsToRedeem(maxRedeemable);
+  }
+}, [applyLoyalty, availableLoyaltyPoints, cartItems, appliedCoupon]);
+
 
 
   const getTotalPrice = () => {
+    if (serverSubtotal !== null && serverSubtotal !== undefined) return serverSubtotal;
     return cartItems.reduce((total, item) => {
       // حساب السعر الأساسي
       const basePrice = item.basePrice || (item.product ? item.product.price : 0);
@@ -204,6 +264,8 @@ const Checkout: React.FC = () => {
     }, 0);
   };
 
+
+
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
@@ -212,9 +274,14 @@ const Checkout: React.FC = () => {
     return appliedCoupon ? appliedCoupon.discountAmount : 0;
   };
 
-  const getFinalTotal = () => {
-    return Math.max(0, getTotalPrice() - getDiscountAmount());
-  };
+  // في دالة getFinalTotal
+const getFinalTotal = () => {
+  if (serverTotal !== null && serverTotal !== undefined) return serverTotal;
+  const subtotal = getTotalPrice();
+  const couponDiscount = getDiscountAmount();
+  const loyaltyDiscount = applyLoyalty ? loyaltyPointsToRedeem : 0;
+  return Math.max(0, subtotal - couponDiscount - loyaltyDiscount);
+};
 
   const formatOptionName = (optionName: string): string => {
     const optionNames: { [key: string]: string } = {
@@ -342,6 +409,8 @@ const Checkout: React.FC = () => {
             productImage: item.product?.mainImage || '',
             attachments: item.attachments || {},
             addOns: item.addOns || [],
+              applyLoyalty,
+          loyaltyPointsToRedeem: applyLoyalty ? loyaltyPointsToRedeem : 0,
             basePrice: item.basePrice || basePrice,
             addOnsPrice: item.addOnsPrice || 0,
             productType: item.product?.productType || ''
@@ -355,9 +424,11 @@ const Checkout: React.FC = () => {
           address: customerInfo.address?.trim() || ''
         },
         paymentMethod: selectedPaymentMethod,
-        total: getFinalTotal(),
-        subtotal: getTotalPrice(),
+        total: serverTotal ?? getFinalTotal(),
+        subtotal: serverSubtotal ?? getTotalPrice(),
         couponDiscount: getDiscountAmount(),
+        loyaltyDiscount: serverLoyaltyDiscount ?? (applyLoyalty ? loyaltyPointsToRedeem : 0),
+        loyaltyAvailable: serverLoyaltyAvailable ?? availableLoyaltyPoints,
         appliedCoupon: appliedCoupon ? {
           code: appliedCoupon.coupon?.code || '',
           discount: getDiscountAmount()
@@ -418,10 +489,11 @@ const Checkout: React.FC = () => {
             totalPrice: itemTotalPrice * item.quantity
           };
         }),
-        totalAmount: getTotalPrice(),
+        totalAmount: serverSubtotal ?? getTotalPrice(),
         couponDiscount: getDiscountAmount(),
         customerAddress: customerInfo.address,
-        finalAmount: getFinalTotal(),
+        finalAmount: serverTotal ?? getFinalTotal(),
+        loyaltyRedeemed: serverLoyaltyDiscount ?? (applyLoyalty ? loyaltyPointsToRedeem : 0),
         paymentMethod: paymentMethods.find(pm => pm.id === selectedPaymentMethod)?.name || 'الدفع عند الاستلام',
         notes: customerInfo.notes?.trim() || '',
         orderDate: new Date().toISOString(),
@@ -610,7 +682,7 @@ const Checkout: React.FC = () => {
             
             <button
               onClick={() => navigate('/cart')}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-3 sm:px-4 py-2 rounded-lg transition-all duration-300 text-sm sm:text-base mobile-padding"
+              className="btn-pro-outline btn-pro-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               {t('checkout.backToCart')}
@@ -805,6 +877,75 @@ const Checkout: React.FC = () => {
                   </div>
                 )}
               </div>
+              <div className="mt-4 sm:mt-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 text-sm sm:text-base">نقاط الولاء المتاحة: {serverLoyaltyAvailable ?? availableLoyaltyPoints}</span>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={applyLoyalty}
+                      onChange={(e) => setApplyLoyalty(e.target.checked)}
+                      className="accent-[#18b5d8]"
+                    />
+                    <span className="text-white text-sm sm:text-base">استخدام نقاط الولاء</span>
+                  </label>
+                </div>
+                {applyLoyalty && availableLoyaltyPoints > 0 && (
+                  <div className="mt-2 flex items-center gap-3">
+                    <input
+                      type="number"
+                      min={0}
+                      max={Math.max(0, Math.min(availableLoyaltyPoints, Math.max(0, getTotalPrice() - getDiscountAmount())))}
+                      value={loyaltyPointsToRedeem}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value || '0');
+                        const max = Math.max(0, Math.min(availableLoyaltyPoints, Math.max(0, getTotalPrice() - getDiscountAmount())));
+                        setLoyaltyPointsToRedeem(Math.min(Math.max(0, isNaN(v) ? 0 : v), max));
+                      }}
+                      className="w-24 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#18b5d8] text-sm sm:text-base"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const max = Math.max(0, Math.min(availableLoyaltyPoints, Math.max(0, getTotalPrice() - getDiscountAmount())));
+                        setLoyaltyPointsToRedeem(max);
+                      }}
+                      className="px-3 sm:px-4 py-2 sm:py-3 bg-[#18b5d8] hover:bg-[#16a2c7] text-white rounded-lg transition-colors text-sm sm:text-base font-medium"
+                    >
+                      أقصى خصم
+                    </button>
+                  </div>
+                )}
+              </div>
+         {/* ✅ إظهار حساب النقاط */}
+<div className="space-y-2 sm:space-y-3 border-t border-white/20 pt-4 sm:pt-6">
+  <div className="flex justify-between text-gray-300 text-sm sm:text-base">
+    <span>{t('checkout.subtotal')} ({getTotalItems()})</span>
+    <PriceDisplay price={getTotalPrice()} size="sm" />
+  </div>
+  
+  {getDiscountAmount() > 0 && (
+    <div className="flex justify-between text-green-400 text-sm">
+      <span>🎁 كود الخصم</span>
+      <PriceDisplay price={-getDiscountAmount()} size="sm" />
+    </div>
+  )}
+  
+  {/* ✅ NEW: عرض خصم النقاط */}
+  {(((serverLoyaltyDiscount ?? 0) > 0) || (applyLoyalty && loyaltyPointsToRedeem > 0)) && (
+    <div className="flex justify-between text-purple-400 text-sm font-bold">
+      <span className="flex items-center gap-1">
+        ⭐ خصم نقاط الولاء ({serverLoyaltyDiscount ?? loyaltyPointsToRedeem})
+      </span>
+      <PriceDisplay price={-(serverLoyaltyDiscount ?? loyaltyPointsToRedeem)} size="sm" />
+    </div>
+  )}
+  
+  <div className="flex justify-between text-white font-bold text-lg border-t border-white/20 pt-3">
+    <span>السعر النهائي</span>
+    <PriceDisplay price={getFinalTotal()} size="lg" className="text-[#18b5d8]" />
+  </div>
+</div>
               
               {/* Price Summary */}
               <div className="space-y-2 sm:space-y-3 border-t border-white/20 pt-4 sm:pt-6">
@@ -827,6 +968,17 @@ const Checkout: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Loyalty Discount */}
+{(((serverLoyaltyDiscount ?? 0) > 0) || (applyLoyalty && loyaltyPointsToRedeem > 0)) && (
+  <div className="flex justify-between text-purple-400 text-sm sm:text-base mobile-text">
+    <span className="flex items-center gap-1">
+      <Gift className="w-4 h-4" />
+      خصم نقاط الولاء ({serverLoyaltyDiscount ?? loyaltyPointsToRedeem} نقطة)
+    </span>
+    <PriceDisplay price={-(serverLoyaltyDiscount ?? loyaltyPointsToRedeem)} size="sm" />
+  </div>
+)}
 
           {/* Customer Information & Payment */}
           <div className="lg:col-span-2 order-2 lg:order-1 space-y-6 sm:space-y-8">

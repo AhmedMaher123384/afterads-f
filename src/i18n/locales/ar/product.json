@@ -1,3 +1,5 @@
 {
-  "view_product_details": "عرض تفاصيل المنتج"
-}
+  "view_product_details": "عرض تفاصيل المنتج",
+  "added_to_cart": "تمت الإضافة إلى السلة",
+  "add_to_cart_failed": "فشل في إضافة {name} إلى السلة"
+} 

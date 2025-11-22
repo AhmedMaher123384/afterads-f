@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, memo, useEffect, useRef } from 'react';
 import { Sparkles, ShoppingCart, Star, Eye, Crown, Settings, Headphones, Store, Zap, CheckCircle, ArrowRight, Palette, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,90 @@ import { smartToast } from '../../utils/toastConfig';
 import { buildImageUrl } from '../../config/api';
 import { addToCartUnified } from '../../utils/cartUtils';
 import logo from '../../assets/themecover.webp';
+
+ // Counter Hook
+const useCountUp = (end: number, duration: number = 2000, shouldStart: boolean = false) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!shouldStart) return;
+
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      const progress = Math.min((Date.now() - startTime) / duration, 1);
+      const currentCount = Math.floor(progress * end);
+      
+      setCount(currentCount);
+
+      if (progress >= 1) {
+        clearInterval(timer);
+        setCount(end);
+      }
+    }, 16);
+
+    return () => clearInterval(timer);
+  }, [end, duration, shouldStart]);
+
+  return count;
+};
+
+// Counter Component للـ Features
+interface FeatureCounterProps {
+  icon: React.ElementType;
+  number: string;
+  label: string;
+  shouldAnimate: boolean;
+  delay?: number;
+  variant?: 'primary' | 'secondary';
+}
+
+const FeatureCounter: React.FC<FeatureCounterProps> = ({ 
+  icon: Icon, 
+  number, 
+  label, 
+  shouldAnimate, 
+  delay = 0,
+  variant = 'primary'
+}) => {
+  const [startAnimation, setStartAnimation] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const isNumeric = !isNaN(parseInt(number));
+  const targetNumber = isNumeric ? parseInt(number) : 0;
+  const suffix = isNumeric ? number.replace(/\d+/, '') : number;
+  
+  const count = useCountUp(targetNumber, 2000, startAnimation);
+
+  useEffect(() => {
+    if (shouldAnimate) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+        setStartAnimation(true);
+      }, delay);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAnimate, delay]);
+
+  const displayValue = isNumeric ? `${count}${suffix}` : number;
+
+  const bgClass = variant === 'primary' 
+    ? 'bg-gradient-to-br from-[#18b5d5]/10 to-[#18b5d5]/5 border-[#18b5d5]/20 hover:from-[#18b5d5]/15 hover:to-[#18b5d5]/10'
+    : 'bg-gradient-to-br from-[#292929]/30 to-[#292929]/20 border-[#ffffff]/30 hover:from-[#292929]/40 hover:to-[#292929]/30';
+
+  const iconClass = variant === 'primary' ? 'text-[#18b5d5]' : 'text-[#ffffff]';
+  const numberClass = variant === 'primary' ? 'text-[#ffffff]' : 'text-[#18b5d5]';
+
+  return (
+    <div className="text-center group">
+      <div className={`${bgClass} border rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 transition-all duration-300 will-change-transform ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        <Icon className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 mx-auto mb-1 sm:mb-2 md:mb-3 lg:mb-4 ${iconClass}`} />
+        <div className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ${numberClass} mb-1 sm:mb-2`}>
+          {displayValue}
+        </div>
+        <div className="text-[#ffffff]/60 text-xs sm:text-sm">{label}</div>
+      </div>
+    </div>
+  );
+};
 
 interface Theme {
   id: number;
@@ -26,30 +110,33 @@ interface ThemeCardProps {
 }
 
 const ThemeCard: React.FC<ThemeCardProps> = ({ theme, viewMode }) => {
-  const navigate = useNavigate();
+const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  
+  // إضافة ref و inView للـ animation
+  const featuresRef = useRef(null);
+  const [featuresInView, setFeaturesInView] = useState(false);
 
-  // Intersection Observer for reveal animation
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-card-reveal');
-            observer.unobserve(entry.target);
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setFeaturesInView(true);
+        }
       },
       { threshold: 0.2 }
     );
 
-    if (cardRef.current) observer.observe(cardRef.current);
+    if (featuresRef.current) {
+      observer.observe(featuresRef.current);
+    }
 
     return () => {
-      if (cardRef.current) observer.unobserve(cardRef.current);
+      if (featuresRef.current) {
+        observer.unobserve(featuresRef.current);
+      }
     };
   }, []);
 
@@ -59,8 +146,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, viewMode }) => {
 
   return (
     <div
-      ref={cardRef}
-      className="relative group max-w-7xl w-full opacity-0 will-change-transform"
+       className="relative group max-w-7xl w-full   will-change-transform"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -112,7 +198,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, viewMode }) => {
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-[#ffffff]/80 font-light leading-relaxed max-w-3xl mx-auto">
-                {t('home.themes.enjoy_unlimited_features')}
+                {t('home.themes.number_one')}
               </p>
 
               <p className="text-xs sm:text-sm md:text-base lg:text-lg text-[#ffffff]/60 max-w-2xl mx-auto">
@@ -147,43 +233,47 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, viewMode }) => {
           </div>
 
           {/* Features Section */}
-          <div className="mt-6 sm:mt-10 md:mt-16 lg:mt-20 pt-6 sm:pt-8 md:pt-12 lg:pt-16 border-t border-[#ffffff]/50">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto">
+         <div ref={featuresRef} className="mt-6 sm:mt-10 md:mt-16 lg:mt-20 pt-6 sm:pt-8 md:pt-12 lg:pt-16 border-t border-[#ffffff]/50">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto">
+          
+          <FeatureCounter
+            icon={Palette}
+            number="25+"
+            label={t('home.themes.professional_elements')}
+            shouldAnimate={featuresInView}
+            delay={0}
+            variant="primary"
+          />
 
-              <div className="text-center group">
-                <div className="bg-gradient-to-br from-[#18b5d5]/10 to-[#18b5d5]/5 border border-[#18b5d5]/20 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 hover:from-[#18b5d5]/15 hover:to-[#18b5d5]/10 transition-transform transition-shadow transition-border duration-300 will-change-transform">
-                  <Palette className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 mx-auto mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-[#18b5d5]" />
-                  <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[#ffffff] mb-1 sm:mb-2">25+</div>
-                  <div className="text-[#ffffff]/60 text-xs sm:text-sm">{t('home.themes.professional_elements')}</div>
-                </div>
-              </div>
+          <FeatureCounter
+            icon={Settings}
+            number="250+"
+            label={t('home.themes.control_options')}
+            shouldAnimate={featuresInView}
+            delay={100}
+            variant="secondary"
+          />
 
-              <div className="text-center group">
-                <div className="bg-gradient-to-br from-[#292929]/30 to-[#292929]/20 border border-[#ffffff]/30 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 hover:from-[#292929]/40 hover:to-[#292929]/30 transition-transform transition-shadow transition-border duration-300 will-change-transform">
-                  <Settings className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 mx-auto mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-[#ffffff]" />
-                  <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[#18b5d5] mb-1 sm:mb-2">250+</div>
-                  <div className="text-[#ffffff]/60 text-xs sm:text-sm">{t('home.themes.control_options')}</div>
-                </div>
-              </div>
+          <FeatureCounter
+            icon={Headphones}
+            number="24/7"
+            label={t('home.themes.technical_support')}
+            shouldAnimate={featuresInView}
+            delay={200}
+            variant="primary"
+          />
 
-              <div className="text-center group">
-                <div className="bg-gradient-to-br from-[#18b5d5]/10 to-[#18b5d5]/5 border border-[#18b5d5]/20 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 hover:from-[#18b5d5]/15 hover:to-[#18b5d5]/10 transition-transform transition-shadow transition-border duration-300 will-change-transform">
-                  <Headphones className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 mx-auto mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-[#18b5d5]" />
-                  <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[#ffffff] mb-1 sm:mb-2">24/7</div>
-                  <div className="text-[#ffffff]/60 text-xs sm:text-sm">{t('home.themes.technical_support')}</div>
-                </div>
-              </div>
+          <FeatureCounter
+            icon={Store}
+            number="4000+"
+            label={t('home.themes.active_store')}
+            shouldAnimate={featuresInView}
+            delay={300}
+            variant="secondary"
+          />
 
-              <div className="text-center group">
-                <div className="bg-gradient-to-br from-[#292929]/30 to-[#292929]/20 border border-[#ffffff]/30 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 hover:from-[#292929]/40 hover:to-[#292929]/30 transition-transform transition-shadow transition-border duration-300 will-change-transform">
-                  <Store className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 mx-auto mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-[#ffffff]" />
-                  <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[#18b5d5] mb-1 sm:mb-2">4000+</div>
-                  <div className="text-[#ffffff]/60 text-xs sm:text-sm">{t('home.themes.active_store')}</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
+        </div>
+      </div>
 
           {/* Bottom Feature Line */}
           <div className="mt-6 sm:mt-8 md:mt-12 lg:mt-16 flex items-center justify-center gap-2 sm:gap-3 md:gap-4 text-[#ffffff] bg-[#292929]/30 backdrop-blur-sm rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 border border-[#ffffff]/30 max-w-4xl mx-auto">
@@ -253,28 +343,18 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({ themes }) => {
             ))
           ) : (
             <div className="flex justify-center">
-              <div className="bg-gradient-to-br from-[#18b5d5]/10 to-[#0d8aa3]/5 border border-[#18b5d5]/20 rounded-3xl p-8 sm:p-12 md:p-16 max-w-4xl w-full backdrop-blur-lg">
-                <div className="text-center">
-                  <Crown className="w-16 h-16 sm:w-20 sm:h-20 text-[#18b5d5] mx-auto mb-6" />
-                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#ffffff] mb-4">
-                    {t('home.themes.coming_soon')}
-                  </h3>
-                  <p className="text-lg sm:text-xl text-[#ffffff]/80 mb-8">
-                    {t('home.themes.coming_soon_description')}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button className="bg-gradient-to-r from-[#18b5d5] to-[#0d8aa3] text-white px-8 py-4 rounded-full font-semibold hover:shadow-lg hover:shadow-[#18b5d5]/25 transition-all duration-300 transform hover:scale-105">
-                      <span className="flex items-center gap-2">
-                        <Crown className="w-5 h-5" />
-                        {t('home.themes.subscribe_notification')}
-                      </span>
-                    </button>
-                    <button className="border-2 border-[#18b5d5] text-[#18b5d5] px-8 py-4 rounded-full font-semibold hover:bg-[#18b5d5] hover:text-white transition-all duration-300">
-                      {t('home.themes.learn_more')}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ThemeCard
+                theme={{
+                  id: 55,
+                  name: 'قالب ملاك',
+                  description: 'القالب رقم 1 لمتاجر سلة',
+                  price: 0,
+                  isAvailable: true,
+                  categoryId: null,
+                  mainImage: '',
+                }}
+                viewMode="grid"
+              />
             </div>
           )}
         </div>
@@ -327,4 +407,4 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({ themes }) => {
   );
 };
 
-export default ThemesSection;
+export default memo(ThemesSection);

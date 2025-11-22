@@ -104,9 +104,16 @@ export const addToCartUnified = async (
           if (Array.isArray(updatedCart)) {
             localStorage.setItem('cart', JSON.stringify(updatedCart));
             console.log('✅ [CartUtils] localStorage synced with server cart:', updatedCart.length, 'items');
-          } else if (updatedCart && typeof updatedCart === 'object' && updatedCart.cart && Array.isArray(updatedCart.cart)) {
-            localStorage.setItem('cart', JSON.stringify(updatedCart.cart));
-            console.log('✅ [CartUtils] localStorage synced with server cart property:', updatedCart.cart.length, 'items');
+          } else if (updatedCart && typeof updatedCart === 'object') {
+            if ((updatedCart as any).cart && Array.isArray((updatedCart as any).cart)) {
+              localStorage.setItem('cart', JSON.stringify((updatedCart as any).cart));
+              console.log('✅ [CartUtils] localStorage synced with server cart property:', (updatedCart as any).cart.length, 'items');
+            } else if ((updatedCart as any).items && Array.isArray((updatedCart as any).items)) {
+              localStorage.setItem('cart', JSON.stringify((updatedCart as any).items));
+              console.log('✅ [CartUtils] localStorage synced with server cart (items property):', (updatedCart as any).items.length, 'items');
+            } else {
+              console.warn('⚠️ [CartUtils] Server returned unexpected cart format:', updatedCart);
+            }
           } else {
             console.warn('⚠️ [CartUtils] Server returned unexpected cart format:', updatedCart);
           }

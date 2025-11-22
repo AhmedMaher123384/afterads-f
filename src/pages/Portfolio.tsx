@@ -2,9 +2,11 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ExternalLink, Filter, Search, Eye, Calendar, Tag, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getPortfolios, getPortfolioCategories } from '../utils/api';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { buildImageUrl } from '../config/api';
 import { smartToast } from '../utils/toastConfig';
 import portfolio from '../assets/portfolio.webp';
+import fallbackImg from '../assets/search_not_found.png';
 
 interface Portfolio {
   id: number;
@@ -160,15 +162,7 @@ const Portfolio: React.FC = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#292929] flex items-center justify-center relative overflow-hidden" dir="rtl">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#333333] via-[#404040] to-[#292929] opacity-85"></div>
-        <div className="text-center animate-fadeInUp z-10">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#18b5d8] mx-auto mb-4"></div>
-          <p className="text-[#e0e0e0] text-lg">جاري تحميل معرض الأعمال...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message={t('nav.loading')} />;
   }
 
   return (
@@ -356,8 +350,7 @@ const Portfolio: React.FC = () => {
                rounded-xl sm:rounded-2xl"
     onError={(e) => {
       const target = e.target as HTMLImageElement;
-      target.src =
-        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIzMiIgZmlsbD0iIzVjZmZlZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtiz2YjYsdipINin2YTZhdmC2KfZhDwvdGV4dD48L3N2Zz4=';
+      target.src = fallbackImg;
     }}
   />
 </div>

@@ -15,19 +15,24 @@ const COLORS = {
 // إعدادات Toast الافتراضية
 const defaultToastOptions: ToastOptions = {
   position: "top-center",
-  autoClose: 2000,
-  hideProgressBar: false,
+  autoClose: 1800,
+  hideProgressBar: true,
   closeOnClick: true,
-  pauseOnHover: true,
+  pauseOnHover: false,
   draggable: true,
   progress: undefined,
   style: {
     fontFamily: 'Cairo, sans-serif',
     fontSize: '14px',
-    fontWeight: '500',
-    borderRadius: '12px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-    border: 'none'
+    fontWeight: '600',
+    borderRadius: '14px',
+    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.25)',
+    border: '1px solid rgba(255,255,255,0.18)',
+    minHeight: '56px',
+    padding: '12px 16px',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    textAlign: 'center'
   }
 };
 

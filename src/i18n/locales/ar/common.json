@@ -8,6 +8,60 @@
   "online": "متصل",
   "search_and_settings": "البحث والإعدادات",
   "pages": "الصفحات",
+  "common": {
+    "loading": "جاري التحميل...",
+    "please_wait": "الرجاء الانتظار..."
+  },
+  "cart": {
+    "merge_success": "تم دمج سلة التسوق بنجاح! 🛒"
+  },
+  "auth": {
+    "welcome_user": "مرحباً بك {{name}}! 🎉",
+    "logout_success": "تم تسجيل الخروج بنجاح",
+    "messages": {
+      "loginSuccess": "تم تسجيل الدخول بنجاح",
+      "registerSuccess": "تم إنشاء الحساب بنجاح",
+      "registerFailed": "فشل في إنشاء الحساب",
+      "emailAlreadyExists": "البريد الإلكتروني مستخدم بالفعل",
+      "loginFailed": "فشل في تسجيل الدخول",
+      "emailNotRegistered": "البريد الإلكتروني غير مسجل",
+      "incorrectPassword": "كلمة المرور غير صحيحة",
+      "invalidData": "بيانات غير صالحة",
+      "serverError": "خطأ في الخادم",
+      "userDataNotReturned": "لم يتم إرجاع بيانات المستخدم",
+      "loggingIn": "جاري تسجيل الدخول...",
+      "creatingAccount": "جاري إنشاء الحساب..."
+    }
+    ,
+    "login": "تسجيل الدخول",
+    "createAccount": "إنشاء حساب",
+    "createNewAccount": "إنشاء حساب جديد",
+    "noAccount": "ليس لديك حساب؟",
+    "haveAccount": "لديك حساب بالفعل؟",
+    "fields": {
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "phone": "رقم الهاتف"
+    },
+    "placeholders": {
+      "firstName": "أدخل الاسم الأول",
+      "lastName": "أدخل اسم العائلة",
+      "password": "أدخل كلمة المرور",
+      "passwordMinLength": "6 أحرف على الأقل"
+    },
+    "validation": {
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "البريد الإلكتروني غير صالح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordMinLength": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+      "nameRequired": "{{field}} مطلوب",
+      "nameMinLength": "{{field}} يجب أن يكون على الأقل حرفين",
+      "phoneRequired": "رقم الهاتف مطلوب",
+      "phoneDigitsOnly": "رقم الهاتف يجب أن يحتوي على أرقام فقط"
+    }
+  },
   "nav": {
     "home": "الرئيسية",
     "products": "المنتجات",
@@ -56,7 +110,8 @@
     "categories": "الفئات",
     "theme_malak": "ثيم ملاك",
     "our_work": "أعمالنا",
-    "blog": "المدونة"
+    "blog": "المدونة",
+    "documentation": "التوثيق"
   },
   "currency": {
     "egp": "جنيه مصري",
@@ -70,8 +125,10 @@
     "hero_cta": "تسوق الآن",
     "hero": {
       "title": "أفتر آدز - شريكك في النجاح الرقمي",
-      "subtitle": "نحن نقدم حلولاً إبداعية ومتطورة في مجال التسويق الرقمي والتصميم لمساعدة عملك على النمو والازدهار في العالم الرقمي",
-      "contact_us": "تواصل معنا"
+      "subtitle": "نصنع الفرق",
+       "contact_us": "تواصل معنا",
+       "theme_showcase": "عرض الثيم",
+  "why_us": "تفاصيل أكثر"
     },
     "faq": {
       "frequent_questions": "الأسئلة الشائعة",
@@ -86,6 +143,19 @@
     "newsletter_text": "اشترك في نشرتنا الإخبارية للحصول على أحدث العروض",
     "newsletter_placeholder": "أدخل بريدك الإلكتروني",
     "newsletter_button": "اشتراك",
+      "contact": {
+        "contact_us_now": "تواصل معنا الآن",
+        "lets_talk_business": "دعنا نتحدث عن الأعمال",
+        "subtitle": "نحن هنا لمساعدتك",
+        "send_message": "أرسل رسالة",
+        "team_ready": "فريقنا جاهز لمساعدتك",
+        "name_placeholder": "أدخل اسمك",
+        "email_placeholder": "أدخل بريدك الإلكتروني",
+        "message_placeholder": "اكتب رسالتك هنا",
+        "send_button": "إرسال",
+        "contact_info": "معلومات التواصل",
+        "follow_us": "تابعنا على"
+      },
     "about": {
       "main_title": "من نحن",
       "main_description": "نحن فريق متخصص في تقديم أفضل الخدمات والمنتجات لعملائنا الكرام",
@@ -191,7 +261,9 @@
       "name_placeholder": "أدخل اسمك",
       "email_placeholder": "أدخل بريدك الإلكتروني",
       "message_placeholder": "اكتب رسالتك هنا",
-      "send_button": "إرسال"
+      "send_button": "إرسال",
+      "contact_info": "معلومات التواصل",
+      "follow_us": "تابعنا على"
     },
     "testimonials": {
       "title": "آراء عملائنا",
@@ -212,6 +284,7 @@
       "enjoy_unlimited_features": "استمتع بميزات لا محدودة",
       "most_advanced_theme": "القالب الأكثر تطوراً وحداثة",
       "add_to_cart": "أضف إلى السلة",
+      "View_Cart": "أحصل على الثيم",
       "live_preview": "معاينة مباشرة",
       "professional_elements": "عنصر احترافي",
       "control_options": "خيار تحكم",
@@ -423,6 +496,37 @@
   "scroll_progress": {
     "reading_progress": "تقدم القراءة"
   },
+  "announcement_bar": {
+    "click_here": "اضغط هنا"
+  },
+  "theme_works": {
+    "header": {
+      "badge": "أعمالنا المميزة",
+      "title": "نماذج من أعمالنا",
+      "description": "اكتشف مجموعة من المتاجر التي صممناها باستخدام قالب ملاك"
+    },
+    "overlay": {
+      "preview": "معاينة",
+      "visit": "زيارة"
+    },
+    "modal": {
+      "title": "معاينة العمل",
+      "preview_label": "معاينة:",
+      "device": {
+        "desktop": "سطح المكتب",
+        "tablet": "جهاز لوحي",
+        "mobile": "جوال"
+      },
+      "client_opinion_title": "رأي العميل:",
+      "client_name_placeholder": "اسم العميل"
+    },
+    "footer": {
+      "visit_site": "زيارة الموقع",
+      "close": "إغلاق"
+    },
+    "no_works": "لا توجد أعمال متاحة حالياً",
+    "error_fetching": "حدث خطأ أثناء جلب البيانات"
+  },
   "scroll_to_top": {
     "button_text": "العودة للأعلى",
     "scroll_up": "اصعد للأعلى"
@@ -478,7 +582,8 @@
     "no_products_search": "لا توجد منتجات تطابق البحث",
     "no_products_available": "لا توجد منتجات متاحة حالياً",
     "clear_filters": "مسح المرشحات",
-    "product_count": "{{count}} منتج"
+    "product_count": "{{count}} منتج",
+    "description_unavailable": "وصف المنتج غير متوفر"
   },
   "footer": {
     "company_description": "نحن شركة متخصصة في تقديم أفضل الخدمات والمنتجات لعملائنا الكرام",
@@ -496,6 +601,9 @@
   "unavailable": "غير متاح",
   "new": "جديد",
   "outOfStock": "نفد المخزون",
+  "loading_product": "جاري التحميل...",
+  "please_wait": "يرجى الانتظار",
+  "loading_product_data": "يتم تحميل بيانات المنتج",
   "language": "اللغة",
   "currency": "العملة",
   "current": "الحالي",
@@ -611,7 +719,20 @@
     "email_verified": "البريد الإلكتروني مؤكد",
     "email_confirmed": "تم تأكيد عنوان بريدك الإلكتروني",
     "verified": "مؤكد",
-    "not_verified": "غير مؤكد"
+    "not_verified": "غير مؤكد",
+    "store_information": "معلومات المتجر",
+    "store_name": "اسم المتجر",
+    "phone_number": "رقم الهاتف",
+    "store_link": "رابط المتجر",
+    "store_logo": "شعار المتجر",
+    "store_image": "صورة المتجر",
+    "upload_store_logo": "رفع شعار المتجر",
+    "upload_store_image": "رفع صورة المتجر",
+    "store_logo_updated_successfully": "تم تحديث شعار المتجر بنجاح",
+    "store_image_updated_successfully": "تم تحديث صورة المتجر بنجاح",
+    "basic_information": "المعلومات الأساسية",
+    "orders": "الطلبات",
+    "spent": "المبلغ المنفق"
   },
   "order_status": {
     "pending": "في الانتظار",
@@ -994,9 +1115,7 @@
       "fieldRequired": "هذا الحقل مطلوب",
       "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
       "phoneRequired": "رقم الجوال مطلوب",
-      "phoneLength": "رقم الجوال يجب أن يكون 10 أرقام",
-      "phoneStartsWith5": "رقم الجوال يجب أن يبدأ بـ 5",
-      "phoneFormat": "رقم الهاتف يجب أن يبدأ بالرقم 5"
+      "phoneDigitsOnly": "رقم الجوال يجب أن يحتوي على أرقام فقط"
     },
     "messages": {
       "loginSuccess": "تم تسجيل الدخول بنجاح",
@@ -1068,6 +1187,7 @@
     "all_categories": "الكل",
     "articles_available": "مقال متاح",
     "articles_title": "المقالات",
+    "latest_articles": "أحدث المقالات",
     "read_article": "قراءة المقال",
     "read_now": "اقرأ الآن",
     "loading_post": "جاري تحميل المقال...",
@@ -1078,7 +1198,35 @@
     "reading_time": "{{time}} دقائق قراءة",
     "share_article": "مشاركة المقال",
     "related_articles": "مقالات ذات صلة",
-    "explore_other_articles": "استكشف مقالات أخرى"
+    "explore_other_articles": "استكشف مقالات أخرى",
+    "premium_badge": "مميز",
+    "no_results_title": "لا توجد نتائج",
+    "no_results_hint": "جرب البحث بكلمات مختلفة أو اختر فئة أخرى",
+    "cta_title": "اكتشف AfterAds",
+    "cta_subtitle": "استكشف خدماتنا الرقمية وحلول التجارة الإلكترونية على موقعنا الرسمي",
+    "cta_button": "زيارة AfterAds"
+  },
+  "documentation": {
+    "error_loading_data": "فشل في تحميل البيانات",
+    "error_loading_content": "فشل في تحميل المحتوى",
+    "no_categories": "لا توجد فئات",
+    "category_not_found": "الفئة غير موجودة",
+    "doc_not_found": "المستند غير موجود",
+    "content_missing": "المحتوى غير موجود",
+    "return_to_docs": "العودة للتوثيق",
+    "select_main": "اختر التصنيف",
+    "select_category": "اختر الفئة",
+    "no_categories_available": "لا توجد فئات متاحة",
+    "quick_search": "البحث السريع",
+    "search_placeholder": "ابحث في المستندات...",
+    "results_count": "{{count}} نتيجة",
+    "subclassifications": "التصنيفات الفرعية",
+    "all_documents": "جميع المستندات",
+    "contents": "المحتويات",
+    "no_content": "لا يوجد محتوى متاح",
+    "select_from_list": "اختر مستنداً من القائمة",
+    "on_this_page": "في هذه الصفحة",
+    "no_headings": "لا توجد عناوين"
   },
   "thankYou": {
     "title": "تهانينا!",

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Mail, Lock, User, Phone, Eye, EyeOff, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { X, Mail, Lock, User, Phone, Eye, EyeOff, AlertCircle, Loader } from 'lucide-react';
 import { smartToast } from '../../utils/toastConfig';
 import { apiCall, API_ENDPOINTS } from '../../config/api';
 import { useTranslation } from 'react-i18next';
@@ -47,36 +46,36 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     }
   }, [isOpen]);
 
-  // Validation functions
-  const validateEmail = (email: string): string => {
+  // Validation functions (Memoized)
+  const validateEmail = useCallback((email: string): string => {
     if (!email) return t('auth.validation.emailRequired');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return t('auth.validation.emailInvalid');
     return '';
-  };
+  }, [t]);
 
-  const validatePassword = (password: string): string => {
+  const validatePassword = useCallback((password: string): string => {
     if (!password) return t('auth.validation.passwordRequired');
     if (password.length < 6) return t('auth.validation.passwordMinLength');
     return '';
-  };
+  }, [t]);
 
-  const validateName = (name: string, fieldName: string): string => {
+  const validateName = useCallback((name: string, fieldName: string): string => {
     if (!name) return t('auth.validation.fieldRequired', { field: fieldName });
     if (name.length < 2) return t('auth.validation.nameMinLength', { field: fieldName });
     return '';
-  };
+  }, [t]);
 
-  const validatePhone = (phone: string): string => {
+  // ✅ FIXED: Phone validation - accepts any length
+  const validatePhone = useCallback((phone: string): string => {
     if (!phone) return t('auth.validation.phoneRequired');
     const cleanPhone = phone.replace(/\D/g, '');
-    if (cleanPhone.length !== 9) return t('auth.validation.phoneLength');
-    if (!cleanPhone.startsWith('5')) return t('auth.validation.phoneStartsWith5');
+    if (cleanPhone.length < 8) return 'رقم الهاتف قصير جداً (8 أرقام على الأقل)';
     return '';
-  };
+  }, [t]);
 
   // Validate form before submission
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
 
     newErrors.email = validateEmail(userData.email);
@@ -94,10 +93,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [userData, isLogin, validateEmail, validatePassword, validateName, validatePhone, t]);
 
   // Handle login
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     if (!validateForm()) return;
     
     setLoading(true);
@@ -113,6 +112,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
       });
       
       if (response.user) {
+        try {
+          localStorage.setItem('user', JSON.stringify(response.user));
+          window.dispatchEvent(new CustomEvent('userUpdated', { detail: response.user }));
+        } catch {}
         onLoginSuccess(response.user);
         smartToast.frontend.success(t('auth.messages.loginSuccess'));
       } else {
@@ -137,15 +140,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
       }
       
       setErrors({ general: errorMessage });
-      
       smartToast.frontend.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [userData, validateForm, onLoginSuccess, t]);
 
   // Handle registration
-  const handleRegister = async () => {
+  const handleRegister = useCallback(async () => {
     if (!validateForm()) return;
     
     setLoading(true);
@@ -159,11 +161,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
           password: userData.password,
           firstName: userData.firstName,
           lastName: userData.lastName,
-          phone: userData.phone
+          phone: userData.phone.replace(/\D/g, '') // Send only digits
         })
       });
       
       if (response.user) {
+        try {
+          localStorage.setItem('user', JSON.stringify(response.user));
+          window.dispatchEvent(new CustomEvent('userUpdated', { detail: response.user }));
+        } catch {}
         onLoginSuccess(response.user);
         smartToast.frontend.success(t('auth.messages.registerSuccess'));
       } else {
@@ -186,104 +192,69 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
       }
       
       setErrors({ general: errorMessage });
-      
       smartToast.frontend.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [userData, validateForm, onLoginSuccess, t]);
 
-  // Format Saudi phone number
-  const formatSaudiPhone = (value: string) => {
-    const digits = value.replace(/\D/g, '');
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)}`;
-  };
+  const toggleAuthMode = useCallback(() => {
+    setIsLogin(!isLogin);
+    setErrors({});
+    setUserData({
+      email: '',
+      password: '',
+      firstName: '',
+      lastName: '',
+      phone: ''
+    });
+  }, [isLogin]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-4 bg-black/70 backdrop-blur-sm" dir="rtl">
-      {/* Modal */}
-      <div className="relative bg-[#292929] rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-xs md:max-w-md mx-auto overflow-hidden transform transition-all duration-500 border border-[#18b5d8]/30 hover:border-[#18b5d8]/50 hover:shadow-[0_0_20px_rgba(24,181,216,0.5)]">
+      {/* Modal - Reduced max height */}
+      <div className="relative bg-[#292929] rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden transform transition-all duration-500 border border-[#18b5d8]/30 hover:border-[#18b5d8]/50 max-h-[90vh] overflow-y-auto">
+        
         {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-[#18b5d8] via-transparent to-[#16a2c7]"></div>
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, #18b5d8 0%, transparent 50%), 
-                             radial-gradient(circle at 75% 75%, #16a2c7 0%, transparent 50%)`,
-            backgroundSize: '100px 100px',
-            animation: 'float 20s ease-in-out infinite'
-          }}></div>
         </div>
 
-        <style>
-          {`
-            @keyframes float {
-              0%, 100% { transform: translateY(0) rotate(0deg); }
-              33% { transform: translateY(-10px) rotate(1deg); }
-              66% { transform: translateY(5px) rotate(-1deg); }
-            }
-            @keyframes glow {
-              0%, 100% { filter: drop-shadow(0 0 5px rgba(24, 181, 216, 0.3)); transform: scale(1); }
-              50% { filter: drop-shadow(0 0 10px rgba(24, 181, 216, 0.7)); transform: scale(1.05); }
-            }
-            @keyframes shimmer {
-              0% { background-position: -200% 0; }
-              100% { background-position: 200% 0; }
-            }
-            .animate-shimmer {
-              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-              background-size: 200% 100%;
-              animation: shimmer 2s infinite;
-            }
-          `}
-        </style>
-
-        {/* Header */}
-        <div className="relative bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] p-4 md:p-6 text-center">
+        {/* Content - Reduced padding */}
+        <div className="p-4 md:p-6 space-y-4 relative z-10">
           <button
             onClick={onClose}
-            className="absolute top-2 md:top-4 left-2 md:left-4 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
+            className="absolute top-2 left-2 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300"
             aria-label={t('common.close')}
           >
-            <X className="w-4 h-4 md:w-5 md:h-5" />
+            <X className="w-4 h-4" />
           </button>
-          
-          <div className="relative w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4">
-            <div className="absolute -inset-2 bg-gradient-to-br from-[#18b5d8]/30 to-[#16a2c7]/30 blur-sm transition-all duration-500" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#18b5d8]/20 to-[#16a2c7]/10 backdrop-blur-md border border-[#18b5d8]/30 transition-all duration-500" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}></div>
-            <div className="absolute inset-2 bg-gradient-to-br from-[#18b5d8]/15 to-transparent transition-all duration-700" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}></div>
-            <User className="absolute inset-0 m-auto w-6 h-6 md:w-8 md:h-8 text-white animate-[glow_3.5s_ease-in-out_infinite]" />
-          </div>
-          
-          <h2 className="text-lg md:text-2xl font-black text-white mb-1 md:mb-2">
-            {isLogin ? t('auth.login') : t('auth.createNewAccount')}
-          </h2>
-          
-          <p className="text-white/90 text-xs md:text-sm max-w-xs mx-auto">
-            {isLogin ? t('auth.enterAccountData') : t('auth.completeDataForNewAccount')}
-          </p>
-        </div>
 
-        {/* Content */}
-        <div className="p-3 md:p-6 space-y-3 md:space-y-6 relative z-10">
+          {/* Title */}
+          <div className="text-center mb-2">
+            <h5 className="text-xl md:text-2xl font-bold text-white mb-1">
+              {isLogin ? t('auth.login') : t('auth.createNewAccount')}
+            </h5>
+           
+          </div>
+
           {/* Login Form */}
           {isLogin && (
-            <div className="space-y-3 md:space-y-4">
+            <div className="space-y-3">
               {/* Email Field */}
               <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-300 mb-1 md:mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   {t('auth.fields.email')}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 md:w-5 md:h-5" />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4" />
                   <input
                     type="email"
                     value={userData.email}
                     onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                    className={`w-full pr-8 md:pr-12 pl-3 md:pl-4 py-2 md:py-3 bg-white/5 backdrop-blur-md border rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm md:text-base ${
+                    className={`w-full pr-10 pl-3 py-2.5 bg-white/5 backdrop-blur-md border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm ${
                       errors.email ? 'border-red-500' : 'border-[#18b5d8]/30'
                     }`}
                     placeholder="example@email.com"
@@ -291,8 +262,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-red-400 text-xs md:text-sm mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
                     {errors.email}
                   </p>
                 )}
@@ -300,16 +271,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
               {/* Password Field */}
               <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-300 mb-1 md:mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   {t('auth.fields.password')}
                 </label>
                 <div className="relative">
-                  <Lock className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 md:w-5 md:h-5" />
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={userData.password}
                     onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-                    className={`w-full pr-8 md:pr-12 pl-8 md:pl-12 py-2 md:py-3 bg-white/5 backdrop-blur-md border rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm md:text-base ${
+                    className={`w-full pr-10 pl-10 py-2.5 bg-white/5 backdrop-blur-md border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm ${
                       errors.password ? 'border-red-500' : 'border-[#18b5d8]/30'
                     }`}
                     placeholder={t('auth.placeholders.password')}
@@ -317,14 +288,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] hover:text-[#16a2c7]"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] hover:text-[#16a2c7]"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4 md:w-5 md:h-5" /> : <Eye className="w-4 h-4 md:w-5 md:h-5" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-red-400 text-xs md:text-sm mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
                     {errors.password}
                   </p>
                 )}
@@ -332,9 +303,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
               {/* General Error */}
               {errors.general && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg md:rounded-xl p-2 md:p-4">
-                  <p className="text-red-400 text-xs md:text-sm flex items-center gap-1 md:gap-2">
-                    <AlertCircle className="w-3 h-3 md:w-5 md:h-5" />
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3">
+                  <p className="text-red-400 text-xs flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
                     {errors.general}
                   </p>
                 </div>
@@ -345,12 +316,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 type="button"
                 onClick={handleLogin}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white py-2.5 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-lg hover:from-[#16a2c7] hover:to-[#18b5d8] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform flex items-center justify-center gap-1 md:gap-2"
-                aria-label={t('auth.login')}
+                className="w-full bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white py-3 rounded-xl font-bold text-base hover:from-[#16a2c7] hover:to-[#18b5d8] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <Loader className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+                    <Loader className="w-5 h-5 animate-spin" />
                     <span>{t('auth.messages.loggingIn')}</span>
                   </>
                 ) : (
@@ -362,19 +332,70 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
           {/* Registration Form */}
           {!isLogin && (
-            <div className="space-y-3 md:space-y-4">
+            <div className="space-y-3">
+              {/* Name Fields - Side by Side */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('auth.fields.firstName')}
+                  </label>
+                  <div className="relative">
+                    <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4" />
+                    <input
+                      type="text"
+                      value={userData.firstName}
+                      onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
+                      className={`w-full pr-10 pl-3 py-2.5 bg-white/5 backdrop-blur-md border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm ${
+                        errors.firstName ? 'border-red-500' : 'border-[#18b5d8]/30'
+                      }`}
+                      placeholder={t('auth.placeholders.firstName')}
+                    />
+                  </div>
+                  {errors.firstName && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.firstName}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('auth.fields.lastName')}
+                  </label>
+                  <div className="relative">
+                    <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4" />
+                    <input
+                      type="text"
+                      value={userData.lastName}
+                      onChange={(e) => setUserData({ ...userData, lastName: e.target.value })}
+                      className={`w-full pr-10 pl-3 py-2.5 bg-white/5 backdrop-blur-md border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm ${
+                        errors.lastName ? 'border-red-500' : 'border-[#18b5d8]/30'
+                      }`}
+                      placeholder={t('auth.placeholders.lastName')}
+                    />
+                  </div>
+                  {errors.lastName && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               {/* Email Field */}
               <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-300 mb-1 md:mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   {t('auth.fields.email')}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 md:w-5 md:h-5" />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4" />
                   <input
                     type="email"
                     value={userData.email}
                     onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                    className={`w-full pr-8 md:pr-12 pl-3 md:pl-4 py-2 md:py-3 bg-white/5 backdrop-blur-md border rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm md:text-base ${
+                    className={`w-full pr-10 pl-3 py-2.5 bg-white/5 backdrop-blur-md border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm ${
                       errors.email ? 'border-red-500' : 'border-[#18b5d8]/30'
                     }`}
                     placeholder="example@email.com"
@@ -382,25 +403,51 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-red-400 text-xs md:text-sm mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
                     {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Phone Field - FIXED: No length limit */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  {t('auth.fields.phone')}
+                </label>
+                <div className="relative">
+                  <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4" />
+                  <input
+                    type="tel"
+                    value={userData.phone}
+                    onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+                    className={`w-full pr-10 pl-3 py-2.5 bg-white/5 backdrop-blur-md border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm ${
+                      errors.phone ? 'border-red-500' : 'border-[#18b5d8]/30'
+                    }`}
+                    placeholder="0512345678"
+                    dir="ltr"
+                  />
+                </div>
+                {errors.phone && (
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.phone}
                   </p>
                 )}
               </div>
 
               {/* Password Field */}
               <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-300 mb-1 md:mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   {t('auth.fields.password')}
                 </label>
                 <div className="relative">
-                  <Lock className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 md:w-5 md:h-5" />
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={userData.password}
                     onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-                    className={`w-full pr-8 md:pr-12 pl-8 md:pl-12 py-2 md:py-3 bg-white/5 backdrop-blur-md border rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm md:text-base ${
+                    className={`w-full pr-10 pl-10 py-2.5 bg-white/5 backdrop-blur-md border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm ${
                       errors.password ? 'border-red-500' : 'border-[#18b5d8]/30'
                     }`}
                     placeholder={t('auth.placeholders.passwordMinLength')}
@@ -408,101 +455,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] hover:text-[#16a2c7]"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] hover:text-[#16a2c7]"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4 md:w-5 md:h-5" /> : <Eye className="w-4 h-4 md:w-5 md:h-5" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-red-400 text-xs md:text-sm mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
                     {errors.password}
-                  </p>
-                )}
-              </div>
-
-              {/* Name Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                <div>
-                  <label className="block text-xs md:text-sm font-bold text-gray-300 mb-1 md:mb-2">
-                    {t('auth.fields.firstName')}
-                  </label>
-                  <div className="relative">
-                    <User className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 md:w-5 md:h-5" />
-                    <input
-                      type="text"
-                      value={userData.firstName}
-                      onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
-                      className={`w-full pr-8 md:pr-12 pl-3 md:pl-4 py-2 md:py-3 bg-white/5 backdrop-blur-md border rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm md:text-base ${
-                        errors.firstName ? 'border-red-500' : 'border-[#18b5d8]/30'
-                      }`}
-                      placeholder={t('auth.placeholders.firstName')}
-                    />
-                  </div>
-                  {errors.firstName && (
-                    <p className="text-red-400 text-xs md:text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
-                      {errors.firstName}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs md:text-sm font-bold text-gray-300 mb-1 md:mb-2">
-                    {t('auth.fields.lastName')}
-                  </label>
-                  <div className="relative">
-                    <User className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 md:w-5 md:h-5" />
-                    <input
-                      type="text"
-                      value={userData.lastName}
-                      onChange={(e) => setUserData({ ...userData, lastName: e.target.value })}
-                      className={`w-full pr-8 md:pr-12 pl-3 md:pl-4 py-2 md:py-3 bg-white/5 backdrop-blur-md border rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm md:text-base ${
-                        errors.lastName ? 'border-red-500' : 'border-[#18b5d8]/30'
-                      }`}
-                      placeholder={t('auth.placeholders.lastName')}
-                    />
-                  </div>
-                  {errors.lastName && (
-                    <p className="text-red-400 text-xs md:text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
-                      {errors.lastName}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Phone Field */}
-              <div>
-                <label className="block text-xs md:text-sm font-bold text-gray-300 mb-1 md:mb-2">
-                  {t('auth.fields.phone')}
-                </label>
-                <div className="relative">
-                  <Phone className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 md:w-5 md:h-5" />
-                  <input
-                    type="tel"
-                    value={formatSaudiPhone(userData.phone)}
-                    onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
-                    className={`w-full pr-8 md:pr-12 pl-3 md:pl-4 py-2 md:py-3 bg-white/5 backdrop-blur-md border rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#18b5d8] transition-all text-white placeholder-gray-400 text-sm md:text-base ${
-                      errors.phone ? 'border-red-500' : 'border-[#18b5d8]/30'
-                    }`}
-                    placeholder="05xxxxxxxx"
-                    dir="ltr"
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="text-red-400 text-xs md:text-sm mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
-                    {errors.phone}
                   </p>
                 )}
               </div>
 
               {/* General Error */}
               {errors.general && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg md:rounded-xl p-2 md:p-4">
-                  <p className="text-red-400 text-xs md:text-sm flex items-center gap-1 md:gap-2">
-                    <AlertCircle className="w-3 h-3 md:w-5 md:h-5" />
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-2">
+                  <p className="text-red-400 text-xs flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
                     {errors.general}
                   </p>
                 </div>
@@ -513,12 +483,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 type="button"
                 onClick={handleRegister}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white py-2.5 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-lg hover:from-[#16a2c7] hover:to-[#18b5d8] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform flex items-center justify-center gap-1 md:gap-2"
-                aria-label={t('auth.createNewAccount')}
+                className="w-full bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white py-3 rounded-xl font-bold text-base hover:from-[#16a2c7] hover:to-[#18b5d8] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <Loader className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+                    <Loader className="w-4 h-4 animate-spin" />
                     <span>{t('auth.messages.creatingAccount')}</span>
                   </>
                 ) : (
@@ -529,20 +498,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
           )}
 
           {/* Toggle between Login/Register */}
-          <div className="mt-4 md:mt-6 text-center">
+          <div className="text-center">
             <button
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setErrors({});
-                setUserData({
-                  email: '',
-                  password: '',
-                  firstName: '',
-                  lastName: '',
-                  phone: ''
-                });
-              }}
-              className="text-[#18b5d8] hover:text-[#16a2c7] font-bold transition-colors text-sm md:text-base"
+              onClick={toggleAuthMode}
+              className="text-[#18b5d8] hover:text-[#16a2c7] font-medium transition-colors text-sm"
               disabled={loading}
             >
               {isLogin ? t('auth.noAccount') : t('auth.haveAccount')}
@@ -554,4 +513,4 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   );
 };
 
-export default AuthModal;
+export default AuthModal

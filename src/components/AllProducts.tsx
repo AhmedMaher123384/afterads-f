@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Grid, List, Package, ChevronDown, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import ProductCard from './ui/ProductCard';
+import LoadingSpinner from './ui/LoadingSpinner';
 import GlobalFooter from './layout/GlobalFooter';
 import { createCategorySlug, createProductSlug } from '../utils/slugify';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
@@ -12,7 +13,7 @@ interface Product {
   name: string;
   name_ar?: string;
   name_en?: string;
-  description: string;
+  description: any;
   description_ar?: string;
   description_en?: string;
   price: number;
@@ -62,6 +63,15 @@ const AllProducts: React.FC = () => {
       return [];
     }
   });
+  const [loading, setLoading] = useState<boolean>(() => {
+    const saved = localStorage.getItem('cachedAllProducts');
+    try {
+      const initial = saved ? JSON.parse(saved) : [];
+      return initial.length === 0;
+    } catch {
+      return true;
+    }
+  });
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -72,12 +82,13 @@ const AllProducts: React.FC = () => {
     const currentLang = i18n.language;
     const arField = `${field}_ar` as keyof Product;
     const enField = `${field}_en` as keyof Product;
-    
-    if (currentLang === 'ar') {
-      return (product[arField] as string) || (product[enField] as string) || product[field];
-    } else {
-      return (product[enField] as string) || (product[arField] as string) || product[field];
+    const value = currentLang === 'ar'
+      ? (product[arField] as any) || (product[enField] as any) || product[field]
+      : (product[enField] as any) || (product[arField] as any) || product[field];
+    if (Array.isArray(value)) {
+      return value.map((b: any) => (b && b.text) ? b.text : '').join(' ');
     }
+    return String(value || '');
   };
 
   // Helper function to get localized category content
@@ -92,8 +103,9 @@ const AllProducts: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
+    setLoading(true);
+    Promise.all([fetchProducts(), fetchCategories()])
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -117,7 +129,7 @@ const AllProducts: React.FC = () => {
       const themesCategoryId = themesCategory ? themesCategory.id : null;
       
       const filteredProducts = productsData.filter((product: Product) => 
-        product.categoryId !== themesCategoryId
+        product.categoryId !== themesCategoryId && product.id !== 55
       );
       
       setProducts(filteredProducts);
@@ -170,6 +182,10 @@ const AllProducts: React.FC = () => {
   const handleCategoryFilter = (categoryId: number | null) => setSelectedCategory(categoryId);
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value);
   const handleSort = (e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value);
+
+  if (loading) {
+    return <LoadingSpinner message={t('common.loading')} />;
+  }
 
   return (
     <section className="min-h-screen bg-[#292929] relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -359,106 +375,7 @@ const AllProducts: React.FC = () => {
           </p>
         </div>
         
-        {/* Filters & Search */}
-        <div className="bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-2xl sm:rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl p-4 sm:p-6 mb-8 sm:mb-12">
-          <div className="space-y-4 sm:space-y-6">
-            {/* Search Bar - Full width on mobile */}
-            <div className="w-full">
-              <div className="relative">
-                <Search className="absolute top-1/2 right-3 sm:right-4 transform -translate-y-1/2 text-[#7a7a7a] w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
-                <input
-                  type="text"
-                  placeholder={t('all_products.search_placeholder')}
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="w-full pr-10 sm:pr-12 pl-3 sm:pl-4 py-2.5 sm:py-3 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#7a7a7a] focus:border-transparent transition-all duration-300 text-white text-sm sm:text-base"
-                />
-              </div>
-            </div>
-
-            {/* Filters Row - Responsive layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {/* Category Filter */}
-              <div>
-                <select
-                  value={selectedCategory || ''}
-                  onChange={(e) => handleCategoryFilter(e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#7a7a7a] focus:border-transparent transition-all duration-300 text-white text-sm sm:text-base"
-                >
-                  <option value="" className="bg-[#292929] text-white">{t('all_products.all_categories')}</option>
-                  {categories
-                    .filter(category => {
-                      const categoryName = getCategoryLocalizedContent(category, 'name').toLowerCase();
-                      return categoryName !== 'ثيمات' && categoryName !== 'themes';
-                    })
-                    .map(category => (
-                      <option key={category.id} value={category.id} className="bg-[#292929] text-white">
-                        {getCategoryLocalizedContent(category, 'name')}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              {/* Sort Filter */}
-              <div>
-                <select
-                  value={sortBy}
-                  onChange={handleSort}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#7a7a7a] focus:border-transparent transition-all duration-300 text-white text-sm sm:text-base"
-                >
-                  <option value="name" className="bg-[#292929] text-white">{t('all_products.sort_by_name')}</option>
-                  <option value="price-low" className="bg-[#292929] text-white">{t('all_products.sort_by_price_low')}</option>
-                  <option value="price-high" className="bg-[#292929] text-white">{t('all_products.sort_by_price_high')}</option>
-                </select>
-              </div>
-
-              {/* View Mode Buttons */}
-              <div className="flex items-center gap-2 justify-center sm:justify-start lg:justify-center">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-300 ${
-                    viewMode === 'grid'
-                      ? 'bg-gradient-to-r from-[#7a7a7a]/40 to-[#4a4a4a]/40 text-[#7a7a7a] border border-[#7a7a7a]/60'
-                      : 'bg-gradient-to-r from-[#7a7a7a]/20 to-[#4a4a4a]/20 text-[#7a7a7a]/70 border border-[#7a7a7a]/30 hover:border-[#7a7a7a]/50'
-                  }`}
-                  aria-label={t('products.grid_view')}
-                >
-                  <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-300 ${
-                    viewMode === 'list'
-                      ? 'bg-gradient-to-r from-[#7a7a7a]/40 to-[#4a4a4a]/40 text-[#7a7a7a] border border-[#7a7a7a]/60'
-                      : 'bg-gradient-to-r from-[#7a7a7a]/20 to-[#4a4a4a]/20 text-[#7a7a7a]/70 border border-[#7a7a7a]/30 hover:border-[#7a7a7a]/50'
-                  }`}
-                  aria-label={t('products.list_view')}
-                >
-                  <List className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Results and Clear Filters */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-[#7a7a7a]/30 gap-3 sm:gap-0">
-              <div className="text-gray-100 text-sm sm:text-base">
-                {t('products.product_count', { count: filteredProducts.length })}
-              </div>
-              {(searchTerm || selectedCategory) && (
-                <button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory(null);
-                  }}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 rounded-lg sm:rounded-xl text-white text-xs sm:text-sm hover:bg-gradient-to-r hover:from-[#7a7a7a]/40 hover:to-[#292929]/40 transition-all duration-300"
-                >
-                  <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                  {t('all_products.clear_filters')}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+      
 
         {/* Products Grid/List */}
         {filteredProducts.length > 0 ? (

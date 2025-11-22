@@ -40,6 +40,7 @@ export const resources = {
           info: "معلومات",
           portfolio: "معرض الأعمال",
           blog: "المدونة",
+          documentation: "التوثيق",
           categories: "الفئات",
           shopping_cart: "عربة التسوق",
           close_menu: "إغلاق القائمة",

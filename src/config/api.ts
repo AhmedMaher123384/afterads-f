@@ -25,22 +25,18 @@ export const getApiBaseUrl = (): string => {
 // دالة مساعدة لبناء URL كامل
 export const buildApiUrl = (endpoint: string): string => {
   const baseUrl = getApiBaseUrl();
-  // إزالة الـ slash الأول من endpoint إذا كان موجود
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-  // إزالة api/ إذا كانت موجودة في endpoint لأنها ستضاف تلقائياً
+  const normalized = typeof endpoint === 'string' ? endpoint : '';
+  const cleanEndpoint = normalized.startsWith('/') ? normalized.slice(1) : normalized;
   const finalEndpoint = cleanEndpoint.startsWith('api/') ? cleanEndpoint.slice(4) : cleanEndpoint;
-  
-  // إذا كان endpoint فارغ، أرجع base URL مع /api بدون trailing slash
   if (!finalEndpoint) {
     return `${baseUrl}/api`;
   }
-  
   return `${baseUrl}/api/${finalEndpoint}`;
 };
 
 // دالة مساعدة لبناء URL الصور - محدثة
 export const buildImageUrl = (imagePath: string): string => {
-  if (!imagePath) return '/placeholder-image.png';
+  if (!imagePath) return 'https://tse1.mm.bing.net/th/id/OIP.M6p4cLkcKW9PWIObAjYi8gHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3';
   if (imagePath.startsWith('http')) return imagePath;
   if (imagePath.startsWith('data:image/')) return imagePath;
   
@@ -170,6 +166,10 @@ export const API_ENDPOINTS = {
   // Health Check
   HEALTH: 'health',
   
+  // Visits Counter
+  VISITS_COUNTER: 'visits/counter',
+  VISITS_COUNTER_BY_PATH: (path: string) => `visits/counter?path=${encodeURIComponent(path)}`,
+  
   // Services (if needed)
   SERVICES: 'services',
   SERVICE_BY_ID: (id: string | number) => `services/${id}`,
@@ -188,6 +188,49 @@ export const API_ENDPOINTS = {
   BLOG_POSTS: 'blog-posts',
   BLOG_POST_BY_ID: (id: string | number) => `blog-posts/${id}`,
   BLOG_POST_BY_SLUG: (slug: string) => `blog-posts/${encodeURIComponent(slug)}`,
+
+  // Documentation
+  DOCUMENTATIONS: 'documentations',
+  DOCUMENTATION_BY_ID: (id: string | number) => `documentations/${id}`,
+  DOCUMENTATION_BY_SLUG: (slug: string) => `documentations/${encodeURIComponent(slug)}`,
+  DOCUMENTATION_STRUCTURE: 'documentations/structure',
+  DOCUMENTATION_CLASSIFICATIONS: (categoryId: string | number) => `documentations/${categoryId}/classifications`,
+  DOCUMENTATION_CLASSIFICATION_BY_ID: (categoryId: string | number, classificationId: string | number) => `documentations/${categoryId}/classifications/${classificationId}`,
+  DOCUMENTATION_DOCS: (categoryId: string | number) => `documentations/${categoryId}/documentations`,
+  DOCUMENTATION_DOC_BY_ID: (categoryId: string | number, docId: string | number) => `documentations/${categoryId}/documentations/${docId}`,
+  DOCUMENTATION_SUBSECTIONS: (categoryId: string | number, docId: string | number) => `documentations/${categoryId}/documentations/${docId}/subsections`,
+  DOCUMENTATION_SUBSECTION_BY_ID: (categoryId: string | number, docId: string | number, subSectionId: string | number) => `documentations/${categoryId}/documentations/${docId}/subsections/${subSectionId}`,
+
+  // Documentation V2 with Main Classification level
+  DOCUMENTATION_V2: {
+    MAIN: {
+      LIST: 'documentations',
+      CREATE: 'documentations/main',
+      BY_ID: (mainId: string | number) => `documentations/main/${mainId}`,
+      UPDATE: (mainId: string | number) => `documentations/main/${mainId}`,
+      DELETE: (mainId: string | number) => `documentations/main/${mainId}`,
+    },
+    STRUCTURE: 'documentations/structure',
+    CATEGORY: {
+      ADD: (mainId: string | number) => `documentations/main/${mainId}/categories`,
+      UPDATE: (mainId: string | number, categoryId: string | number) => `documentations/main/${mainId}/categories/${categoryId}`,
+      DELETE: (mainId: string | number, categoryId: string | number) => `documentations/main/${mainId}/categories/${categoryId}`,
+    },
+    CLASSIFICATION: {
+      ADD: (mainId: string | number, categoryId: string | number) => `documentations/main/${mainId}/categories/${categoryId}/classifications`,
+      UPDATE: (mainId: string | number, categoryId: string | number, classificationId: string | number) => `documentations/main/${mainId}/categories/${categoryId}/classifications/${classificationId}`,
+      DELETE: (mainId: string | number, categoryId: string | number, classificationId: string | number) => `documentations/main/${mainId}/categories/${categoryId}/classifications/${classificationId}`,
+    },
+    DOC: {
+      ADD: (mainId: string | number, categoryId: string | number) => `documentations/main/${mainId}/categories/${categoryId}/documentations`,
+      UPDATE: (mainId: string | number, categoryId: string | number, docId: string | number) => `documentations/main/${mainId}/categories/${categoryId}/documentations/${docId}`,
+      DELETE: (mainId: string | number, categoryId: string | number, docId: string | number) => `documentations/main/${mainId}/categories/${categoryId}/documentations/${docId}`,
+    },
+  },
+
+  // Announcement Bar
+  ANNOUNCEMENT_BAR: 'announcement-bar',
+  ANNOUNCEMENT_BAR_ACTIVE: 'announcement-bar/active',
 
   // Testimonials endpoints
   TESTIMONIALS: 'testimonials',
@@ -254,6 +297,16 @@ export const API_ENDPOINTS = {
 
   // Upload attachments
   UPLOAD_ATTACHMENTS: 'upload-attachments',
+
+  // Theme Works (أعمالنا)
+  THEME_WORKS: {
+    LIST: 'theme-works',
+    CREATE: 'theme-works',
+    UPDATE: (id: string | number) => `theme-works/${id}`,
+    DELETE: (id: string | number) => `theme-works/${id}`,
+    BY_ID: (id: string | number) => `theme-works/${id}`,
+    TOGGLE_ACTIVE: (id: string | number) => `theme-works/${id}/toggle-active`,
+  },
 
   
 

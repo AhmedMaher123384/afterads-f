@@ -6,8 +6,9 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
-import './i18n/config';
+import i18n from './i18n/config';
 import Navbar from './components/layout/Navbar';
+import AnnouncementBar from './components/ui/AnnouncementBar';
 import GlobalFooter from './components/layout/GlobalFooter';
 import CustomCursor from './components/ui/CustomCursor';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -20,7 +21,7 @@ import ShoppingCart from './components/ShoppingCart';
 import CartDiagnostics from './components/CartDiagnostics';
 import Wishlist from './components/Wishlist';
 import Login from './pages/Login';
-import Dashboard from './pages/dashboard/Dashboard';
+import Dashboard from './pages/dashboard/Sidebar';
 import UserProfile from './components/home/UserProfile';
 import ServiceForm from './components/forms/ServiceForm';
 import CategoryAdd from './pages/CategoryAdd';
@@ -44,6 +45,9 @@ import Portfolio from './pages/Portfolio';
 import Blog from './components/Blog';
 import BlogPost from './components/BlogPost';
 import './index.css';
+import ProductsManagement from './pages/dashboard/sections/ProductsTab';
+import AdminLayout from './pages/dashboard/components/layout/AdminLayout';
+import DocumentationPost from './pages/DocumentationPost';
 
 // تعريف Props لـ ProtectedRoute
 interface ProtectedRouteProps {
@@ -75,7 +79,7 @@ const LayoutWrapper: React.FC = () => {
   const [showCartNotification, setShowCartNotification] = React.useState(false);
   const [notificationProduct, setNotificationProduct] = React.useState<any>(null);
   const [notificationQuantity, setNotificationQuantity] = React.useState(1);
-  const hideNavbarPaths = ['/login', '/admin', '/checkout', '/thank-you'];
+  const hideNavbarPaths = ['/login', '/admin', '/checkout', '/thank-you', '/documentation'];
   const hideFooterPaths = ['/login', '/admin', '/checkout', '/thank-you'];
 
   // إيقاف شاشة التحميل بعد التحميل الأولي للصفحة
@@ -115,10 +119,28 @@ const LayoutWrapper: React.FC = () => {
 
   // إضافة padding علوي للمحتوى لتجنب التداخل مع الـ navbar
   const contentClass = 'pt-0';
+  const showAnnouncementBar = (
+    location.pathname === '/' ||
+    location.pathname === '/products' ||
+    location.pathname.startsWith('/category/') ||
+    location.pathname.startsWith('/product/')
+  );
+
+  React.useEffect(() => {
+    const isHome = location.pathname === '/';
+    document.body.classList.toggle('no-card-glow', !isHome);
+  }, [location.pathname]);
+
+  React.useEffect(() => {
+    document.documentElement.classList.add('reduce-animations');
+  }, []);
 
   return (
     <>
       <CustomCursor />
+      {showAnnouncementBar && !shouldHideNavbar && (
+        <AnnouncementBar />
+      )}
       {!shouldHideNavbar && (
         <ErrorBoundary>
           <Navbar />
@@ -151,6 +173,10 @@ const LayoutWrapper: React.FC = () => {
           {/* Blog Routes */}
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          {/* Documentation Routes */}
+          <Route path="/documentation" element={<DocumentationPost />} />
+          <Route path="/documentation/:categorySlug" element={<DocumentationPost />} />
+          <Route path="/documentation/:categorySlug/:docSlug" element={<DocumentationPost />} />
           <Route path="/cart/diagnostics" element={<CartDiagnostics />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/thank-you" element={<ThankYou />} />
@@ -161,10 +187,20 @@ const LayoutWrapper: React.FC = () => {
           <Route path="/login" element={<Login />} />
           
           {/* Admin Dashboard Routes */}
-          <Route path="/admin" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          
+          {/* <Route path="/admin" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> */}
+          {/* <Route path="/admin" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/admin/products" element={<ProtectedRoute><ProductsManagement /></ProtectedRoute>} /> */}
+          <Route
+  path="/admin/*"
+  element={
+    <ProtectedRoute>
+      <AdminLayout />
+    </ProtectedRoute>
+  }
+/>
+
           {/* Services Management Routes (Legacy) */}
-          <Route path="/admin/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
+          {/* <Route path="/admin/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} /> */}
           <Route path="/admin/service/add" element={<ProtectedRoute><ServiceForm /></ProtectedRoute>} />
           <Route path="/admin/service/edit/:id" element={<ProtectedRoute><ServiceForm /></ProtectedRoute>} />
           
@@ -233,16 +269,13 @@ root.render(
           <CurrencyProvider>
             <ScrollToTop />
             <LayoutWrapper />
-          </CurrencyProvider>
-        </LoadingProvider>
-
-        <ToastContainer 
+               <ToastContainer 
         position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
+        autoClose={1800}
+        hideProgressBar={true}
         newestOnTop={true}
         closeOnClick
-        rtl
+        rtl={i18n.language === 'ar'}
         pauseOnFocusLoss
         draggable
         pauseOnHover
@@ -250,14 +283,26 @@ root.render(
         limit={3}
         style={{ 
           zIndex: 999999,
-          top: '80px',
-          fontSize: '16px'
+          top: '100px',
+          fontSize: '14px'
         }}
         toastStyle={{
-          minHeight: '60px',
-          fontSize: '16px'
+          minHeight: '56px',
+          fontSize: '14px',
+          width: 'min(640px, 92vw)',
+          margin: '0 auto',
+          borderRadius: '14px',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.25)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.18)',
+          textAlign: 'center'
         }}
         />
+          </CurrencyProvider>
+        </LoadingProvider>
+
+     
       </Router>
     </HelmetProvider>
   </React.StrictMode>

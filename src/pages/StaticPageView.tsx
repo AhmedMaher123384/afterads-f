@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { FileText, Calendar, Eye, ArrowLeft } from 'lucide-react';
-import { apiCall, API_ENDPOINTS } from '../config/api';
+import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import RichTextDisplay from '../components/ui/RichTextDisplay';
 
 interface StaticPage {
   id: number;
   title: string;
   slug: string;
-  content: string;
+  content: any;
   metaDescription?: string;
   isActive: boolean;
   showInFooter: boolean;
@@ -224,7 +225,7 @@ const StaticPageView: React.FC = () => {
               <div className="mb-6 sm:mb-8 md:mb-10 animate-fadeInUp">
                 <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 xl:h-[500px] 2xl:h-[600px] overflow-hidden rounded-xl sm:rounded-2xl border border-white/10">
                   <img
-                    src={page.imageUrl}
+                    src={buildImageUrl(page.imageUrl || '')}
                     alt={page.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
@@ -243,16 +244,41 @@ const StaticPageView: React.FC = () => {
                   <p className="text-base sm:text-lg leading-relaxed text-[#18b5d5]">{page.metaDescription}</p>
                 </div>
               )}
-              <div
-                className="prose prose-sm sm:prose-base md:prose-lg max-w-none prose-content prose-headings:text-white prose-p:text-white prose-li:text-white prose-strong:text-white prose-a:text-[#7a7a7a] prose-blockquote:text-white prose-code:text-white prose-pre:text-white"
-                style={{
-                  direction: 'rtl',
-                  textAlign: 'right',
-                  lineHeight: '1.8'
-                }}
-              >
-                <div dangerouslySetInnerHTML={{ __html: page.content }} />
-              </div>
+              {Array.isArray(page.content) ? (
+                <div className="space-y-8">
+                  {(page.content as any[]).map((block: any, idx: number) => {
+                    const hasImages = Array.isArray(block.images) && block.images.length > 0;
+                    const isHorizontal = hasImages && block.images.every((img: any) => img.orientation === 'horizontal');
+                    return (
+                      <div key={idx} className="space-y-4">
+                        {block.text && <div dangerouslySetInnerHTML={{ __html: block.text }} />}
+                        {hasImages && (
+                          isHorizontal ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                              {block.images.map((img: any, i: number) => (
+                                <div key={i} className="rounded-lg overflow-hidden border border-white/10 bg-white/5 h-32 sm:h-40 lg:h-48">
+                                  <img src={buildImageUrl(img.url)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1 sm:gap-2">
+                              {block.images.map((img: any, i: number) => (
+                                <img key={i} src={buildImageUrl(img.url)} alt="" className="rounded-lg w-full sm:w-2/3 lg:w-1/2 max-h-[550px] object-contain" loading="lazy" style={{ margin: 0 }} />
+                              ))}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <RichTextDisplay
+                  content={page.content}
+                  className="prose prose-sm sm:prose-base md:prose-lg max-w-none prose-content prose-headings:text-white prose-p:text-white prose-li:text-white prose-strong:text-white prose-a:text-[#7a7a7a] prose-blockquote:text-white prose-code:text-white prose-pre:text-white"
+                />
+              )}
             </div>
 
             {/* Back Button */}

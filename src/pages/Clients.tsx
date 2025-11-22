@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { User, Calendar, Search, Filter, Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
 import { smartToast } from '../utils/toastConfig';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import logo from '../assets/logo.webp';
 
 interface Client {
@@ -105,14 +106,7 @@ const Clients: React.FC = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">جاري تحميل العملاء...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="جاري تحميل العملاء..." />;
   }
 
   if (error) {

@@ -38,7 +38,6 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'ar', // Set Arabic as the default language
     fallbackLng: 'ar',
     defaultNS: 'translation',
     ns: ['translation', 'common', 'product_detail', 'product_card', 'product'],
@@ -50,6 +49,7 @@ i18n
     
     detection: {
       order: ['localStorage', 'querystring', 'cookie', 'sessionStorage'],
+      lookupLocalStorage: 'selectedLanguage',
       lookupQuerystring: 'lng',
       lookupCookie: 'i18next',
       lookupSessionStorage: 'i18nextLng',

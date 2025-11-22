@@ -29,8 +29,10 @@ import { addToCartUnified, addToWishlistUnified, removeFromWishlistUnified } fro
 import { commentService, Comment, CreateCommentData } from '../services/commentService';
 import AuthModal from './modals/AuthModal';
 import PriceDisplay from './ui/PriceDisplay';
+import notfoundImg from '../assets/search_not_found.png';
 import ProductOptionsSelector from './ui/ProductOptionsSelector';
 import { useCurrency } from '../contexts/CurrencyContext';
+import RichTextDisplay from './ui/RichTextDisplay';
 
 interface ProductOption {
   id: string;
@@ -70,7 +72,7 @@ interface Product {
   name: string;
   name_ar?: string;
   name_en?: string;
-  description: string;
+  description: any;
   description_ar?: string;
   description_en?: string;
   shortDescription?: string;
@@ -123,7 +125,6 @@ const FAQCard: React.FC<{ faq: { question: string; question_ar?: string; questio
   const [isOpen, setIsOpen] = useState(false);
   const { i18n } = useTranslation();
 
-  // Helper function to get localized FAQ content
   const getLocalizedFAQContent = (field: 'question' | 'answer') => {
     const currentLang = i18n.language;
     
@@ -217,11 +218,23 @@ const ProductDetail: React.FC = () => {
     
     if (!targetItem) return '';
     
-    if (currentLang === 'ar') {
-      return targetItem[`${field}_ar`] || targetItem[`${field}_en`] || targetItem[field] || '';
-    } else {
-      return targetItem[`${field}_en`] || targetItem[`${field}_ar`] || targetItem[field] || '';
+    const value = currentLang === 'ar'
+      ? targetItem[`${field}_ar`] || targetItem[`${field}_en`] || targetItem[field]
+      : targetItem[`${field}_en`] || targetItem[`${field}_ar`] || targetItem[field];
+    if (Array.isArray(value)) {
+      return value.map((b: any) => (b && b.text) ? b.text : '').join(' ');
     }
+    return value || '';
+  };
+
+  const getLocalizedRich = (field: 'description' | 'shortDescription', item?: any): any => {
+    const currentLang = i18n.language;
+    const targetItem = item || product;
+    if (!targetItem) return '';
+    const value = currentLang === 'ar'
+      ? targetItem[`${field}_ar`] || targetItem[`${field}_en`] || targetItem[field]
+      : targetItem[`${field}_en`] || targetItem[`${field}_ar`] || targetItem[field];
+    return value;
   };
 
   // Helper function to get localized category content
@@ -518,7 +531,10 @@ const ProductDetail: React.FC = () => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthModalOpen(false);
-    smartToast.frontend.success('مرحباً بك! يمكنك الآن إضافة تعليقك');
+    try {
+      window.dispatchEvent(new CustomEvent('userUpdated', { detail: userData }));
+    } catch {}
+    smartToast.frontend.success(t('auth.messages.loginSuccess'));
   };
 
   const renderStars = (rating: number, interactive: boolean = false, onRatingChange?: (rating: number) => void) => {
@@ -564,8 +580,8 @@ const ProductDetail: React.FC = () => {
       <div className="min-h-screen bg-[#292929] flex items-center justify-center px-4" dir="rtl">
         <div className="text-center">
           <RefreshCw className="h-8 w-8 animate-spin mx-auto text-[#18b5d8] mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-4">جاري التحميل...</h1>
-          <p className="text-[#7a7a7a] mb-6">يتم تحميل بيانات المنتج</p>
+          <h1 className="text-2xl font-bold text-white mb-4">{t('loading_product')}</h1>
+          <p className="text-[#7a7a7a] mb-6">{t('loading_product_data')}</p>
         </div>
       </div>
     );
@@ -735,7 +751,7 @@ const ProductDetail: React.FC = () => {
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm mb-4 sm:mb-8 overflow-x-auto" dir="ltr">
           <button onClick={() => navigate('/')} className="text-[#7a7a7a] hover:text-white transition-colors whitespace-nowrap text-xs sm:text-sm">
-            {t('home')}
+            {t('nav.home')}
           </button>
           <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-[#7a7a7a] flex-shrink-0" />
           {category && (
@@ -759,7 +775,7 @@ const ProductDetail: React.FC = () => {
                   alt={getLocalizedContent('name')}
                   className="w-full h-full object-cover sm:object-contain transition-all duration-500 hover:scale-105 micro-hover"
                   onError={(e) => {
-                    e.currentTarget.src = '/placeholder-image.png';
+                    e.currentTarget.src = notfoundImg;
                   }}
                 />
                 {/* Image Overlay for Better Mobile Viewing */}
@@ -775,11 +791,11 @@ const ProductDetail: React.FC = () => {
                   }`}
                 >
                   <img
-                    src={buildImageUrl(product.mainImage)}
+                    src={product.mainImage ? buildImageUrl(product.mainImage) : notfoundImg}
                     alt="الصورة الرئيسية"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = '/placeholder-image.png';
+                      e.currentTarget.src = notfoundImg;
                     }}
                   />
                 </button>
@@ -793,11 +809,11 @@ const ProductDetail: React.FC = () => {
                     }`}
                   >
                     <img
-                      src={buildImageUrl(image)}
+                      src={image ? buildImageUrl(image) : notfoundImg}
                       alt={`${t('detailed_image')} ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = '/placeholder-image.png';
+                        e.currentTarget.src = notfoundImg;
                       }}
                     />
                   </button>
@@ -999,11 +1015,11 @@ const ProductDetail: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex space-x-2 sm:space-x-4">
+                <div className="flex space-x-2 gap-2 sm:space-x-4">
                   <button
                     onClick={addToCart}
                     disabled={addingToCart || !product.isAvailable}
-                    className="flex-1 flex items-center justify-center space-x-1 sm:space-x-2 bg-gradient-to-r from-[#7a7a7a] to-[#292929] text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl hover:from-[#292929] hover:to-[#7a7a7a] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 font-semibold shadow-lg micro-hover text-sm sm:text-base"
+                    className="flex-1 btn-pro btn-pro-lg space-x-1 sm:space-x-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     {addingToCart ? (
                       <>
@@ -1020,7 +1036,7 @@ const ProductDetail: React.FC = () => {
                   
                   <button
                     onClick={addToWishlist}
-                    className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-2 border-[#7a7a7a] text-[#7a7a7a] rounded-xl hover:bg-[#7a7a7a] hover:text-white transition-all duration-300 transform hover:scale-105 micro-hover"
+                    className="btn-pro-outline btn-pro-lg"
                   >
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
@@ -1032,54 +1048,66 @@ const ProductDetail: React.FC = () => {
 
         {/* Product Details Section */}
         <div className="mt-6 sm:mt-8 lg:mt-12 space-y-4 sm:space-y-6 lg:space-y-8">
-          {getLocalizedContent('description') && (
+          {(Array.isArray(getLocalizedRich('description')) ? (getLocalizedRich('description') as any[]).length > 0 : !!getLocalizedContent('description')) && (
             <div className="bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-2xl sm:rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl p-4 sm:p-6 lg:p-8">
               <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
                 <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#18b5d8]" />
                 {t('product_details')}
               </h3>
-              <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none text-[#ffffff] leading-relaxed">
-                <p className="whitespace-pre-wrap text-sm sm:text-base">{getLocalizedContent('description')}</p>
-              </div>
+              {Array.isArray(getLocalizedRich('description')) ? (
+                <div className="space-y-6">
+                  <style>{`.prose-content * { color: #ffffff !important; }`}</style>
+                  {(getLocalizedRich('description') as any[]).map((block: any, idx: number) => {
+                    const hasImages = Array.isArray(block.images) && block.images.length > 0;
+                    const isHorizontal = hasImages && block.images.every((img: any) => img.orientation === 'horizontal');
+                    return (
+                      <div key={idx} className="space-y-3 font-white">
+{block.text && (
+  <div
+    className="text-white"
+    dangerouslySetInnerHTML={{ __html: block.text }}
+  />
+)}
+                        {hasImages && (
+                          isHorizontal ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                              {block.images.map((img: any, i: number) => (
+                                <div key={i} className="rounded-lg overflow-hidden border border-white/10 bg-white/5 h-28 sm:h-36 lg:h-44">
+                                  <img src={buildImageUrl(img.url)} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = notfoundImg; }} />
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1 sm:gap-2">
+                              {block.images.map((img: any, i: number) => (
+                                <img key={i} src={buildImageUrl(img.url)} alt="" className="rounded-lg w-full sm:w-2/3 lg:w-1/2 max-h-[500px] object-contain" loading="lazy" style={{ margin: 0 }} onError={(e) => { (e.target as HTMLImageElement).src = notfoundImg; }} />
+                              ))}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <RichTextDisplay content={getLocalizedContent('description')} className="text-sm sm:text-base" />
+              )}
             </div>
           )}
 
-          {/* FAQ Section - Professional & Compact */}
+{/* FAQ Section - Matching Home FAQ Style */}
 {product.faqs && product.faqs.length > 0 && (
-  <div className="bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl p-6">
-    <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+  <div className="bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-2xl sm:rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl p-4 sm:p-6 lg:p-8">
+    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
       <div className="bg-gradient-to-r from-[#18b5d8] to-[#16a8cc] p-2 rounded-lg">
-        <AlertCircle className="w-6 h-6 text-white" />
+        <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
       </div>
       {t('faqs')}
     </h3>
-    <div className="space-y-2 sm:space-y-3">
-      {product.faqs?.map((faq, index) => {
-        // Helper function to get localized FAQ content
-        const getLocalizedFAQContent = (field: 'question' | 'answer') => {
-          const currentLang = i18n.language;
-          
-          if (currentLang === 'ar') {
-            return faq[`${field}_ar`] || faq[`${field}_en`] || faq[field] || '';
-          } else {
-            return faq[`${field}_en`] || faq[`${field}_ar`] || faq[field] || '';
-          }
-        };
-
-        return (
-          <div key={index} className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:bg-white/8 transition-all duration-200">
-            <details className="group">
-              <summary className="flex items-center justify-between cursor-pointer text-white hover:text-[#18b5d8] transition-colors duration-200">
-                <span className="text-sm sm:text-base font-medium pr-2 leading-relaxed">{getLocalizedFAQContent('question')}</span>
-                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#18b5d8] transform transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
-              </summary>
-              <div className="mt-2 sm:mt-3 pt-2 border-t border-white/5">
-                <p className="text-gray-300 leading-relaxed text-xs sm:text-sm">{getLocalizedFAQContent('answer')}</p>
-              </div>
-            </details>
-          </div>
-        );
-      })}
+    <div className="space-y-3 sm:space-y-4">
+      {product.faqs?.map((faq, index) => (
+        <FAQCard key={index} faq={faq} index={index} />
+      ))}
     </div>
   </div>
 )}
@@ -1236,12 +1264,13 @@ const RelatedProducts: React.FC<{ currentProductId: number; categoryId: number |
   // Helper function to get localized content
   const getLocalizedContent = (field: 'name' | 'description' | 'shortDescription', product: Product) => {
     const currentLang = i18n.language;
-    
-    if (currentLang === 'ar') {
-      return product[`${field}_ar`] || product[`${field}_en`] || product[field] || '';
-    } else {
-      return product[`${field}_en`] || product[`${field}_ar`] || product[field] || '';
+    const value = currentLang === 'ar'
+      ? (product as any)[`${field}_ar`] || (product as any)[`${field}_en`] || (product as any)[field]
+      : (product as any)[`${field}_en`] || (product as any)[`${field}_ar`] || (product as any)[field];
+    if (Array.isArray(value)) {
+      return value.map((b: any) => (b && b.text) ? b.text : '').join(' ');
     }
+    return value || '';
   };
 
   useEffect(() => {
@@ -1282,22 +1311,22 @@ const RelatedProducts: React.FC<{ currentProductId: number; categoryId: number |
             <div className="relative">
               <div className="aspect-square overflow-hidden">
                 <img 
-                  src={buildImageUrl(product.mainImage)}
+                  src={product.mainImage ? buildImageUrl(product.mainImage) : notfoundImg}
                   alt={getLocalizedContent('name', product)}
                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   loading="lazy"
                   onError={(e) => {
-                    e.currentTarget.src = '/placeholder-image.png';
+                    e.currentTarget.src = notfoundImg;
                   }}
                 />
               </div>
               <div className="absolute top-3 right-3 bg-[#18b5d8]/20 text-[#18b5d8] px-2 py-1 rounded-full text-xs font-bold">
-                منتج
+                {t('product')}
               </div>
             </div>
             <div className="p-4">
               <h3 className="text-md font-bold text-white mb-2 line-clamp-2">{getLocalizedContent('name', product)}</h3>
-              <p className="text-[#7a7a7a] text-sm mb-3 line-clamp-2">{getLocalizedContent('description', product) || 'وصف المنتج غير متوفر'}</p>
+              <p className="text-[#7a7a7a] text-sm mb-3 line-clamp-2">{getLocalizedContent('description', product) || t('products.description_unavailable')}</p>
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                   {product.originalPrice && product.originalPrice > product.price ? (
@@ -1317,7 +1346,7 @@ const RelatedProducts: React.FC<{ currentProductId: number; categoryId: number |
                   )}
                 </div>
                 <button className="bg-gradient-to-r from-[#7a7a7a] to-[#292929] text-white px-3 py-2 rounded-lg hover:from-[#292929] hover:to-[#7a7a7a] transition-colors duration-200 text-sm micro-hover">
-                  عرض
+                  {t('nav.view')}
                 </button>
               </div>
             </div>

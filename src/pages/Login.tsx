@@ -1,8 +1,10 @@
 import { useState, FormEvent, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { smartToast } from '../utils/toastConfig';
 import { apiCall, API_ENDPOINTS } from '../config/api';
-
+import { ArrowRight } from 'lucide-react'
+ 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -10,6 +12,8 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { t , i18n } = useTranslation('common');
+  const isRTL = i18n.language === 'ar';
 
   useEffect(() => {
     // إنشاء تأثير الجزيئات المتحركة في الخلفية
@@ -100,7 +104,8 @@ const Login: React.FC = () => {
         const form = document.querySelector('.login-form');
         form?.classList.add('success-animation');
 
-        smartToast.frontend.success('مرحباً بك! تم تسجيل الدخول بنجاح');
+        const name = (response.user?.firstName || response.user?.name || '').toString();
+    
 
         setTimeout(() => {
           navigate('/admin');
@@ -511,7 +516,7 @@ const Login: React.FC = () => {
             disabled={loading}
             className="login-button w-full py-2 sm:py-3 md:py-4 rounded-lg sm:rounded-xl text-white text-sm sm:text-base md:text-lg font-semibold transition-all duration-300 mobile-text-sm ultra-mobile-text-xs mobile-p-3 ultra-mobile-p-2"
           >
-            <div className="button-content">
+            <div className="button-content gap-1">
               {loading ? (
                 <svg className="spinner w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
@@ -519,10 +524,10 @@ const Login: React.FC = () => {
                 </svg>
               ) : (
                 <>
+
                   <span className="mobile-text-sm ultra-mobile-text-xs">تسجيل الدخول</span>
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                  </svg>
+                   <ArrowRight className={`w-5 h-5 ${isRTL ? '' : 'rotate-180'}`} />
+
                 </>
               )}
             </div>

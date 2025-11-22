@@ -72,10 +72,10 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
   
   // Variant styles
   const variantStyles = {
-    default: 'text-gray-900',
-    card: 'text-[#541029] font-bold',
-    checkout: 'text-gray-800 font-semibold',
-    minimal: 'text-gray-700'
+    default: 'text-[#18b5d8]',
+    card: 'text-[#18b5d8] font-bold',
+    checkout: 'text-[#18b5d8] font-semibold',
+    minimal: 'text-[#18b5d8]'
   };
   
   const discountPercentage = hasDiscount && convertedOriginalPrice && convertedPrice

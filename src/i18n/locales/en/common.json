@@ -8,6 +8,92 @@
   "online": "Online",
   "search_and_settings": "Search & Settings",
   "pages": "Pages",
+  "common": {
+    "loading": "Loading...",
+    "please_wait": "Please wait..."
+  },
+  "cart": {
+    "merge_success": "Cart merged successfully! 🛒"
+  },
+  "auth": {
+    "welcome_user": "Welcome, {{name}}! 🎉",
+    "logout_success": "Logged out successfully",
+    "messages": {
+      "loginSuccess": "Logged in successfully",
+      "registerSuccess": "Registered successfully",
+      "registerFailed": "Registration failed",
+      "emailAlreadyExists": "Email already exists",
+      "loginFailed": "Login failed",
+      "emailNotRegistered": "Email is not registered",
+      "incorrectPassword": "Incorrect password",
+      "invalidData": "Invalid data",
+      "serverError": "Server error",
+      "userDataNotReturned": "User data not returned",
+      "loggingIn": "Logging in...",
+      "creatingAccount": "Creating account..."
+    }
+    ,
+    "login": "Login",
+    "createAccount": "Create Account",
+    "createNewAccount": "Create New Account",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "password": "Password",
+      "phone": "Phone Number"
+    },
+    "placeholders": {
+      "firstName": "Enter first name",
+      "lastName": "Enter last name",
+      "password": "Enter password",
+      "passwordMinLength": "At least 6 characters"
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "nameRequired": "{{field}} is required",
+      "nameMinLength": "{{field}} must be at least 2 characters",
+      "phoneRequired": "Phone number is required",
+      "phoneDigitsOnly": "Phone must contain digits only"
+    }
+  },
+  "announcement_bar": {
+    "click_here": "Click Here"
+  },
+  "faqs": "FAQs",
+  "theme_works": {
+    "header": {
+      "badge": "Our Featured Works",
+      "title": "Showcase of Our Work",
+      "description": "Discover selected stores we built using the Malak theme"
+    },
+    "overlay": {
+      "preview": "Preview",
+      "visit": "Visit"
+    },
+    "modal": {
+      "title": "Work Preview",
+      "preview_label": "Preview:",
+      "device": {
+        "desktop": "Desktop",
+        "tablet": "Tablet",
+        "mobile": "Mobile"
+      },
+      "client_opinion_title": "Client Opinion:",
+      "client_name_placeholder": "Client Name"
+    },
+    "footer": {
+      "visit_site": "Visit Website",
+      "close": "Close"
+    },
+    "no_works": "No works available currently",
+    "error_fetching": "An error occurred while fetching data"
+  },
   "nav": {
     "home": "Home",
     "products": "Products",
@@ -56,7 +142,8 @@
     "categories": "Categories",
     "theme_malak": "Theme Malak",
     "our_work": "Our Work",
-    "blog": "Blog"
+    "blog": "Blog",
+    "documentation": "Docs"
   },
   "currency": {
     "egp": "Egyptian Pound",
@@ -70,8 +157,10 @@
     "hero_cta": "Shop Now",
     "hero": {
       "title": "AfterAds",
-      "subtitle": "We make the difference in the advertising world",
-      "contact_us": "Contact Us"
+      "subtitle": "We Create Impact",
+      "contact_us": "Contact Us",
+      "theme_showcase": "Theme Showcase",
+  "why_us": "Why Choose Us"
     },
     "faq": {
       "frequent_questions": "Frequently Asked Questions",
@@ -95,7 +184,22 @@
       "name_placeholder": "Enter your name",
       "email_placeholder": "Enter your email",
       "message_placeholder": "Write your message here",
-      "send_button": "Send"
+      "send_button": "Send",
+      "contact_info": "Contact Information",
+      "follow_us": "Follow Us"
+    },
+    "contact": {
+      "contact_us_now": "Contact Us Now",
+      "lets_talk_business": "Let's Talk Business",
+      "subtitle": "We're here to help you",
+      "send_message": "Send Message",
+      "team_ready": "Our team is ready to help you",
+      "name_placeholder": "Enter your name",
+      "email_placeholder": "Enter your email",
+      "message_placeholder": "Write your message here",
+      "send_button": "Send",
+      "contact_info": "Contact Information",
+      "follow_us": "Follow Us"
     },
     "testimonials": {
       "title": "Customer Reviews",
@@ -212,6 +316,7 @@
       "enjoy_unlimited_features": "Enjoy Unlimited Features",
       "most_advanced_theme": "The most advanced and modern theme",
       "add_to_cart": "Add to Cart",
+      "View_Cart": "Get The Theme",
       "live_preview": "Live Preview",
       "professional_elements": "Professional Elements",
       "control_options": "Control Options",
@@ -432,7 +537,8 @@
     "no_products_search": "No products match your search",
     "no_products_available": "No products available at the moment",
     "clear_filters": "Clear Filters",
-    "product_count": "{{count}} products"
+    "product_count": "{{count}} products",
+    "description_unavailable": "Product description not available"
   },
   "footer": {
     "company_description": "We are a specialized company dedicated to providing the best services and products to our valued customers",
@@ -450,6 +556,9 @@
   "unavailable": "Unavailable",
   "new": "New",
   "outOfStock": "Out of Stock",
+  "loading_product": "Loading product...",
+  "please_wait": "Please wait",
+  "loading_product_data": "Loading product data",
   "language": "Language",
   "currency": "Currency",
   "current": "Current",
@@ -476,7 +585,7 @@
   "scroll_progress": {
     "beginning": "Beginning",
     "theme_malak": "Theme Malak",
-    "why_us": "Why Us",
+    "why_us": "More Details",
     "our_clients": "Our Clients",
     "our_products": "Our Products",
     "client_reviews": "Client Reviews",
@@ -565,7 +674,20 @@
     "email_verified": "Email Verified",
     "email_confirmed": "Your email address has been confirmed",
     "verified": "Verified",
-    "not_verified": "Not Verified"
+    "not_verified": "Not Verified",
+    "store_information": "Store Information",
+    "store_name": "Store Name",
+    "phone_number": "Phone Number",
+    "store_link": "Store Link",
+    "store_logo": "Store Logo",
+    "store_image": "Store Image",
+    "upload_store_logo": "Upload Store Logo",
+    "upload_store_image": "Upload Store Image",
+    "store_logo_updated_successfully": "Store logo updated successfully",
+    "store_image_updated_successfully": "Store image updated successfully",
+    "basic_information": "Basic Information",
+    "orders": "Orders",
+    "spent": "Spent"
   },
   "order_status": {
     "pending": "Pending",
@@ -993,9 +1115,7 @@
       "nameRequired": "{{field}} is required",
       "nameMinLength": "{{field}} must be at least 2 characters",
       "phoneRequired": "Phone number is required",
-      "phoneLength": "Phone number must be 9 digits",
-      "phoneStartsWith5": "Phone number must start with 5",
-      "phoneFormat": "Phone number must start with 5"
+      "phoneDigitsOnly": "Phone number must contain digits only"
     },
     "messages": {
       "loginSuccess": "Login successful",
@@ -1068,6 +1188,7 @@
     "all_categories": "All",
     "articles_available": "articles available",
     "articles_title": "Articles",
+    "latest_articles": "Latest Articles",
     "read_article": "Read Article",
     "read_now": "Read Now",
     "loading_post": "Loading article...",
@@ -1078,7 +1199,35 @@
     "reading_time": "{{time}} min read",
     "share_article": "Share Article",
     "related_articles": "Related Articles",
-    "explore_other_articles": "Explore Other Articles"
+    "explore_other_articles": "Explore Other Articles",
+    "premium_badge": "Premium",
+    "no_results_title": "No Results",
+    "no_results_hint": "Try different keywords or choose another category",
+    "cta_title": "Discover AfterAds",
+    "cta_subtitle": "Explore our digital services and e-commerce solutions on our official website",
+    "cta_button": "Visit AfterAds"
+  },
+  "documentation": {
+    "error_loading_data": "Failed to load data",
+    "error_loading_content": "Failed to load content",
+    "no_categories": "No categories",
+    "category_not_found": "Category not found",
+    "doc_not_found": "Documentation not found",
+    "content_missing": "Content not found",
+    "return_to_docs": "Back to Docs",
+    "select_main": "Select main classification",
+    "select_category": "Select category",
+    "no_categories_available": "No categories available",
+    "quick_search": "Quick Search",
+    "search_placeholder": "Search documents...",
+    "results_count": "{{count}} result",
+    "subclassifications": "Sub-classifications",
+    "all_documents": "All documents",
+    "contents": "Contents",
+    "no_content": "No content available",
+    "select_from_list": "Select a document from the list",
+    "on_this_page": "On this page",
+    "no_headings": "No headings"
   },
   "thankYou": {
     "title": "Congratulations!",

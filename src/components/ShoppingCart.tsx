@@ -7,6 +7,7 @@ import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
 import AuthModal from './modals/AuthModal';
 import CheckoutAuthModal from './modals/CheckoutAuthModal';
 import PriceDisplay from './ui/PriceDisplay';
+import LoadingSpinner from './ui/LoadingSpinner';
 
 
 
@@ -67,6 +68,10 @@ const ShoppingCart: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showCheckoutAuthModal, setShowCheckoutAuthModal] = useState(false);
   const navigate = useNavigate();
+  const [serverSubtotal, setServerSubtotal] = useState<number | null>(null);
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
+  const [serverLoyaltyDiscount, setServerLoyaltyDiscount] = useState<number | null>(null);
+  const [serverLoyaltyAvailable, setServerLoyaltyAvailable] = useState<number | null>(null);
 
   // Helper function to get localized content for add-ons
   const getLocalizedAddOnContent = (field: 'name' | 'description', addOn: any) => {
@@ -100,12 +105,26 @@ const ShoppingCart: React.FC = () => {
               
               if (Array.isArray(serverCart)) {
                 cartToLoad = serverCart;
-                console.log('✅ [ShoppingCart] Loaded cart from server:', cartToLoad.length, 'items');
-              } else if (serverCart && typeof serverCart === 'object' && serverCart.cart && Array.isArray(serverCart.cart)) {
-                cartToLoad = serverCart.cart;
-                console.log('✅ [ShoppingCart] Loaded cart from server (cart property):', cartToLoad.length, 'items');
+                setServerSubtotal(null);
+                setServerTotal(null);
+                setServerLoyaltyDiscount(null);
+                setServerLoyaltyAvailable(null);
+                console.log('✅ [ShoppingCart] Loaded cart from server (array):', cartToLoad.length, 'items');
+              } else if (serverCart && typeof serverCart === 'object') {
+                if (Array.isArray((serverCart as any).cart)) {
+                  cartToLoad = (serverCart as any).cart;
+                } else if (Array.isArray((serverCart as any).items)) {
+                  cartToLoad = (serverCart as any).items;
+                } else {
+                  console.warn('⚠️ [ShoppingCart] Server returned unexpected cart format, falling back to local storage');
+                  throw new Error('Invalid server cart format');
+                }
+                setServerSubtotal(typeof (serverCart as any).subtotal === 'number' ? (serverCart as any).subtotal : null);
+                setServerTotal(typeof (serverCart as any).total === 'number' ? (serverCart as any).total : null);
+                setServerLoyaltyDiscount(typeof (serverCart as any).loyaltyDiscount === 'number' ? (serverCart as any).loyaltyDiscount : null);
+                setServerLoyaltyAvailable(typeof (serverCart as any).loyaltyAvailable === 'number' ? (serverCart as any).loyaltyAvailable : null);
               } else {
-                console.warn('⚠️ [ShoppingCart] Server returned unexpected cart format, falling back to local storage');
+                console.warn('⚠️ [ShoppingCart] Server returned non-object cart format');
                 throw new Error('Invalid server cart format');
               }
               
@@ -291,6 +310,7 @@ const ShoppingCart: React.FC = () => {
 
   // Calculate totals
   const subtotal = useMemo(() => {
+    if (serverSubtotal !== null && serverSubtotal !== undefined) return serverSubtotal;
     return cartItems.reduce((total, item) => {
       const basePrice = item.basePrice || item.product.price;
       const addOnsPrice = item.addOnsPrice || 0;
@@ -309,7 +329,7 @@ const ShoppingCart: React.FC = () => {
     }, 0);
   }, [cartItems]);
 
-  const total = subtotal;
+  const total = serverTotal ?? subtotal;
 
   // Proceed to checkout
   const proceedToCheckout = () => {
@@ -405,17 +425,7 @@ const ShoppingCart: React.FC = () => {
 
         {/* Loading State */}
         {isInitialLoading && (
-          <div className="text-center py-16">
-            <div className="relative w-20 h-20 mx-auto mb-8">
-              <div className="absolute -inset-2 bg-gradient-to-br from-[#18b5d8]/30 to-[#16a2c7]/30 blur-sm transition-all duration-500" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-[#18b5d8]/20 to-[#16a2c7]/10 backdrop-blur-md border border-[#18b5d8]/30 transition-all duration-500" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}></div>
-              <div className="absolute inset-2 bg-gradient-to-br from-[#18b5d8]/15 to-transparent transition-all duration-700" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#18b5d8]"></div>
-              </div>
-            </div>
-            <p className="text-white text-lg font-bold">{t('cart.loading')}</p>
-          </div>
+      <LoadingSpinner message={t('home.themes.loading')} />
         )}
 
         {/* Empty Cart State */}
@@ -436,14 +446,14 @@ const ShoppingCart: React.FC = () => {
             <div className="space-y-4 max-w-sm mx-auto">
               <Link
                 to="/products"
-                className="block w-full bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white px-8 py-4 rounded-2xl hover:from-[#16a2c7] hover:to-[#18b5d8] transition-all duration-300 font-black text-lg backdrop-blur-sm border border-white/20 hover:scale-105 transform shadow-xl"
+                className="block w-full btn-pro btn-pro-lg"
                 aria-label={t('cart.browseProducts')}
               >
                 {t('cart.browseProducts')}
               </Link>
               <Link
                 to="/"
-                className="block w-full bg-white/10 backdrop-blur-xl border border-[#18b5d8]/50 text-white px-8 py-4 rounded-2xl hover:bg-white/20 transition-all duration-300 font-black text-lg hover:scale-105 transform shadow-xl"
+                className="block w-full btn-pro-outline btn-pro-lg"
                 aria-label={t('cart.backToHome')}
               >
                 {t('cart.backToHome')}
@@ -472,7 +482,7 @@ const ShoppingCart: React.FC = () => {
                         alt={item.product.name}
                         loading="lazy"
                         className="w-full h-32 sm:h-48 object-cover rounded-xl sm:rounded-2xl border-2 border-[#18b5d8]/40 shadow-lg group-hover:border-[#18b5d8] transition-all duration-300 transform hover:scale-105"
-                        onError={(e) => (e.currentTarget.src = '/placeholder-image.png')}
+                        onError={(e) => (e.currentTarget.src = 'https://tse1.mm.bing.net/th/id/OIP.M6p4cLkcKW9PWIObAjYi8gHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3')}
                       />
                     </div>
 
@@ -482,9 +492,13 @@ const ShoppingCart: React.FC = () => {
                         <h3 className="text-lg sm:text-xl font-black text-white mb-1 sm:mb-2 line-clamp-2 hover:text-[#18b5d8] transition-colors duration-300">
                           {item.product.name}
                         </h3>
-                        {item.product.description && (
-                          <p className="text-gray-300 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">{item.product.description}</p>
-                        )}
+                       {item.product.description && Array.isArray(item.product.description) && item.product.description.length > 0 && (
+  <div className="text-gray-300 text-xs sm:text-sm mb-2 sm:mb-3">
+    {item.product.description.map((desc: any, idx: number) => (
+      <div key={idx} dangerouslySetInnerHTML={{ __html: desc.text || '' }} />
+    ))}
+  </div>
+)}
                         {/* Price Breakdown */}
                         <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-gradient-to-r from-[#18b5d8]/10 to-[#16a2c7]/10 rounded-lg sm:rounded-xl border border-[#18b5d8]/30">
                           <div className="space-y-2">
@@ -507,6 +521,34 @@ const ShoppingCart: React.FC = () => {
                                 />
                               </div>
                             )}
+
+                            {/* Display attachments if exists */}
+{item.attachments?.text && (
+  <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-white/10 rounded-lg sm:rounded-xl border border-[#18b5d8]/30">
+    <h4 className="text-xs sm:text-sm font-bold text-white mb-2">
+      {t('cart.notes')}:
+    </h4>
+    <p className="text-gray-300 text-sm">{item.attachments.text}</p>
+  </div>
+)}
+
+{item.attachments?.images && Array.isArray(item.attachments.images) && item.attachments.images.length > 0 && (
+  <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-white/10 rounded-lg sm:rounded-xl border border-[#18b5d8]/30">
+    <h4 className="text-xs sm:text-sm font-bold text-white mb-2">
+      {t('cart.attachedImages')}:
+    </h4>
+    <div className="flex gap-2 flex-wrap">
+      {item.attachments.images.map((img, idx) => (
+        <img 
+          key={idx} 
+          src={buildImageUrl(img)} 
+          alt={`attachment-${idx}`} 
+          className="w-16 h-16 rounded object-cover border border-[#18b5d8]/30"
+        />
+      ))}
+    </div>
+  </div>
+)}
                             
                             {/* Add-ons Price */}
                             {item.addOnsPrice && item.addOnsPrice > 0 && (
@@ -672,12 +714,24 @@ const ShoppingCart: React.FC = () => {
                   </h3>
                 </div>
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 relative z-10">
+                  {serverLoyaltyAvailable !== null && (
+                    <div className="flex justify-between items-center p-3 sm:p-4 bg-white/5 rounded-lg sm:rounded-xl border border-white/10">
+                      <span className="text-gray-300 font-medium text-sm sm:text-base">نقاط الولاء المتاحة:</span>
+                      <span className="text-white font-black text-base sm:text-lg">{serverLoyaltyAvailable}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center p-3 sm:p-4 bg-white/5 rounded-lg sm:rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300">
                     <span className="text-gray-300 font-medium text-sm sm:text-base">{t('cart.subtotal')}:</span>
                     <PriceDisplay price={subtotal} className="font-black text-white text-base sm:text-lg" />
                   </div>
 
                   <div className="border-t-2 border-[#18b5d8]/30 pt-3 sm:pt-4">
+                    {serverLoyaltyDiscount && serverLoyaltyDiscount > 0 && (
+                      <div className="flex justify-between items-center p-3 sm:p-4 bg-purple-500/10 rounded-lg border border-purple-500/20 mb-2">
+                        <span className="text-purple-400 font-medium text-sm sm:text-base">خصم نقاط الولاء</span>
+                        <PriceDisplay price={-serverLoyaltyDiscount} className="font-black text-purple-400 text-base sm:text-lg" />
+                      </div>
+                    )}
                     <div className="flex justify-between items-center p-4 sm:p-6 bg-gradient-to-r from-[#18b5d8]/20 to-[#16a2c7]/20 rounded-xl sm:rounded-2xl border-2 border-[#18b5d8]/30">
                       <span className="font-black text-white text-lg sm:text-xl">{t('cart.total')}:</span>
                       <PriceDisplay price={total} className="text-2xl sm:text-3xl font-black text-[#18b5d8]" />
@@ -688,7 +742,7 @@ const ShoppingCart: React.FC = () => {
                     className="w-full bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white font-black py-3 sm:py-4 rounded-xl sm:rounded-2xl hover:from-[#16a2c7] hover:to-[#18b5d8] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
                     aria-label={t('cart.proceedToCheckout')}
                   >
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <ArrowRight className={`w-4 h-4 sm:w-5 sm:h-5 ${isRTL ? 'rotate-180' : ''}`} />
                     {t('cart.proceedToCheckout')}
                   </button>
                   <Link

@@ -90,6 +90,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html, body, button, input, textarea, select { font-family: PingARLT, sans-serif; }
+}
+
 @layer components {
   .card {
     @apply bg-cream-50 rounded-xl shadow-lg border border-gray-200 overflow-hidden;
@@ -391,6 +395,71 @@
       overflow: visible !important;
     }
   }
+
+  .btn-pro {
+    @apply inline-flex items-center justify-center rounded-xl font-bold transition-all duration-300;
+    color: #ffffff;
+    background: linear-gradient(135deg, #18b5d8 0%, #0891b2 100%);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn-pro:hover {
+    background: linear-gradient(135deg, #0891b2 0%, #18b5d8 100%);
+  }
+  .btn-pro:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .btn-pro-outline {
+    @apply inline-flex items-center justify-center rounded-xl font-bold transition-all duration-300;
+    color: #18b5d8;
+    border: 2px solid #18b5d8;
+    background: transparent;
+  }
+  .btn-pro-outline:hover {
+    color: #ffffff;
+    background: #18b5d8;
+  }
+  .btn-pro-lg {
+    @apply px-8 py-4 text-base;
+  }
+  .btn-pro-sm {
+    @apply px-4 py-2 text-sm;
+  }
+}
+
+@layer utilities {
+  .no-card-glow .hover\:shadow:hover,
+  .no-card-glow .hover\:shadow-sm:hover,
+  .no-card-glow .hover\:shadow-md:hover,
+  .no-card-glow .hover\:shadow-lg:hover,
+  .no-card-glow .hover\:shadow-xl:hover,
+  .no-card-glow .hover\:shadow-2xl:hover {
+    box-shadow: none !important;
+  }
+  .no-card-glow .group:hover .group-hover\:shadow,
+  .no-card-glow .group:hover .group-hover\:shadow-sm,
+  .no-card-glow .group:hover .group-hover\:shadow-md,
+  .no-card-glow .group:hover .group-hover\:shadow-lg,
+  .no-card-glow .group:hover .group-hover\:shadow-xl,
+  .no-card-glow .group:hover .group-hover\:shadow-2xl {
+    box-shadow: none !important;
+  }
+  .no-card-glow [class*="shadow"] { box-shadow: none !important; }
+  .no-card-glow [class*="drop-shadow"] { filter: none !important; }
+  .no-card-glow .animate-pulse,
+  .no-card-glow .animate-ping,
+  .no-card-glow .animate-bounce { animation: none !important; }
+  .no-card-glow [class*="backdrop-blur"],
+  .no-card-glow [style*="backdrop-filter"],
+  .no-card-glow [style*="WebkitBackdropFilter"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .reduce-animations .animate-pulse,
+  .reduce-animations .animate-ping,
+  .reduce-animations .animate-bounce,
+  .reduce-animations .neon-glow { animation: none !important; }
 }
 
 /* Global Styles */

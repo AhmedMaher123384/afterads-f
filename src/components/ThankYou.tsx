@@ -315,7 +315,7 @@ const ThankYou: React.FC = () => {
           <p className="text-gray-300 mb-8 leading-relaxed">{t('thankYou.noOrderDescription')}</p>
           <button
             onClick={() => navigate('/')}
-            className="bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white px-8 py-4 rounded-2xl hover:from-[#16a2c7] hover:to-[#18b5d8] transition-all duration-300 font-black shadow-xl transform hover:scale-105"
+            className="btn-pro btn-pro-lg"
           >
             <Home className="w-5 h-5 inline-block ml-2" />
             العودة إلى الصفحة الرئيسية
@@ -363,6 +363,22 @@ const ThankYou: React.FC = () => {
           animation: 'float 20s ease-in-out infinite'
         }}></div>
       </div>
+
+      {/* ✅ عرض النقاط المكتسبة */}
+{order.loyaltyEarned && order.loyaltyEarned > 0 && (
+  <div className="relative group mb-6">
+    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur-xl opacity-75"></div>
+    <div className="relative bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-4 rounded-2xl inline-block shadow-2xl">
+      <div className="flex items-center gap-3">
+        <Gift className="w-6 h-6" />
+        <div>
+          <p className="text-sm opacity-90">🎉 نقاط الولاء المكتسبة</p>
+          <p className="text-2xl font-black">{order.loyaltyEarned} نقطة</p>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Success Header - Enhanced */}
       <div className="relative bg-gradient-to-br from-[#292929] via-[#1a1a1a] to-[#0f0f0f] border-b border-[#18b5d8]/30">
@@ -718,6 +734,36 @@ const ThankYou: React.FC = () => {
                 </h3>
                 <div className="absolute -top-4 -left-4 w-16 h-16 sm:w-24 sm:h-24 bg-white/10 rounded-full"></div>
               </div>
+
+{/* ✅ في قسم الملخص المالي */}
+{order.loyaltyRedeemed && order.loyaltyRedeemed > 0 && (
+  <div className="flex justify-between items-center p-3 sm:p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+    <div className="flex items-center gap-2">
+      <Star className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+      <span className="text-purple-400 font-medium text-sm sm:text-base">
+        خصم نقاط الولاء ({order.loyaltyRedeemed})
+      </span>
+    </div>
+    <div className="font-black text-purple-400 text-base sm:text-lg">
+      -{order.loyaltyRedeemed.toFixed(2)}
+    </div>
+  </div>
+)}
+
+{/* ✅ النقاط المكتسبة */}
+{order.loyaltyEarned && order.loyaltyEarned > 0 && (
+  <div className="flex justify-between items-center p-3 sm:p-4 bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-xl border border-pink-500/20">
+    <div className="flex items-center gap-2">
+      <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400" />
+      <span className="text-pink-400 font-medium text-sm sm:text-base">
+        نقاط مكتسبة جديدة
+      </span>
+    </div>
+    <div className="font-black text-pink-400 text-base sm:text-lg">
+      +{order.loyaltyEarned} نقطة
+    </div>
+  </div>
+)}
               
               <div className="p-4 sm:p-8 space-y-4 sm:space-y-6">
                 <div className="flex justify-between items-center p-3 sm:p-4 bg-white/5 rounded-xl border border-white/10">
@@ -845,17 +891,17 @@ const ThankYou: React.FC = () => {
 
             {/* Action Buttons - Enhanced */}
             <div className="space-y-3 sm:space-y-5">
-              <button
-                onClick={() => navigate('/')}
-                className="w-full group relative overflow-hidden bg-gradient-to-r from-[#18b5d8] to-[#16a2c7] text-white px-6 sm:px-8 py-4 sm:py-5 rounded-xl sm:rounded-2xl hover:from-[#16a2c7] hover:to-[#18b5d8] transition-all duration-500 font-black shadow-2xl transform hover:scale-105 hover:-translate-y-1"
-              >
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative flex items-center justify-center gap-2 sm:gap-3">
-                  <Home className="w-5 h-5 sm:w-6 sm:h-6" />
-                  <span className="text-base sm:text-lg">{t('thankYou.continueShopping')}</span>
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
-                </div>
-              </button>
+  <button
+    onClick={() => navigate('/')}
+    className="w-full btn-pro btn-pro-lg"
+  >
+    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div className="relative flex items-center justify-center gap-2 sm:gap-3">
+      <Home className="w-5 h-5 sm:w-6 sm:h-6" />
+      <span className="text-base sm:text-lg">{t('thankYou.continueShopping')}</span>
+      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+    </div>
+  </button>
               
               
              

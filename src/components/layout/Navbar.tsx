@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { smartToast } from '../../utils/toastConfig';
-import { Menu, X, ShoppingCart, Heart, User, LogOut, Search, Package, Settings, Phone, Mail, MapPin, Clock, ChevronDown, Home, Grid3X3, Star, Award, Truck, Shield, Sparkles, Bell, ChevronLeft, BookOpen, Crown } from 'lucide-react';
+import { Menu, X, ShoppingCart, Heart, User, LogOut, Search, Package, Settings, Phone, Mail, MapPin, Clock, ChevronDown, Home, Grid3X3, Star, Award, Truck, Shield, Sparkles, Bell, ChevronLeft, BookOpen,FileText, Crown } from 'lucide-react';
 import logo from '../../assets/logo.webp';
 import AuthModal from '../modals/AuthModal';
 import CartDropdown from '../ui/CartDropdown';
+import notfoundImg from '../../assets/search_not_found.png';
 import LiveSearch from '../ui/LiveSearch';
 import LanguageCurrencySelector from '../ui/LanguageCurrencySelector';
 import { createCategorySlug } from '../../utils/slugify';
@@ -32,6 +33,7 @@ function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isAnimatingNav, setIsAnimatingNav] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState<number>(0);
   const [wishlistItemsCount, setWishlistItemsCount] = useState<number>(0);
   const [categories, setCategories] = useState<Category[]>(() => {
@@ -48,6 +50,7 @@ function Navbar() {
   const [isLogoHovered, setIsLogoHovered] = useState(false);
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false);
   const [isCartHovered, setIsCartHovered] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0, left: 0 });
   const userMenuRef = useRef<HTMLDivElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -86,17 +89,46 @@ function Navbar() {
         } else if (currentScrollY < lastScrollY) {
           // Scrolling up - show navbar
           setShowNavbar(true);
+          setIsAnimatingNav(true);
+          window.setTimeout(() => setIsAnimatingNav(false), 350);
         }
       }
 
       setLastScrollY(currentScrollY);
     };
 
-    const throttledControlNavbar = throttle(controlNavbar, 10);
+    const throttledControlNavbar = throttle(controlNavbar, 50);
     window.addEventListener('scroll', throttledControlNavbar);
 
     return () => window.removeEventListener('scroll', throttledControlNavbar);
   }, [lastScrollY, isLogoHovered]);
+
+  useEffect(() => {
+  const updateDropdownPosition = () => {
+    if (userMenuRef.current && isUserMenuOpen) {
+      const buttonRect = userMenuRef.current.querySelector('button')?.getBoundingClientRect();
+      
+      if (buttonRect) {
+        const newPosition = {
+          top: buttonRect.bottom + 12, // 12px تحت الزر
+          right: isRTL ? window.innerWidth - buttonRect.right : 'auto',
+          left: isRTL ? 'auto' : buttonRect.left
+        };
+        
+        setDropdownPosition(newPosition);
+      }
+    }
+  };
+
+  updateDropdownPosition();
+  window.addEventListener('scroll', updateDropdownPosition);
+  window.addEventListener('resize', updateDropdownPosition);
+
+  return () => {
+    window.removeEventListener('scroll', updateDropdownPosition);
+    window.removeEventListener('resize', updateDropdownPosition);
+  };
+}, [isUserMenuOpen, isRTL]);
 
   // Handle logo hover to show navbar
   useEffect(() => {
@@ -119,30 +151,38 @@ function Navbar() {
   }, []);
 
   // Close user menu and cart dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+// استبدل هذا الـ useEffect بالموجود بالفعل:
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as Node;
+    
+    // إغلاق user menu إذا كان الكلك خارجه
+    if (userMenuRef.current && !userMenuRef.current.contains(target)) {
+      // تحقق أيضاً من الـ dropdown نفسه (في حالة الـ fixed positioning)
+      const dropdown = document.querySelector('[data-user-dropdown]');
+      if (dropdown && !dropdown.contains(target)) {
         setIsUserMenuOpen(false);
       }
-      // تحسين منطق إغلاق البوب أب - لا نغلقه إذا كان المستخدم يحوم عليه
-      if (cartDropdownRef.current && !cartDropdownRef.current.contains(event.target as Node)) {
-        // تأخير الإغلاق للسماح بالانتقال بين العناصر
-        setTimeout(() => {
-          if (!isCartHovered) {
-            setIsCartDropdownOpen(false);
-          }
-        }, 400);
-      }
-    };
-
-    if (isUserMenuOpen || isCartDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
     }
+    
+    // إغلاق cart dropdown
+    if (cartDropdownRef.current && !cartDropdownRef.current.contains(target)) {
+      setTimeout(() => {
+        if (!isCartHovered) {
+          setIsCartDropdownOpen(false);
+        }
+      }, 400);
+    }
+  };
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isUserMenuOpen, isCartDropdownOpen, isCartHovered]);
+  if (isUserMenuOpen || isCartDropdownOpen) {
+    document.addEventListener('mousedown', handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [isUserMenuOpen, isCartDropdownOpen, isCartHovered]);
 
   // Close mobile menu when clicking outside or on overlay
   useEffect(() => {
@@ -203,11 +243,24 @@ function Navbar() {
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
-        console.log('👤 User loaded from localStorage:', userData);
         setUser(userData);
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
+      } catch {
         localStorage.removeItem('user');
+      }
+    } else {
+      const adminUser = localStorage.getItem('adminUser');
+      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+      if (adminUser && isAuthenticated) {
+        try {
+          const admin = JSON.parse(adminUser);
+          const mapped = {
+            id: admin.id || admin.userId || admin._id || undefined,
+            name: admin.name || admin.username || admin.firstName || 'User',
+            email: admin.email || '',
+            avatar: admin.avatar || ''
+          };
+          setUser(mapped);
+        } catch {}
       }
     }
   }, []);
@@ -303,6 +356,17 @@ function Navbar() {
 
     window.addEventListener('storage', handleStorageChange);
 
+    const handleUserUpdated = (e: any) => {
+      try {
+        const newUser = e?.detail ?? JSON.parse(localStorage.getItem('user') || 'null');
+        if (newUser) {
+          setUser(newUser);
+        }
+      } catch {}
+    };
+
+    window.addEventListener('userUpdated', handleUserUpdated);
+
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user?.id) {
       const savedCartCount = localStorage.getItem(`cartCount_${user.id}`);
@@ -356,6 +420,7 @@ function Navbar() {
 
       window.removeEventListener('categoriesUpdated', handleCategoriesUpdate);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userUpdated', handleUserUpdated);
     };
   }, []);
 
@@ -416,10 +481,14 @@ function Navbar() {
         let totalItems = 0;
         if (Array.isArray(data)) {
           totalItems = data.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-        } else if (data && typeof data === 'object' && Array.isArray(data.cart)) {
-          totalItems = data.cart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-        } else if (data && typeof data === 'object' && typeof data.totalItems === 'number') {
-          totalItems = data.totalItems;
+        } else if (data && typeof data === 'object') {
+          if (Array.isArray((data as any).cart)) {
+            totalItems = (data as any).cart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+          } else if (Array.isArray((data as any).items)) {
+            totalItems = (data as any).items.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+          } else if (typeof (data as any).totalItems === 'number') {
+            totalItems = (data as any).totalItems;
+          }
         }
 
         console.log('📊 [Navbar] Cart count calculated from server:', totalItems);
@@ -550,6 +619,11 @@ function Navbar() {
   const handleLoginSuccess = (userData: any) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.removeItem('adminUser');
+    localStorage.removeItem('isAuthenticated');
+    try {
+      window.dispatchEvent(new CustomEvent('userUpdated', { detail: userData }));
+    } catch {}
     setIsAuthModalOpen(false);
 
     const mergeLocalCartWithUserCart = async () => {
@@ -570,7 +644,7 @@ function Navbar() {
                     selectedOptions: item.selectedOptions || {},
                     optionsPricing: item.optionsPricing || {},
                     attachments: item.attachments || {},
-                    productName: item.product?.name || 'منتج',
+                    productName: item.product?.name || t('product:name'),
                     price: item.product?.price || 0,
                     image: item.product?.mainImage || ''
                   })
@@ -583,13 +657,19 @@ function Navbar() {
 
             try {
               const serverCart = await apiCall(API_ENDPOINTS.USER_CART(userData.id));
-              localStorage.setItem('cart', JSON.stringify(serverCart));
-              console.log('✅ [Navbar] Cart merged successfully, new cart size:', serverCart.length);
+              const mergedItems = Array.isArray(serverCart)
+                ? serverCart
+                : Array.isArray((serverCart as any)?.items)
+                  ? (serverCart as any).items
+                  : Array.isArray((serverCart as any)?.cart)
+                    ? (serverCart as any).cart
+                    : [];
+              localStorage.setItem('cart', JSON.stringify(mergedItems));
+              console.log('✅ [Navbar] Cart merged successfully, new cart size:', mergedItems.length);
 
               window.dispatchEvent(new CustomEvent('cartUpdated'));
 
-              smartToast.frontend.success('تم دمج سلة التسوق بنجاح! 🛒');
-            } catch (error) {
+             } catch (error) {
               console.error('❌ [Navbar] Error fetching merged cart:', error);
             }
           } else {
@@ -605,12 +685,12 @@ function Navbar() {
 
     mergeLocalCartWithUserCart();
 
-    smartToast.frontend.success(`مرحباً بك ${userData.firstName}! 🎉`);
-  };
+   };
 
   const handleLogout = () => {
     const currentUser = user;
     setUser(null);
+    setIsCartDropdownOpen(false);
     localStorage.removeItem('user');
 
     if (currentUser?.id) {
@@ -618,12 +698,16 @@ function Navbar() {
       localStorage.removeItem(`wishlistCount_${currentUser.id}`);
     }
 
+    try {
+      localStorage.clear();
+    } catch (e) {}
+
     setIsUserMenuOpen(false);
     setCartItemsCount(0);
     setWishlistItemsCount(0);
 
     navigate('/');
-    smartToast.frontend.success('تم تسجيل الخروج بنجاح');
+    smartToast.frontend.success(t('common:auth.logout_success'));
   };
 
   const openAuthModal = () => {
@@ -634,9 +718,9 @@ function Navbar() {
   return (
     <>
       {/* Floating Logo - Appears when scrolled and navbar is hidden - Hidden on Mobile */}
-      {scrolled && !showNavbar && (
+      {scrolled && !showNavbar && !isAnimatingNav && (
         <div 
-          className="fixed top-6 right-6 z-[60] transition-all duration-300 ease-out opacity-100 translate-y-0 scale-100 pointer-events-auto hidden md:block"
+          className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[9999] transition-all duration-300 ease-out opacity-100 translate-y-0 scale-100 pointer-events-auto hidden md:block"
           onMouseEnter={() => {
             setIsLogoHovered(true);
           }}
@@ -647,15 +731,20 @@ function Navbar() {
           }}
         >
           <Link to="/" onClick={() => setIsMenuOpen(false)}>
-            <img src={logo} alt="Logo" className="w-21 h-21 object-contain hover:scale-95 transition-transform duration-200" />
+<img src={logo} alt="Logo" className="w-16 sm:w-21 h-16 sm:h-21 object-contain hover:scale-95 transition-transform duration-200" />
           </Link>
         </div>
       )}
       {/* Main Navbar */}
       <nav 
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ease-out ${
+        className={`fixed w-full z-50 transition-all duration-500 ease-out ${
           (showNavbar && !isMenuOpen) || isMobile ? 'translate-y-0' : '-translate-y-full'
         }`}
+        style={{ 
+          top: 'var(--announcement-offset, 0px)',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden'
+        }}
         dir={isRTL ? 'rtl' : 'ltr'}
         onMouseEnter={() => {
           if (scrolled && !isMenuOpen) {
@@ -667,25 +756,24 @@ function Navbar() {
         }}
       >
         {/* Navbar Container with Rounded Corners */}
-        <div className="px-4 sm:px-6 lg:px-8 pt-4">
+<div className="px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4">
           <div 
-            className={`relative mx-auto max-w-[90rem] transition-all duration-500 ease-out rounded-2xl ${
-              scrolled 
-                ? 'bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/20' 
-                : 'bg-transparent border border-transparent'
-            }`}
+           className={`relative mx-auto max-w-[90rem] transition-all duration-500 ease-out rounded-xl sm:rounded-2xl ${
+  scrolled 
+    ? 'bg-white/5 backdrop-blur-xl sm:backdrop-blur-2xl border border-white/10 shadow-xl sm:shadow-2xl shadow-black/20' 
+    : 'bg-transparent border border-transparent'
+}`}
           >
-            <div className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6">
-              
+<div className="flex items-center justify-between h-12 sm:h-16 px-3 sm:px-6">              
               {/* Mobile Menu Button & Cart */}
-              <div className="lg:hidden flex items-center space-x-2">
+<div className="lg:hidden flex items-center gap-1.5">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="text-white p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-all duration-300 backdrop-blur-sm touch-manipulation relative overflow-hidden group"
-                  aria-label={isMenuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
+                  className="text-white p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-all duration-300 backdrop-blur-sm touch-manipulation relative overflow-hidden group"
+                  aria-label={isMenuOpen ? t('nav.close_menu') : t('nav.menu')}
                 >
                   <div className="relative z-10">
-                    {isMenuOpen ? <X size={20} className="sm:w-[22px] sm:h-[22px]" /> : <Menu size={20} className="sm:w-[22px] sm:h-[22px]" />}
+                    {isMenuOpen ? <X size={18} className="sm:w-[22px] sm:h-[22px]" /> : <Menu size={18} className="sm:w-[22px] sm:h-[22px]" />}
                   </div>
                   <div className="absolute inset-0 bg-white/5 scale-0 group-active:scale-100 transition-transform duration-150 rounded-lg"></div>
                 </button>
@@ -693,13 +781,16 @@ function Navbar() {
                 {/* Mobile Cart Button */}
                 <div className="relative">
                   <button
-                    onClick={() => setIsCartDropdownOpen(!isCartDropdownOpen)}
+                    onClick={() => {
+                      if (!user) return;
+                      setIsCartDropdownOpen(!isCartDropdownOpen);
+                    }}
                     className="relative text-white p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-all duration-300 backdrop-blur-sm touch-manipulation group"
-                    aria-label="سلة التسوق"
+                    aria-label={t('nav.shopping_cart')}
                   >
-                    <ShoppingCart size={20} className="sm:w-[22px] sm:h-[22px]" />
+<ShoppingCart size={18} className="sm:w-[22px] sm:h-[22px]" />
                     {cartItemsCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-[#18b5d5] text-white rounded-full min-w-[16px] h-[16px] flex items-center justify-center text-[10px] font-medium shadow-[0_0_8px_rgba(255,255,255,0.3)] animate-pulse">
+<span className="absolute -top-1 -right-1 bg-[#18b5d5] text-white rounded-full min-w-[15px] h-[15px] flex items-center justify-center text-[9px] font-bold shadow-[0_0_6px_rgba(24,181,213,0.4)] animate-pulse">
                         {cartItemsCount}
                       </span>
                     )}
@@ -719,7 +810,7 @@ function Navbar() {
                 </div>
 
                 {/* Mobile Language & Currency Selector */}
-                <div className="flex items-center">
+                <div className="hidden">
                   <LanguageCurrencySelector />
                 </div>
               </div>
@@ -727,8 +818,7 @@ function Navbar() {
               {/* Logo */}
               <div className="flex items-center">
                 <Link to="/" onClick={() => setIsMenuOpen(false)} className="cursor-pointer">
-                  <img src={logo} alt="Logo" className="h-7 sm:h-8 w-auto" />
-                </Link>
+<img src={logo} alt="Logo" className="h-6 sm:h-8 w-auto" />                </Link>
               </div>
 
               {/* Desktop Navigation Links */}
@@ -738,6 +828,7 @@ function Navbar() {
                   { name: t('nav.products'), href: '/products' },
                   { name: t('nav.theme_malak'), href: '/theme/55' },
                   { name: t('nav.blog'), href: '/blog' },
+                  { name: t('nav.documentation', { defaultValue: 'التوثيق' }), href: '/documentation' },
                   { name: t('nav.categories'), href: '/categories' },
                   { name: t('nav.contact'), href: '/contact' }
                 ].map((link) => (
@@ -767,7 +858,10 @@ function Navbar() {
       {/* Cart Button with Dropdown */}
       <div className="relative" ref={cartDropdownRef}>
         <button 
-          onClick={() => setIsCartDropdownOpen(!isCartDropdownOpen)}
+          onClick={() => {
+            if (!user) return;
+            setIsCartDropdownOpen(!isCartDropdownOpen);
+          }}
           className="relative text-white/80 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-all duration-300 group"
         >
           <ShoppingCart size={20} />
@@ -811,23 +905,28 @@ function Navbar() {
         <div className="absolute inset-0 rounded-xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </Link>
 
-                {/* User Menu */}
-      {user ? (
+ 
+{/* User Menu */}
+{user ? (
   <div className="relative" ref={userMenuRef}>
     <button 
       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} 
       className="flex items-center text-white/90 hover:text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg md:rounded-xl hover:bg-white/10 transition-all duration-300 gap-2 md:gap-3 group"
     >
-      <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-br from-[#18b5d8] to-[#0891b2] rounded-md md:rounded-lg flex items-center justify-center">
-        <User size={14} className="md:w-4 md:h-4" />
+      <div className="w-7 h-7 md:w-8 md:h-8 rounded-md md:rounded-lg overflow-hidden border border-white/20">
+        <img src={(user.avatar || user.storeLogo || user.storeImage) ? buildImageUrl(user.avatar || user.storeLogo || user.storeImage || '') : notfoundImg} alt={user.name || user.firstName || 'User'} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = notfoundImg; }} />
       </div>
       <span className="text-xs md:text-sm font-medium hidden md:inline">{user.name?.split(' ')[0] || user.firstName || t('nav.profile')}</span>
-                <span className="text-xs md:text-sm font-medium md:hidden">{getInitials(user.name || user.firstName || t('nav.profile'))}</span>
+      <span className="text-xs md:text-sm font-medium md:hidden">{getInitials(user.name || user.firstName || t('nav.profile'))}</span>
       <ChevronDown size={14} className={`md:w-4 md:h-4 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
     </button>
     
-    {isUserMenuOpen && (
-      <div className="absolute left-0 md:right-0 mt-2 w-36 md:w-56 max-w-[calc(100vw-0.5rem)] bg-white/10 backdrop-blur-2xl rounded-lg md:rounded-2xl shadow-2xl border border-white/20 overflow-hidden animate-in slide-in-from-top-2 duration-300 z-[70]">
+{isUserMenuOpen && (
+  <div 
+    className={`fixed ${isRTL ? 'left-2' : 'right-2'} w-36 md:w-56 max-w-[calc(100vw-0.5rem)] bg-white/5 backdrop-blur-2xl rounded-lg md:rounded-2xl shadow-2xl border border-white/20 overflow-hidden animate-in slide-in-from-top-2 duration-300 z-[9999]`}
+
+  >
+        {/* احنا هنحدد موقع الـ dropdown ديناميكي من خلال JavaScript */}
         <div className="p-1 md:p-2 space-y-0.5 md:space-y-2">
           <Link
             to="/profile"
@@ -858,8 +957,8 @@ function Navbar() {
     <span className="relative z-10">{t('nav.login')}</span>
     <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
   </button>
-                )}
-              </div>
+)}
+               </div>
             </div>
           </div>
         </div>
@@ -933,12 +1032,12 @@ function Navbar() {
             }}
           >
             <Link to="/" onClick={() => setIsMenuOpen(false)} className="transition-all duration-300 hover:scale-105 hover:drop-shadow-lg">
-              <img src={logo} alt="Logo" className="h-12 w-auto filter drop-shadow-sm" />
+  <img src={logo} alt="Logo" className="h-8 w-auto filter drop-shadow-sm" />
             </Link>
             <button 
               onClick={() => setIsMenuOpen(false)} 
-              className="relative text-white p-3 rounded-2xl transition-all duration-300 group overflow-hidden"
-              aria-label="إغلاق القائمة"
+             className="relative text-white p-2 rounded-xl transition-all duration-300 group overflow-hidden"
+              aria-label={t('nav.close_menu')}
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
                 backdropFilter: 'blur(10px)',
@@ -947,7 +1046,7 @@ function Navbar() {
               }}
             >
               <div className="relative z-10 transition-transform duration-300 group-hover:rotate-90">
-                <X size={24} />
+                <X size={20} />
               </div>
               <div 
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-2xl"
@@ -963,7 +1062,7 @@ function Navbar() {
             {/* User Section - Enhanced Glassmorphism */}
             {user ? (
               <div 
-                className="relative p-6 border-b border-white/15"
+               className="relative p-4 border-b border-white/15"
                 style={{
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
                   backdropFilter: 'blur(20px)',
@@ -972,7 +1071,7 @@ function Navbar() {
               >
                 {/* User Info Card */}
                 <div 
-                  className="relative flex items-center p-5 text-white rounded-2xl mb-6 overflow-hidden group"
+                 className="relative flex items-center p-4 text-white rounded-xl mb-4 overflow-hidden group"
                   style={{
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
                     backdropFilter: 'blur(25px)',
@@ -991,13 +1090,13 @@ function Navbar() {
                   
                   {/* Avatar */}
                   <div 
-                    className="relative w-14 h-14 rounded-2xl flex items-center justify-center mr-4 overflow-hidden"
+                    className="relative w-11 h-11 rounded-xl flex items-center justify-center mr-3 overflow-hidden"
                     style={{
                       background: 'linear-gradient(135deg, #18b5d8 0%, #0891b2 100%)',
                       boxShadow: '0 8px 32px rgba(24,181,216,0.3), inset 0 1px 1px rgba(255,255,255,0.2)'
                     }}
                   >
-                    <span className="text-white font-bold text-xl relative z-10">
+  <span className="text-white font-bold text-lg relative z-10">
                       {getInitials(user.name || user.firstName || t('nav.profile'))}
                     </span>
                     <div 
@@ -1010,7 +1109,7 @@ function Navbar() {
                   
                   {/* User Details */}
                   <div className="flex-1 relative z-10">
-                    <div className="text-lg font-bold text-white mb-1">
+  <div className="text-base font-bold text-white mb-0.5">
                       {user.name?.split(' ')[0] || user.firstName || t('nav.profile')}
                     </div>
                     <div className="text-sm text-white/80 font-medium">
@@ -1036,7 +1135,7 @@ function Navbar() {
                   <Link
                     to="/profile"
                     onClick={() => setIsMenuOpen(false)}
-                    className="relative flex items-center w-full px-5 py-4 text-white/90 hover:text-white rounded-2xl transition-all duration-300 space-x-3 touch-manipulation group overflow-hidden"
+                   className="relative flex items-center w-full px-4 py-3 text-white/90 hover:text-white rounded-2xl transition-all duration-300 space-x-3 touch-manipulation group overflow-hidden"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
                       backdropFilter: 'blur(15px)',
@@ -1050,8 +1149,8 @@ function Navbar() {
                         background: 'linear-gradient(135deg, rgba(24,181,216,0.15) 0%, rgba(8,145,178,0.08) 100%)'
                       }}
                     ></div>
-                    <User size={22} className="flex-shrink-0 relative z-10" />
-                    <span className="text-base font-semibold relative z-10">{t('nav.profile')}</span>
+                    <User size={18} className="flex-shrink-0 relative z-10" />
+<span className="text-sm font-semibold relative z-10">{t('nav.profile')}</span>
                     <ChevronLeft size={18} className="mr-auto opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1 relative z-10" />
                   </Link>
                   
@@ -1071,8 +1170,8 @@ function Navbar() {
                         background: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(220,38,38,0.08) 100%)'
                       }}
                     ></div>
-                    <LogOut size={22} className="flex-shrink-0 relative z-10" />
-                    <span className="text-base font-semibold relative z-10">{t('nav.logout')}</span>
+                    <LogOut size={18} className="flex-shrink-0 relative z-10" />
+<span className="text-sm font-semibold relative z-10">{t('nav.logout')}</span>
                     <ChevronLeft size={18} className="mr-auto opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1 relative z-10" />
                   </button>
                 </div>
@@ -1088,7 +1187,7 @@ function Navbar() {
               >
                 <button 
                   onClick={openAuthModal}
-                  className="relative flex items-center justify-center w-full px-6 py-5 text-white rounded-2xl transition-all duration-300 touch-manipulation group overflow-hidden"
+                  className="relative flex items-center justify-center w-full px-5 py-3.5 text-white rounded-xl transition-all duration-300 touch-manipulation group overflow-hidden"
                   style={{
                     background: 'linear-gradient(135deg, #18b5d8 0%, #0891b2 100%)',
                     boxShadow: '0 8px 32px rgba(24,181,216,0.3), inset 0 1px 1px rgba(255,255,255,0.2)'
@@ -1112,21 +1211,21 @@ function Navbar() {
                     }}
                   ></div>
                   
-                  <User size={24} className="flex-shrink-0 ml-3 relative z-10" />
-                  <span className="font-bold text-lg relative z-10">{t('nav.login')}</span>
+                  <User size={20} className="flex-shrink-0 ml-2 relative z-10" />
+<span className="font-bold text-base relative z-10">{t('nav.login')}</span>
                 </button>
               </div>
             )}
 
             {/* Search & Settings Section - Mobile */}
-            <div 
-              className="relative p-4 border-b border-white/15"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)'
-              }}
-            >
+          <div 
+  className="relative p-4 border-b border-white/15"
+  style={{
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)'
+  }}
+>
               {/* Section Header */}
               <div className="flex items-center mb-4">
                 <div 
@@ -1140,12 +1239,12 @@ function Navbar() {
               </div>
 
               {/* Search Component */}
-              <div className="mb-3">
+  <div className="mb-3 relative z-10">
                 <LiveSearch />
               </div>
 
-              {/* Language & Currency Selector */}
-              <div className="flex justify-center">
+              {/* Language & Currency Selector */}                            
+  <div className="flex justify-center relative z-10">
                 <LanguageCurrencySelector />
               </div>
             </div>
@@ -1178,6 +1277,7 @@ function Navbar() {
                   { name: t('nav.products'), href: '/products', icon: Grid3X3, color: '#0891b2' },
                   { name: t('nav.theme_malak'), href: '/theme/55', icon: Crown, color: '#f59e0b' },
                   { name: t('nav.blog'), href: '/blog', icon: BookOpen, color: '#10b981' },
+                  { name: t('nav.documentation', { defaultValue: 'التوثيق' }), href: '/documentation', icon: FileText, color: '#60a5fa' },
                   { name: t('nav.categories'), href: '/categories', icon: Package, color: '#f97316' },
                   { name: t('nav.contact'), href: '/contact', icon: Phone, color: '#ef4444' }
                 ].map((link, index) => (
@@ -1185,7 +1285,7 @@ function Navbar() {
                     key={link.name}
                     to={link.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`relative flex items-center px-3 py-2.5 text-white/90 hover:text-white rounded-lg transition-all duration-300 space-x-2 group touch-manipulation overflow-hidden ${
+                    className={`relative flex items-center px-3 py-2 text-white/90 hover:text-white rounded-lg transition-all duration-300 space-x-2 group touch-manipulation overflow-hidden ${
                       isActive(link.href) ? 'text-white' : ''
                     }`}
                     style={{
@@ -1211,7 +1311,7 @@ function Navbar() {
                     
                     {/* Icon Container */}
                     <div 
-                      className="relative w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110"
+                      className="relative w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110"
                       style={{
                         background: isActive(link.href) 
                           ? `linear-gradient(135deg, ${link.color} 0%, ${link.color}cc 100%)`
@@ -1222,7 +1322,7 @@ function Navbar() {
                       }}
                     >
                       <link.icon 
-                        size={16} 
+                        size={14} 
                         className="relative z-10"
                         style={{ 
                           color: isActive(link.href) ? '#ffffff' : link.color 
@@ -1279,7 +1379,7 @@ function Navbar() {
               <Link
                 to="/wishlist"
                 onClick={() => setIsMenuOpen(false)}
-                className="flex items-center px-3 py-2.5 text-white/90 hover:text-white rounded-lg transition-all duration-300 space-x-2 group touch-manipulation"
+              className="flex items-center px-3 py-2 text-white/90 hover:text-white rounded-lg transition-all duration-300 space-x-2 group touch-manipulation"
                 style={{
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
                   backdropFilter: 'blur(15px)',
@@ -1288,9 +1388,9 @@ function Navbar() {
                 }}
               >
                 <div className="relative">
-                  <Heart size={18} className="flex-shrink-0" />
+                  <Heart size={16} className="flex-shrink-0" />
                   {wishlistItemsCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-pink-500 text-white rounded-full min-w-[16px] h-[16px] flex items-center justify-center text-[10px] font-bold">
+  <span className="absolute -top-1 -right-1 bg-pink-500 text-white rounded-full min-w-[14px] h-[14px] flex items-center justify-center text-[9px] font-bold">
                       {wishlistItemsCount}
                     </span>
                   )}

@@ -26,7 +26,8 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
   onContinueAsGuest, 
   onLoginSuccess 
 }) => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+  const isRTL = i18n.language === 'ar';
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [userData, setUserData] = useState<UserData>({
@@ -64,8 +65,7 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
   const validatePhone = (phone: string) => {
     if (!phone) return t('auth.validation.phoneRequired');
     const cleanPhone = phone.replace(/\D/g, '');
-    if (cleanPhone.length !== 9) return t('auth.validation.phoneLength');
-    if (!cleanPhone.startsWith('5')) return t('auth.validation.phoneFormat');
+    if (cleanPhone !== phone.replace(/\s/g, '')) return t('auth.validation.phoneDigitsOnly');
     return '';
   };
 
@@ -98,6 +98,10 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
       console.log('✅ [CheckoutAuthModal] Login successful:', response);
       
       if (response.user) {
+        try {
+          localStorage.setItem('user', JSON.stringify(response.user));
+          window.dispatchEvent(new CustomEvent('userUpdated', { detail: response.user }));
+        } catch {}
         onLoginSuccess(response.user);
         smartToast.frontend.success(t('auth.messages.loginSuccess'));
       }
@@ -158,6 +162,10 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
       console.log('✅ [CheckoutAuthModal] Registration successful:', response);
       
       if (response.user) {
+        try {
+          localStorage.setItem('user', JSON.stringify(response.user));
+          window.dispatchEvent(new CustomEvent('userUpdated', { detail: response.user }));
+        } catch {}
         onLoginSuccess(response.user);
         smartToast.frontend.success(t('auth.messages.registerSuccess'));
       }
@@ -195,17 +203,13 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
   // Format phone number
   const formatSaudiPhone = (value: string) => {
     const cleaned = value.replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{3})(\d{3})(\d{3})$/);
-    if (match) {
-      return `${match[1]} ${match[2]} ${match[3]}`;
-    }
     return cleaned;
   };
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/80 z-[99999] flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-[#292929] rounded-xl shadow-2xl w-full max-w-md mx-auto border border-gray-600/50 my-auto" style={{
-        maxHeight: '90vh',
+    <div className="fixed inset-0 bg-black/80 z-[99999] flex items-center justify-center p-3 backdrop-blur-sm">
+      <div className="bg-[#292929] rounded-xl shadow-2xl w-full max-w-sm mx-auto border border-gray-600/50 my-auto" style={{
+        maxHeight: '70vh',
         minHeight: 'auto',
         transform: 'translateY(0)',
         position: 'relative'
@@ -229,7 +233,7 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
 
         {/* Main Choice View */}
         {!showLoginForm && !showRegisterForm && (
-          <div className="p-4">
+          <div className="p-3">
             <div className="text-center mb-4">
               <h3 className="text-base font-semibold text-white mb-1">
                 {t('checkout.chooseMethod')}
@@ -244,7 +248,7 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
               {/* Continue as Guest */}
               <button
                 onClick={onContinueAsGuest}
-                className="w-full p-3 border border-[#18b5d5]/40 hover:border-[#18b5d5] rounded-lg bg-[#18b5d5]/10 hover:bg-[#18b5d5]/20 transition-all group"
+                className="w-full p-2.5 border border-[#18b5d5]/40 hover:border-[#18b5d5] rounded-lg bg-[#18b5d5]/10 hover:bg-[#18b5d5]/20 transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 space-x-reverse">
@@ -256,14 +260,14 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
                 <p className="text-xs text-gray-300">{t('checkout.quickMethod')}</p>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-[#18b5d5] group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className={`w-4 h-4 text-[#18b5d5] transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
                 </div>
               </button>
 
               {/* Login Option */}
               <button
                 onClick={() => setShowLoginForm(true)}
-                className="w-full p-3 border border-gray-600 hover:border-gray-500 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all group"
+                className="w-full p-2.5 border border-gray-600 hover:border-gray-500 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 space-x-reverse">
@@ -275,14 +279,14 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
                 <p className="text-xs text-gray-300">{t('checkout.existingAccount')}</p>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className={`w-4 h-4 text-gray-300 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
                 </div>
               </button>
 
               {/* Register Option */}
               <button
                 onClick={() => setShowRegisterForm(true)}
-                className="w-full p-3 border border-[#18b5d5]/40 hover:border-[#18b5d5] rounded-lg bg-[#18b5d5]/10 hover:bg-[#18b5d5]/20 transition-all group"
+                className="w-full p-2.5 border border-[#18b5d5]/40 hover:border-[#18b5d5] rounded-lg bg-[#18b5d5]/10 hover:bg-[#18b5d5]/20 transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 space-x-reverse">
@@ -294,7 +298,7 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
                 <p className="text-xs text-gray-300">{t('checkout.additionalFeatures')}</p>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-[#18b5d5] group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className={`w-4 h-4 text-[#18b5d5] transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
                 </div>
               </button>
             </div>
@@ -465,14 +469,12 @@ const CheckoutAuthModal: React.FC<CheckoutAuthModalProps> = ({
                     value={formatSaudiPhone(userData.phone)}
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
-                      if (value.length <= 9) {
-                        setUserData({ ...userData, phone: value });
-                      }
+                      setUserData({ ...userData, phone: value });
                     }}
                     className={`flex-1 px-2 py-2 bg-gray-800 border text-white rounded-l-lg focus:ring-2 focus:ring-[#18b5d5] focus:border-[#18b5d5] text-sm ${
                       errors.phone ? 'border-red-600' : 'border-gray-600'
                     }`}
-                    placeholder="5XX XXX XXX"
+                    placeholder="أدخل رقم هاتفك"
                     dir="ltr"
                   />
                 </div>

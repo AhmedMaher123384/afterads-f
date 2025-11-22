@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { smartToast } from '../utils/toastConfig';
 import {
@@ -77,6 +78,7 @@ interface Order {
 }
 
 const Profile: React.FC = () => {
+  const { t } = useTranslation('common');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,7 +242,7 @@ const Profile: React.FC = () => {
     localStorage.removeItem('cart');
     localStorage.removeItem('wishlist');
     navigate('/');
-    smartToast.frontend.success('تم تسجيل الخروج بنجاح');
+    smartToast.frontend.success(t('auth.logout_success'));
   };
 
   const getStatusColor = (status: string) => {

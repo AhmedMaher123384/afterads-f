@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { smartToast } from '../utils/toastConfig';
@@ -136,7 +136,7 @@ const AllCategories: React.FC = () => {
                   loading="lazy"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = '/assets/placeholder-category.jpg';
+                    target.src = 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop';
                   }}
                 />
                 <div className="absolute top-2 right-2 w-6 h-6 bg-[#7a7a7a]/50 rounded-full flex items-center justify-center">
@@ -178,7 +178,7 @@ const AllCategories: React.FC = () => {
               loading="lazy"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = '/assets/placeholder-category.jpg';
+                target.src = 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop';
               }}
             />
             <div className="absolute top-4 right-4 w-8 h-8 bg-[#7a7a7a]/50 rounded-full flex items-center justify-center">
@@ -371,82 +371,7 @@ const AllCategories: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-2xl sm:rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl p-4 sm:p-6 mb-8 sm:mb-12">
-          <div className="space-y-4 sm:space-y-6">
-            {/* Search Bar - Full width on mobile */}
-            <div className="w-full">
-              <div className="relative">
-                <Search className="absolute top-1/2 right-3 sm:right-4 transform -translate-y-1/2 text-[#18b5d8] w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
-                <input
-                  type="text"
-                  placeholder={t('categories.search_placeholder')}
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="w-full pr-10 sm:pr-12 pl-3 sm:pl-4 py-2.5 sm:py-3 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#18b5d8] focus:border-transparent transition-all duration-300 text-white text-sm sm:text-base"
-                  aria-label={t('categories.search_aria_label')}
-                />
-              </div>
-            </div>
-
-            {/* Sort and View Mode - Responsive layout */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {/* Sort Dropdown */}
-              <div className="flex-1">
-                <select
-                  value={sortBy}
-                  onChange={handleSort}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#18b5d8] focus:border-transparent transition-all duration-300 text-white text-sm sm:text-base"
-                  aria-label={t('categories.sort_aria_label')}
-                >
-                  <option value="name" className="bg-[#292929] text-white">{t('categories.sort_name_asc')}</option>
-                  <option value="name-desc" className="bg-[#292929] text-white">{t('categories.sort_name_desc')}</option>
-                  <option value="newest" className="bg-[#292929] text-white">{t('categories.sort_newest')}</option>
-                  <option value="oldest" className="bg-[#292929] text-white">{t('categories.sort_oldest')}</option>
-                </select>
-              </div>
-
-              {/* View Mode Buttons */}
-              <div className="flex items-center gap-2 justify-center sm:justify-start">
-                <span className="text-gray-100 font-semibold text-sm sm:text-base">{t('categories.view_label')}:</span>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 sm:p-2.5 rounded-lg transition-colors duration-300 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 ${
-                    viewMode === 'grid' ? 'text-[#18b5d8] border-[#18b5d8]/60' : 'text-white hover:bg-[#7a7a7a]/40'
-                  }`}
-                  aria-label={t('categories.grid_view_aria')}
-                >
-                  <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 sm:p-2.5 rounded-lg transition-colors duration-300 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 ${
-                    viewMode === 'list' ? 'text-[#18b5d8] border-[#18b5d8]/60' : 'text-white hover:bg-[#7a7a7a]/40'
-                  }`}
-                  aria-label={t('categories.list_view_aria')}
-                >
-                  <List className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Results and Clear Search */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-[#7a7a7a]/30 gap-3 sm:gap-0">
-              <div className="text-gray-100 text-sm sm:text-base">
-                {t('categories.count', { count: filteredCategories.length })}
-              </div>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 rounded-lg text-[#18b5d8] hover:text-white transition-colors duration-300 text-xs sm:text-sm"
-                  aria-label={t('categories.clear_search_aria')}
-                >
-                  <span>{t('categories.clear_search')}</span>
-                  <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+      
 
         {loading ? (
           <div className="text-center py-16 px-4">
@@ -507,4 +432,4 @@ const AllCategories: React.FC = () => {
   );
 };
 
-export default AllCategories;
+export default memo(AllCategories);

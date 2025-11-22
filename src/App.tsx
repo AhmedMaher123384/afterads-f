@@ -1,15 +1,12 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 declare global {
   namespace NodeJS {
     interface Timeout {}
   }
 }
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { smartToast } from './utils/toastConfig';
-import { ChevronLeft, ChevronRight, ShoppingCart, Heart, Package, Gift, Sparkles, ArrowLeft, Plus, Minus, Star, Users, Shield, Crown, Truck, Medal, Award, Tag, Zap, Code, Smartphone, Globe, Palette, CheckCircle, ArrowRight, Monitor, Database, Cloud, Phone, Mail, MapPin, Quote, User } from 'lucide-react';
-import { FaInstagram, FaWhatsapp, FaUser } from 'react-icons/fa';
-import { apiCall, API_ENDPOINTS, buildImageUrl } from './config/api';
+import { apiCall, API_ENDPOINTS } from './config/api';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import ThemesSection from './components/home/ThemesSection';
 import ScrollProgressIndicator from './components/ui/ScrollProgressIndicator';
@@ -23,10 +20,8 @@ import TestimonialsSection from './components/home/TestimonialsSection';
 import ClientsSection from './components/home/ClientsSection';
 import FAQSection from './components/home/FAQSection';
 import ContactSection from './components/home/ContactSection';
-import { createCategorySlug, createProductSlug } from './utils/slugify';
 import { addToCartUnified, addToWishlistUnified, removeFromWishlistUnified } from './utils/cartUtils';
 import { isMobileDevice } from './utils/deviceDetection';
-import Navbar from './components/layout/Navbar';
 
 interface Product {
   id: number;
@@ -69,12 +64,6 @@ interface CategoryProducts {
   products: Product[];
 }
 
-interface CartItem {
-  id: number;
-  productId: number;
-  quantity: number;
-}
-
 interface StaticPage {
   id: string;
   title: string;
@@ -100,224 +89,66 @@ interface Client {
   createdAt: string;
 }
 
+// Memoized Components
+const MemoizedThemesSection = memo(ThemesSection);
+const MemoizedCategoriesSection = memo(CategoriesSection);
+const MemoizedAboutUsSection = memo(AboutUsSection);
+const MemoizedTestimonialsSection = memo(TestimonialsSection);
+const MemoizedClientsSection = memo(ClientsSection);
+const MemoizedFAQSection = memo(FAQSection);
+const MemoizedContactSection = memo(ContactSection);
+const MemoizedHeroSection = memo(HeroSection);
+
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = useMemo(() => i18n.language === 'ar', [i18n.language]);
   const { isLoading, setIsLoading } = useLoading();
 
-  // Update document direction when language changes
-  useEffect(() => {
-    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
-    document.documentElement.lang = i18n.language;
-  }, [isRTL, i18n.language]);
+  // State
   const [categoryProducts, setCategoryProducts] = useState<CategoryProducts[]>([]);
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [staticPages, setStaticPages] = useState<StaticPage[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState<number>(0);
-  const [currentClientIndex, setCurrentClientIndex] = useState<number>(0);
-  const [isTestimonialTransitioning, setIsTestimonialTransitioning] = useState<boolean>(false);
-  const [isClientTransitioning, setIsClientTransitioning] = useState<boolean>(false);
-  const intervalRef = useRef<number | null>(null);
-  const clientIntervalRef = useRef<number | null>(null);
-  const testimonialIntervalRef = useRef<number | null>(null);
+
+  // Refs
   const testimonialsTrackRef = useRef<HTMLDivElement | null>(null);
 
-  const slides = [
-    {
-      title: 'منتجات احترافية متميزة',
-      subtitle: 'نقدم لك أفضل الخدمات بجودة عالية وأسعار منافسة'
-    },
-    {
-      title: 'فريق عمل محترف',
-      subtitle: 'خبراء متخصصون في جميع المجالات لخدمتك'
-    },
-    {
-      title: 'ضمان الجودة والتميز',
-      subtitle: 'نضمن لك الحصول على أفضل النتائج'
-    }
-  ];
+  // Update document direction when language changes
+  useEffect(() => {
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.documentElement.lang = i18n.language;
+  }, [isRTL, i18n.language]);
 
+  // Record visit once on mount
+  useEffect(() => {
+    const recordVisit = async () => {
+      try {
+        const path = window.location?.pathname || '/';
+        await apiCall(API_ENDPOINTS.VISITS_COUNTER, {
+          method: 'POST',
+          body: JSON.stringify({ path }),
+        });
+      } catch (err) {
+        console.warn('لم يتم تسجيل الزيارة:', err);
+      }
+    };
+    recordVisit();
+  }, []);
+
+  // Initial visibility animation
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [slides.length]);
-
-  useEffect(() => {
-    const loadAllData = async () => {
-      try {
-        // التحقق من نوع الجهاز
-        const isMobile = isMobileDevice();
-        
-        // إذا كان الجهاز محمول، إخفاء شاشة التحميل فوراً
-        if (isMobile) {
-          setIsLoading(false);
-        }
-        
-        // تحميل البيانات
-        await Promise.all([
-          fetchCategoryProducts(),
-          fetchStaticPages(),
-          fetchTestimonials(),
-          fetchClients()
-        ]);
-        loadWishlistFromStorage();
-        
-        // تحميل الصور المهمة مسبقاً (فقط للأجهزة الكبيرة)
-        if (!isMobile) {
-          const preloadImages = () => {
-            return new Promise<void>((resolve) => {
-              let loadedCount = 0;
-              const imagesToPreload = [
-                '/favi.ico',
-                // يمكن إضافة صور أخرى مهمة هنا
-              ];
-              
-              if (imagesToPreload.length === 0) {
-                resolve();
-                return;
-              }
-              
-              imagesToPreload.forEach((src) => {
-                const img = new Image();
-                img.onload = img.onerror = () => {
-                  loadedCount++;
-                  if (loadedCount === imagesToPreload.length) {
-                    resolve();
-                  }
-                };
-                img.src = src;
-              });
-            });
-          };
-          
-          await preloadImages();
-          
-          // إخفاء شاشة التحميل بعد تحميل جميع البيانات والصور (فقط للأجهزة الكبيرة)
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 300); // تأخير قصير للانتقال السلس
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-        setIsLoading(false);
-      }
-    };
-
-    loadAllData();
-  }, [setIsLoading]);
-
-  useEffect(() => {
-  console.log("Home Mounted");
-}, []);
-  // سيتم نقل useEffect للأنيميشن التلقائي بعد تعريف الدوال
-
-  // سلايدر الشهادات: تنقل دائري مع أسهم
-  const scrollByOneCard = (dir: 1 | -1) => {
-    const ref = testimonialsTrackRef.current;
-    if (!ref || testimonials.length === 0) {
-      console.log('❌ [Testimonials] Ref not found or no testimonials:', { ref: !!ref, testimonialsLength: testimonials.length });
-      return;
-    }
-    
-    console.log('🔄 [Testimonials] Scrolling direction:', dir === 1 ? 'right' : 'left');
-    
-    const firstCard = ref.querySelector('[data-testimonial-card]') as HTMLElement | null;
-    if (!firstCard) {
-      console.log('❌ [Testimonials] No testimonial card found');
-      return;
-    }
-    
-    const cardW = firstCard.offsetWidth || 400; // استخدام العرض الافتراضي
-    const gap = 24; // gap-6 بين الكروت
-    const amount = (cardW + gap) * dir;
-    
-    const currentScroll = ref.scrollLeft;
-    const maxScroll = ref.scrollWidth - ref.clientWidth;
-    
-    console.log('📊 [Testimonials] Scroll info:', {
-      cardWidth: cardW,
-      gap,
-      amount,
-      currentScroll,
-      maxScroll,
-      scrollWidth: ref.scrollWidth,
-      clientWidth: ref.clientWidth
-    });
-    
-    if (dir === 1) {
-      // التحرك يميناً
-      if (currentScroll >= maxScroll - 10) {
-        // وصلنا للنهاية، نعود للبداية
-        console.log('🔄 [Testimonials] Reached end, going to start');
-        ref.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        console.log('➡️ [Testimonials] Scrolling right by:', amount);
-        ref.scrollBy({ left: amount, behavior: 'smooth' });
-      }
-    } else {
-      // التحرك شمالاً
-      if (currentScroll <= 10) {
-        // وصلنا للبداية، نذهب للنهاية
-        console.log('🔄 [Testimonials] Reached start, going to end');
-        ref.scrollTo({ left: maxScroll, behavior: 'smooth' });
-      } else {
-        console.log('⬅️ [Testimonials] Scrolling left by:', amount);
-        ref.scrollBy({ left: amount, behavior: 'smooth' });
-      }
-    }
-  };
-
-  const handleNextTestimonial = () => {
-    console.log('🎯 [Testimonials] Next button clicked');
-    scrollByOneCard(1);
-  };
-  
-  const handlePrevTestimonial = () => {
-    console.log('🎯 [Testimonials] Previous button clicked');
-    scrollByOneCard(-1);
-  };
-
-  useEffect(() => {
-    if (clients.length > 1) {
-      clientIntervalRef.current = setInterval(() => {
-        setIsClientTransitioning(true);
-        setTimeout(() => {
-          setCurrentClientIndex((prev) => (prev + 1) % clients.length);
-          setIsClientTransitioning(false);
-        }, 300);
-      }, 3000);
-
-      return () => {
-        if (clientIntervalRef.current) {
-          clearInterval(clientIntervalRef.current);
-        }
-      };
-    }
-  }, [clients.length]);
-
-  // تم استبدال هذا بـ useEffect الجديد أعلاه
-
-  const loadWishlistFromStorage = () => {
+  // Memoized load wishlist function
+  const loadWishlistFromStorage = useCallback(() => {
     try {
       const savedWishlist = localStorage.getItem('wishlist');
       if (savedWishlist) {
@@ -326,9 +157,10 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Error loading wishlist from storage:', error);
     }
-  };
+  }, []);
 
-  const fetchCategoryProducts = async () => {
+  // Memoized fetch functions
+  const fetchCategoryProducts = useCallback(async () => {
     try {
       setLoading(true);
       const [categoriesResponse, productsResponse] = await Promise.all([
@@ -338,10 +170,6 @@ const App: React.FC = () => {
       
       const categories = Array.isArray(categoriesResponse) ? categoriesResponse : [];
       const products = Array.isArray(productsResponse?.products) ? productsResponse.products : [];
-      
-      console.log('API Response - Categories:', categories.length);
-      console.log('API Response - Products:', products.length);
-      console.log('All products:', products);
       
       const regularCategories = categories.filter((category: Category) => 
         category.name !== 'ثيمات'
@@ -363,9 +191,9 @@ const App: React.FC = () => {
         category,
         products: regularProducts.filter((product: Product) => product.categoryId === category.id)
       }));
+      
       setCategoryProducts(categoryProductsData);
       setThemes(themeProducts);
-      console.log('Theme products found:', themeProducts.length, themeProducts);
     } catch (error) {
       console.error('Error fetching category products:', error);
       setError('فشل في تحميل البيانات. يرجى المحاولة مرة أخرى.');
@@ -373,13 +201,12 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
- 
-  const fetchStaticPages = async () => {
+  }, []);
+
+  const fetchStaticPages = useCallback(async () => {
     try {
       const response = await apiCall(API_ENDPOINTS.STATIC_PAGES);
       
-      // تحقق من البنية الصحيحة للاستجابة
       if (Array.isArray(response)) {
         const footerPages = response.filter((page: StaticPage) => page.showInFooter);
         setStaticPages(footerPages);
@@ -390,14 +217,12 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Error fetching static pages:', error);
     }
-  };
+  }, []);
 
-  const fetchTestimonials = async () => {
+  const fetchTestimonials = useCallback(async () => {
     try {
       const response = await apiCall(API_ENDPOINTS.TESTIMONIALS);
-      console.log('📝 [App] Testimonials response:', response);
       
-      // Handle different response formats
       if (Array.isArray(response)) {
         setTestimonials(response);
       } else if (response.success && Array.isArray(response.data)) {
@@ -405,21 +230,18 @@ const App: React.FC = () => {
       } else if (response.testimonials && Array.isArray(response.testimonials)) {
         setTestimonials(response.testimonials);
       } else {
-        console.warn('⚠️ [App] Unexpected testimonials response format:', response);
         setTestimonials([]);
       }
     } catch (error) {
-      console.error('❌ [App] Error fetching testimonials:', error);
+      console.error('Error fetching testimonials:', error);
       setTestimonials([]);
     }
-  };
+  }, []);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       const response = await apiCall(API_ENDPOINTS.CLIENTS);
-      console.log('🏢 [App] Clients response:', response);
       
-      // Handle different response formats
       if (Array.isArray(response)) {
         setClients(response);
       } else if (response.success && Array.isArray(response.data)) {
@@ -427,16 +249,49 @@ const App: React.FC = () => {
       } else if (response.clients && Array.isArray(response.clients)) {
         setClients(response.clients);
       } else {
-        console.warn('⚠️ [App] Unexpected clients response format:', response);
         setClients([]);
       }
     } catch (error) {
-      console.error('❌ [App] Error fetching clients:', error);
+      console.error('Error fetching clients:', error);
       setClients([]);
     }
-  };
+  }, []);
 
-  const handleQuantityIncrease = (productId: number, maxStock: number) => {
+  // Load all data on mount
+  useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        const isMobile = isMobileDevice();
+        
+        if (isMobile) {
+          setIsLoading(false);
+        }
+        
+        await Promise.all([
+          fetchCategoryProducts(),
+          fetchStaticPages(),
+          fetchTestimonials(),
+          fetchClients()
+        ]);
+        
+        loadWishlistFromStorage();
+        
+        if (!isMobile) {
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 300);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    loadAllData();
+  }, [setIsLoading, fetchCategoryProducts, fetchStaticPages, fetchTestimonials, fetchClients, loadWishlistFromStorage]);
+
+  // Memoized cart handlers
+  const handleQuantityIncrease = useCallback((productId: number, maxStock: number) => {
     setQuantities(prev => {
       const currentQuantity = prev[productId] || 1;
       if (currentQuantity < maxStock) {
@@ -444,9 +299,9 @@ const App: React.FC = () => {
       }
       return prev;
     });
-  };
+  }, []);
 
-  const handleQuantityDecrease = (productId: number) => {
+  const handleQuantityDecrease = useCallback((productId: number) => {
     setQuantities(prev => {
       const currentQuantity = prev[productId] || 1;
       if (currentQuantity > 1) {
@@ -454,9 +309,9 @@ const App: React.FC = () => {
       }
       return prev;
     });
-  };
+  }, []);
 
-  const handleAddToCart = async (productId: number, productName: string) => {
+  const handleAddToCart = useCallback(async (productId: number, productName: string) => {
     try {
       const quantity = quantities[productId] || 1;
       const product = categoryProducts
@@ -468,30 +323,30 @@ const App: React.FC = () => {
         return;
       }
       
-      const productPrice = product.price;
-      const productImage = product.mainImage;
-      
       if (!product.isAvailable) {
         smartToast.frontend.error('الكمية المطلوبة غير متوفرة في المخزون');
         return;
       }
       
-      console.log('🛒 [App] Adding to cart:', { productId, productName, quantity, productPrice, productImage });
+      const success = await addToCartUnified(
+        productId, 
+        productName, 
+        quantity, 
+        {}, 
+        product.price, 
+        product.mainImage
+      );
       
-      const success = await addToCartUnified(productId, productName, quantity, {}, productPrice, productImage);
       if (success) {
-        console.log('✅ [App] Successfully added to cart');
         setQuantities(prev => ({ ...prev, [productId]: 1 }));
-      } else {
-        console.log('❌ [App] Failed to add to cart');
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
       smartToast.frontend.error('فشل في إضافة المنتج للسلة');
     }
-  };
+  }, [quantities, categoryProducts]);
 
-  const handleWishlistToggle = async (productId: number, productName: string) => {
+  const handleWishlistToggle = useCallback(async (productId: number, productName: string) => {
     try {
       const isInWishlist = wishlist.includes(productId);
       
@@ -510,20 +365,9 @@ const App: React.FC = () => {
       console.error('Error toggling wishlist:', error);
       smartToast.frontend.error(t('common.errors.wishlist_update_failed'));
     }
-  };
+  }, [wishlist, t]);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
-
+  // Memoized computed values
   const allProducts = useMemo(() => {
     return categoryProducts.flatMap(cp => cp.products);
   }, [categoryProducts]);
@@ -532,8 +376,7 @@ const App: React.FC = () => {
     return allProducts.slice(0, 8);
   }, [allProducts]);
 
- 
-
+  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
@@ -552,70 +395,58 @@ const App: React.FC = () => {
     );
   }
 
-  // Show loading screen first
+  // Loading state
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-<div className={`min-h-screen w-full bg-[#292929] transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`} dir={isRTL ? 'rtl' : 'ltr'}>      
-      {/* Navbar */}
-      <Navbar />
+    <div 
+      className={`min-h-screen w-full bg-[#292929] transition-opacity duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`} 
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >      
       
-      {/* Main Content */}
       <div className="pt-0">
-        {/* Hero Section */}
         <section data-section="hero">
-          <HeroSection />
+          <MemoizedHeroSection />
         </section>
 
-        {/* Themes Section */}
         <section data-section="themes">
-          <ThemesSection themes={themes} />
+          <MemoizedThemesSection themes={themes} />
         </section>
 
-        {/* Why Choose Us Section */}
         <section data-section="services">
-          <AboutUsSection />
+          <MemoizedAboutUsSection />
         </section>
  
-        {/* Clients Section */}
         <section data-section="clients">
-          <ClientsSection clients={clients} />
+          <MemoizedClientsSection clients={clients} />
         </section>
 
-        {/* Categories Section */}
         <section data-section="categories">
-          <CategoriesSection 
+          <MemoizedCategoriesSection 
             loading={loading}
             categoryProducts={categoryProducts}
           />
         </section>
      
-        {/* Testimonials Section */}
         <section data-section="testimonials">
-          <TestimonialsSection testimonials={testimonials} />
+          <MemoizedTestimonialsSection testimonials={testimonials} />
         </section>
 
-        {/* FAQ Section */}
         <section data-section="faq">
-          <FAQSection />
+          <MemoizedFAQSection />
         </section>
 
-        {/* Contact Section */}
         <section data-section="contact">
-          <ContactSection />
+          <MemoizedContactSection />
         </section>
       </div>
 
-      {/* Scroll to Top Button */}
       <ScrollToTopButton />
-      
-      {/* Scroll Progress Indicator */}
       <ScrollProgressIndicator />
-   
     </div>
   );
 }
 
-export default App;
+export default memo(App);
