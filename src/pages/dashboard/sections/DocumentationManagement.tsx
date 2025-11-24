@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { buildImageUrl, apiCall, API_ENDPOINTS } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
@@ -360,20 +361,23 @@ const DocumentationManagement: React.FC = () => {
       });
 
       if (response) {
-        setSuccess(
-          editingItem
-            ? `تم ${editingLevel === 'category' ? 'تحديث الفئة' : editingLevel === 'classification' ? 'تحديث التصنيف' : 'تحديث التوثيق'} بنجاح`
-            : `تم ${editingLevel === 'category' ? 'إضافة الفئة' : editingLevel === 'classification' ? 'إضافة التصنيف' : 'إضافة التوثيق'} بنجاح`
-        );
+        const msg = editingItem
+          ? `تم ${editingLevel === 'category' ? 'تحديث الفئة' : editingLevel === 'classification' ? 'تحديث التصنيف' : 'تحديث التوثيق'} بنجاح`
+          : `تم ${editingLevel === 'category' ? 'إضافة الفئة' : editingLevel === 'classification' ? 'إضافة التصنيف' : 'إضافة التوثيق'} بنجاح`;
+        setSuccess(msg);
+        smartToast.dashboard.success(msg);
         closeModal();
         queryClient.invalidateQueries({ queryKey: ['documentation-structure'] });
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(`فشل في ${editingItem ? 'تحديث' : 'حفظ'} ${editingLevel === 'category' ? 'الفئة' : editingLevel === 'classification' ? 'التصنيف' : 'التوثيق'}`);
+        const msg = `فشل في ${editingItem ? 'تحديث' : 'حفظ'} ${editingLevel === 'category' ? 'الفئة' : editingLevel === 'classification' ? 'التصنيف' : 'التوثيق'}`;
+        setError(msg);
+        smartToast.dashboard.error(msg);
       }
     } catch (err) {
-      setError(`حدث خطأ أثناء ${editingItem ? 'تحديث' : 'حفظ'} ${editingLevel === 'category' ? 'الفئة' : editingLevel === 'classification' ? 'التصنيف' : 'التوثيق'}`);
-      console.error(err);
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || `حدث خطأ أثناء ${editingItem ? 'تحديث' : 'حفظ'} ${editingLevel === 'category' ? 'الفئة' : editingLevel === 'classification' ? 'التصنيف' : 'التوثيق'}`;
+      setError(msg);
+      smartToast.dashboard.error(msg);
     }
   };
 
@@ -419,17 +423,20 @@ const DocumentationManagement: React.FC = () => {
       response = await apiCall(url, { method });
 
       if (response) {
-        setSuccess(
-          `تم حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'} بنجاح`
-        );
+        const msg = `تم حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'} بنجاح`;
+        setSuccess(msg);
+        smartToast.dashboard.success(msg);
         queryClient.invalidateQueries({ queryKey: ['documentation-structure'] });
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(`فشل في حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'}`);
+        const msg = `فشل في حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'}`;
+        setError(msg);
+        smartToast.dashboard.error(msg);
       }
     } catch (err) {
-      setError(`حدث خطأ أثناء حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'}`);
-      console.error(err);
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || `حدث خطأ أثناء حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'}`;
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setConfirmOpen(false);
       setDeleteTarget(null);

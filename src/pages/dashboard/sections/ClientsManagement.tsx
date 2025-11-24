@@ -115,9 +115,23 @@ const ClientsManagement: React.FC = () => {
   // Handle save client
   const handleSaveClient = async (clientData: any) => {
     try {
+      if (!clientData.name || !String(clientData.name).trim()) {
+        smartToast.dashboard.error('يرجى إدخال اسم العميل');
+        return;
+      }
+      const website = String(clientData.website || '').trim();
+      if (!website) {
+        smartToast.dashboard.error('يرجى إدخال الموقع الإلكتروني');
+        return;
+      }
+      const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/[^\s]*)?$/i;
+      if (!urlPattern.test(website)) {
+        smartToast.dashboard.error('رابط الموقع غير صالح');
+        return;
+      }
       const formData = new FormData();
       formData.append('name', clientData.name);
-      if (clientData.website) formData.append('website', clientData.website);
+      formData.append('website', website);
       if (clientData.logo) {
         if (clientData.logo instanceof File) {
           formData.append('logo', clientData.logo);
@@ -440,14 +454,14 @@ onChange={(e) => setClientStatusFilter(e.target.value as 'all' | 'active' | 'ina
       {/* Modal for adding/editing client */}
       {isClientModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="sticky top-0 bg-gradient-to-r z-10 from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
               <h3 className="text-2xl font-bold">
                 {editingClient ? '✏️ تعديل العميل' : '➕ إضافة عميل جديد'}
               </h3>
             </div>
             
-            <div className="p-6 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
+            <div className="p-6">
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">الاسم</label>
@@ -492,7 +506,7 @@ onChange={(e) => setClientStatusFilter(e.target.value as 'all' | 'active' | 'ina
                   />
                 </div>
                 
-        
+                
               </div>
               
               <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">

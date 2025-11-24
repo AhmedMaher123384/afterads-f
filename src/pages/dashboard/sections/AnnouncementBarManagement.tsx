@@ -4,6 +4,7 @@ import { Megaphone, Plus, Edit, Trash2, Eye, X, Calendar, AlertCircle, Link as L
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import { useQueryClient } from '@tanstack/react-query';
+import { smartToast } from '../../../utils/toastConfig';
 
 // تعريف نوع البيانات للإعلان
 interface Announcement {
@@ -93,8 +94,10 @@ const AnnouncementBarManagement: React.FC = () => {
       if (result?.success !== false) {
         if (editingAnnouncement) {
           setSuccess('تم تحديث شريط الإعلان بنجاح');
+          smartToast.dashboard.success('تم تحديث شريط الإعلان بنجاح');
         } else {
           setSuccess('تم إنشاء شريط الإعلان بنجاح');
+          smartToast.dashboard.success('تم إنشاء شريط الإعلان بنجاح');
         }
         queryClient.invalidateQueries({ queryKey: ['announcement-bar-list'] });
         setIsModalOpen(false);
@@ -102,9 +105,12 @@ const AnnouncementBarManagement: React.FC = () => {
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError('حدث خطأ أثناء الحفظ');
+        smartToast.dashboard.error('حدث خطأ أثناء الحفظ');
       }
     } catch (err) {
-      setError('فشل في الاتصال بالخادم');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'فشل في الاتصال بالخادم';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setLoading(false);
     }
@@ -139,13 +145,17 @@ const AnnouncementBarManagement: React.FC = () => {
 
       if (result?.success !== false) {
         setSuccess('تم حذف شريط الإعلان بنجاح');
+        smartToast.dashboard.success('تم حذف شريط الإعلان بنجاح');
         queryClient.invalidateQueries({ queryKey: ['announcement-bar-list'] });
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError('حدث خطأ أثناء الحذف');
+        smartToast.dashboard.error('حدث خطأ أثناء الحذف');
       }
     } catch (err) {
-      setError('فشل في الاتصال بالخادم');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'فشل في الاتصال بالخادم';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setLoading(false);
       setConfirmOpen(false);
@@ -164,13 +174,17 @@ const AnnouncementBarManagement: React.FC = () => {
 
       if (result?.success !== false) {
         setSuccess(result?.message || '');
+        smartToast.dashboard.success(result?.message || 'تم تغيير الحالة');
         await fetchAnnouncements();
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError('حدث خطأ أثناء تغيير الحالة');
+        smartToast.dashboard.error('حدث خطأ أثناء تغيير الحالة');
       }
     } catch (err) {
-      setError('فشل في الاتصال بالخادم');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'فشل في الاتصال بالخادم';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setLoading(false);
     }

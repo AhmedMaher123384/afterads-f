@@ -17,6 +17,7 @@ import Spinner from '../../../components/ui/Spinner';
 import RichTextEditor from '../components/layout/RichTextEditor';
 import ImageUploader from '../components/layout/ImageUploaderProps';
 import { buildImageUrl, apiCall, API_ENDPOINTS } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -156,22 +157,26 @@ const handleSubmit = async (e: React.FormEvent) => {
   // Validation بسيط
   if (!formData.name?.trim()) {
     setError('الرجاء إدخال اسم المنتج');
+    smartToast.dashboard.error('الرجاء إدخال اسم المنتج');
     return;
   }
   
   if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
     setError('الرجاء إدخال سعر صحيح للمنتج');
+    smartToast.dashboard.error('الرجاء إدخال سعر صحيح للمنتج');
     return;
   }
   
   if (!formData.categoryId) {
     setError('الرجاء اختيار تصنيف المنتج');
+    smartToast.dashboard.error('الرجاء اختيار تصنيف المنتج');
     return;
   }
 
   const descriptionRows = htmlToBlocks(formData.description || '');
   if (!Array.isArray(descriptionRows) || descriptionRows.length === 0) {
     setError('الرجاء كتابة وصف المنتج');
+    smartToast.dashboard.error('الرجاء كتابة وصف المنتج');
     return;
   }
   
@@ -229,13 +234,17 @@ const handleSubmit = async (e: React.FormEvent) => {
       body: JSON.stringify(dataToSend)
     });
     
-    setSuccess(editingProduct ? 'تم تعديل المنتج بنجاح' : 'تم إضافة المنتج بنجاح');
+    const msg = editingProduct ? 'تم تعديل المنتج بنجاح' : 'تم إضافة المنتج بنجاح';
+    setSuccess(msg);
+    smartToast.dashboard.success(msg);
     queryClient.invalidateQueries({ queryKey: ['products'] });
     setTimeout(() => closeModal(), 1500);
     
   } catch (err: any) {
     console.error('Error saving product:', err);
-    setError(err.message || 'حدث خطأ أثناء حفظ المنتج');
+    const msg = err?.response?.data?.message || err.message || 'حدث خطأ أثناء حفظ المنتج';
+    setError(msg);
+    smartToast.dashboard.error(msg);
   } finally {
     setLoading(false);
   }
@@ -253,10 +262,13 @@ const handleSubmit = async (e: React.FormEvent) => {
     try {
       await apiCall(API_ENDPOINTS.PRODUCT_BY_ID(id), { method: 'DELETE' });
       setSuccess('تم حذف المنتج بنجاح');
+      smartToast.dashboard.success('تم حذف المنتج بنجاح');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError('حدث خطأ أثناء حذف المنتج');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err.message || 'حدث خطأ أثناء حذف المنتج';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setLoading(false);
       setIsConfirmOpen(false);

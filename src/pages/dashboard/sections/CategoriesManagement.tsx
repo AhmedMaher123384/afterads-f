@@ -3,6 +3,8 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, Folder, CheckCircle, Layers, FileText, Settings, Image, ArrowUpDown, AlignRight, Grid } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
+import { useQueryClient } from '@tanstack/react-query';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import ImageUploader from '../components/layout/ImageUploaderProps';
 
@@ -59,6 +61,7 @@ const CategoriesManagement: React.FC = () => {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  const queryClient = useQueryClient();
   useEffect(() => {
     if (!categoriesData) return;
     const arr = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.data || categoriesData);
@@ -174,13 +177,17 @@ const CategoriesManagement: React.FC = () => {
       });
 
       {
-        setSuccess(editingCategory ? 'تم تحديث الفئة بنجاح' : 'تم إضافة الفئة بنجاح');
+        const msg = editingCategory ? 'تم تحديث الفئة بنجاح' : 'تم إضافة الفئة بنجاح';
+        setSuccess(msg);
+        smartToast.dashboard.success(msg);
         closeModal();
-        
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {
-      setError('حدث خطأ أثناء حفظ الفئة');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'حدث خطأ أثناء حفظ الفئة';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     }
   };
 
@@ -194,10 +201,13 @@ const CategoriesManagement: React.FC = () => {
     try {
       await apiCall(API_ENDPOINTS.CATEGORY_BY_ID(deleteTargetId), { method: 'DELETE' });
       setSuccess('تم حذف الفئة بنجاح');
-      fetchCategories();
+      smartToast.dashboard.success('تم حذف الفئة بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('حدث خطأ أثناء حذف الفئة');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'حدث خطأ أثناء حذف الفئة';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setConfirmOpen(false);
       setDeleteTargetId(null);

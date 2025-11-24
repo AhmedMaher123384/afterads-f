@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, Monitor, Tablet, Smartphone, X, Upload, Star, AlertCircle, CheckCircle } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, buildImageUrl } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import { useQueryClient } from '@tanstack/react-query';
 import { 
@@ -167,32 +168,7 @@ interface DeleteModal {
   loading: boolean;
 }
 
- const Toast = ({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  return (
-   <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] animate-slideDown">
-      <div className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl ${
-        type === 'success' 
-          ? 'bg-green-500 text-white' 
-          : 'bg-red-500 text-white'
-      }`}>
-        {type === 'success' ? (
-          <CheckCircle className="w-5 h-5" />
-        ) : (
-          <AlertCircle className="w-5 h-5" />
-        )}
-        <span className="font-medium">{message}</span>
-        <button onClick={onClose} className="ml-2 hover:opacity-80">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-};
+ 
 
 const ThemeCardsManagement: React.FC = () => {
   const [themeCards, setThemeCards] = useState<ThemeCard[]>([]);
@@ -204,12 +180,7 @@ const ThemeCardsManagement: React.FC = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [iconSearch, setIconSearch] = useState('');
-const [iconCategory, setIconCategory] = useState('all');
-    const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
-    show: false,
-    message: '',
-    type: 'success'
-  });
+  const [iconCategory, setIconCategory] = useState('all');
   
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -335,20 +306,12 @@ const [iconCategory, setIconCategory] = useState('all');
     if (data?.success !== false) {
       queryClient.invalidateQueries({ queryKey: ['theme-cards'] });
       closeModal();
-      setToast({
-        show: true,
-        message: editingCard ? 'تم التحديث بنجاح! ✓' : 'تم الإضافة بنجاح! ✓',
-        type: 'success'
-      });
+      smartToast.dashboard.success(editingCard ? 'تم التحديث بنجاح! ✓' : 'تم الإضافة بنجاح! ✓');
     }
   } catch (error) {
     console.error('Error saving theme card:', error);
-    // ✅ Toast للخطأ
-    setToast({
-      show: true,
-      message: 'حدث خطأ أثناء الحفظ ✗',
-      type: 'error'
-    });
+    const msg = (error as any)?.response?.data?.message || (error as any)?.message || 'حدث خطأ أثناء الحفظ ✗';
+    smartToast.dashboard.error(msg);
   } finally {
     setIsLoading(false);
   }
@@ -386,20 +349,12 @@ const confirmDelete = async () => {
     if (data?.success !== false) {
       queryClient.invalidateQueries({ queryKey: ['theme-cards'] });
       setDeleteModal({ isOpen: false, card: null, loading: false });
-      setToast({
-        show: true,
-        message: 'تم الحذف بنجاح! ✓',
-        type: 'success'
-      });
+      smartToast.dashboard.success('تم الحذف بنجاح! ✓');
     }
   } catch (error) {
     console.error('Error deleting theme card:', error);
-    // ✅ Toast للخطأ
-    setToast({
-      show: true,
-      message: 'حدث خطأ أثناء الحذف ✗',
-      type: 'error'
-    });
+    const msg = (error as any)?.response?.data?.message || (error as any)?.message || 'حدث خطأ أثناء الحذف ✗';
+    smartToast.dashboard.error(msg);
   } finally {
     setDeleteModal(prev => ({ ...prev, loading: false }));
   }
@@ -419,7 +374,7 @@ const closeModal = () => {
     isActive: true,
     displayOrder: 0,
     backgroundImage: null,
-    icon: 'FaUser' // ✅ أضف هذا السطر
+    icon: 'FaUser'
   });
 };
 
@@ -997,29 +952,9 @@ const closeModal = () => {
       )}
 
       {isLoading && !isModalOpen && <Spinner overlay />}
-
-        {toast.show && (
-      <Toast 
-        message={toast.message} 
-        type={toast.type} 
-        onClose={() => setToast({ show: false, message: '', type: 'success' })} 
-      />
-    )}
     <style>{`
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-  }
-  .animate-slideDown {
-    animation: slideDown 0.3s ease-out;
-  }
-`}</style>
+  
+  `}</style>
     </div>
   );
 };

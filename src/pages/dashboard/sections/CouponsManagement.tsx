@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, Tag, Percent, DollarSign, Calendar, TrendingUp, XCircle, CheckCircle } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -109,6 +110,7 @@ const CouponsManagement: React.FC = () => {
     
     if (!formData.name || !formData.code || !formData.discountValue) {
       setError('الرجاء ملء جميع الحقول المطلوبة');
+      smartToast.dashboard.error('الرجاء ملء جميع الحقول المطلوبة');
       return;
     }
 
@@ -123,13 +125,17 @@ const CouponsManagement: React.FC = () => {
       });
 
       {
-        setSuccess(editingCoupon ? 'تم تحديث الكوبون بنجاح' : 'تم إضافة الكوبون بنجاح');
+        const msg = editingCoupon ? 'تم تحديث الكوبون بنجاح' : 'تم إضافة الكوبون بنجاح';
+        setSuccess(msg);
+        smartToast.dashboard.success(msg);
         closeModal();
         queryClient.invalidateQueries({ queryKey: ['coupons'] });
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {
-      setError('حدث خطأ أثناء حفظ الكوبون');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'حدث خطأ أثناء حفظ الكوبون';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     }
   };
 
@@ -143,10 +149,13 @@ const CouponsManagement: React.FC = () => {
     try {
       await apiCall(API_ENDPOINTS.COUPON_BY_ID(deleteTargetId), { method: 'DELETE' });
       setSuccess('تم حذف الكوبون بنجاح');
+      smartToast.dashboard.success('تم حذف الكوبون بنجاح');
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('حدث خطأ أثناء حذف الكوبون');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'حدث خطأ أثناء حذف الكوبون';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setConfirmOpen(false);
       setDeleteTargetId(null);

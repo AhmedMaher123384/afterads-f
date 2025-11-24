@@ -9,6 +9,7 @@ import { useApiQuery } from '../../../hooks/useApiQuery';
 import { useQueryClient } from '@tanstack/react-query';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import Spinner from '../../../components/ui/Spinner';
+import { smartToast } from '../../../utils/toastConfig';
 
 // تعريف الأنواع (Types)
 interface OrderItem {
@@ -226,12 +227,17 @@ const handleOrderStatusUpdate = async (orderId: number, newStatus: string) => {
       setFilteredOrders(result);
 
       console.log('✅ Order status updated successfully');
+      smartToast.dashboard.success('تم تحديث حالة الطلب بنجاح');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     } else {
+      const msg = (response?.message || response?.data?.message) || 'فشل في تحديث حالة الطلب';
+      smartToast.dashboard.error(msg);
       console.error('❌ Failed to update order status:', response);
     }
-  } catch (error) {
-    console.error('Error updating order status:', error);
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء تحديث حالة الطلب';
+    smartToast.dashboard.error(msg);
+    console.error('Error updating order status:', err);
   }
 };
 
@@ -253,10 +259,12 @@ const handleOrderStatusUpdate = async (orderId: number, newStatus: string) => {
       filterOrders(orderFilters); // إعادة التصفية بعد التحديث
       setEditingOrderNotes(null);
       setNoteText('');
+      smartToast.dashboard.success('تم تحديث ملاحظات الطلب بنجاح');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-    } catch (error) {
-      console.error('Error updating order notes:', error);
-      // toast.error('فشل في تحديث ملاحظات الطلب');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'فشل في تحديث ملاحظات الطلب';
+      smartToast.dashboard.error(msg);
+      console.error('Error updating order notes:', err);
     }
   };
 
@@ -296,14 +304,19 @@ const handleDeleteOrder = async (orderId: number) => {
       setFilteredOrders(result);
 
       console.log('✅ Order deleted successfully');
+      smartToast.dashboard.success('تم حذف الطلب بنجاح');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     } else {
+      const msg = (response?.message || response?.data?.message) || 'فشل في حذف الطلب';
+      smartToast.dashboard.error(msg);
       console.error('❌ Failed to delete order:', response);
     }
-  } catch (error) {
-    console.error('Error deleting order:', error);
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء حذف الطلب';
+    smartToast.dashboard.error(msg);
+    console.error('Error deleting order:', err);
   }
-};  
+};
 
   const handleCancelEditNotes = () => {
     setEditingOrderNotes(null);

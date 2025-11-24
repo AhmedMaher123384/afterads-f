@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { buildImageUrl, apiCall, API_ENDPOINTS } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, FileText, Calendar, User } from 'lucide-react';
@@ -229,6 +230,7 @@ try {
     // ✅ تحقق من وجود محتوى فعلي
     if (!contentBlocks || contentBlocks.length === 0) {
       setError('الرجاء إضافة محتوى للمقال');
+      smartToast.dashboard.error('الرجاء إضافة محتوى للمقال');
       return;
     }
     
@@ -242,13 +244,17 @@ try {
       body: JSON.stringify(payload),
     });
     {
-      setSuccess(editingPost ? 'تم تحديث المقال بنجاح' : 'تم إضافة المقال بنجاح');
+      const msg = editingPost ? 'تم تحديث المقال بنجاح' : 'تم إضافة المقال بنجاح';
+      setSuccess(msg);
+      smartToast.dashboard.success(msg);
       closeModal();
       fetchPosts();
       setTimeout(() => setSuccess(''), 3000);
     }
   } catch (err) {
-    setError('حدث خطأ أثناء حفظ المقال');
+    const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'حدث خطأ أثناء حفظ المقال';
+    setError(msg);
+    smartToast.dashboard.error(msg);
   }
 };
   const handleDelete = (id: string) => {
@@ -261,10 +267,13 @@ try {
     try {
       await apiCall(API_ENDPOINTS.BLOG_POST_BY_ID(deleteTargetId), { method: 'DELETE' });
       setSuccess('تم حذف المقال بنجاح');
+      smartToast.dashboard.success('تم حذف المقال بنجاح');
       fetchPosts();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('حدث خطأ أثناء حذف المقال');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'حدث خطأ أثناء حذف المقال';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setConfirmOpen(false);
       setDeleteTargetId(null);

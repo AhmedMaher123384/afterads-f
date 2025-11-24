@@ -3,6 +3,8 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, User, Mail, Phone, MapPin, Lock, Users, UserX, UserCheck, Calendar, Shield, UserPlus } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
+import { useQueryClient } from '@tanstack/react-query';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 
 interface Customer {
@@ -23,6 +25,7 @@ interface Customer {
   updatedAt?: string;
 }
 const CustomersManagement: React.FC = () => {
+  const queryClient = useQueryClient();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { data: customersData, isLoading: customersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CUSTOMERS, queryKey: ['customers'] });
   const loading = customersLoading;
@@ -110,11 +113,13 @@ const handleSubmit = async (e: React.MouseEvent) => {
   // Validate required fields
   if (!formData.email || !formData.phone || !formData.name) {
     setError('الرجاء ملء جميع الحقول المطلوبة');
+    smartToast.dashboard.error('الرجاء ملء جميع الحقول المطلوبة');
     return;
   }
 
   if (!editingCustomer && !formData.password) {
     setError('كلمة المرور مطلوبة للعملاء الجدد');
+    smartToast.dashboard.error('كلمة المرور مطلوبة للعملاء الجدد');
     return;
   }
 
@@ -133,13 +138,17 @@ const handleSubmit = async (e: React.MouseEvent) => {
     });
 
     {
-      setSuccess(editingCustomer ? 'تم تحديث العميل بنجاح' : 'تم إضافة العميل بنجاح');
+      const msg = editingCustomer ? 'تم تحديث العميل بنجاح' : 'تم إضافة العميل بنجاح';
+      setSuccess(msg);
+      smartToast.dashboard.success(msg);
       closeModal();
-      fetchCustomers();
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
       setTimeout(() => setSuccess(''), 3000);
     }
-  } catch (err) {
-    setError('حدث خطأ أثناء حفظ العميل');
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء حفظ العميل';
+    setError(msg);
+    smartToast.dashboard.error(msg);
   }
 };
 
@@ -153,10 +162,13 @@ const handleSubmit = async (e: React.MouseEvent) => {
     try {
       await apiCall(API_ENDPOINTS.CUSTOMER_BY_ID(deleteTargetId), { method: 'DELETE' });
       setSuccess('تم حذف العميل بنجاح');
-      fetchCustomers();
+      smartToast.dashboard.success('تم حذف العميل بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError('حدث خطأ أثناء حذف العميل');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء حذف العميل';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setConfirmOpen(false);
       setDeleteTargetId(null);

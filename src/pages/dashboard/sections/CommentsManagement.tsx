@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Trash2, AlertCircle, MessageSquare, Star, User, Mail, Package, Calendar, X, Eye } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { smartToast } from '../../../utils/toastConfig';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -49,10 +50,13 @@ const CommentsManagement: React.FC = () => {
     try {
       await apiCall(API_ENDPOINTS.COMMENT_BY_ID(deleteTargetId), { method: 'DELETE' });
       setSuccess('تم حذف التعليق بنجاح');
+      smartToast.dashboard.success('تم حذف التعليق بنجاح');
       queryClient.invalidateQueries({ queryKey: ['comments'] });
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('حدث خطأ أثناء حذف التعليق');
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'حدث خطأ أثناء حذف التعليق';
+      setError(msg);
+      smartToast.dashboard.error(msg);
     } finally {
       setConfirmOpen(false);
       setDeleteTargetId(null);
