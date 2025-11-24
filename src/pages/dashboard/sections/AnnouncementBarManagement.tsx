@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, Plus, Edit, Trash2, Eye, X, Calendar, AlertCircle, Link as LinkIcon, Power, PowerOff } from 'lucide-react';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 // تعريف نوع البيانات للإعلان
 interface Announcement {
@@ -29,6 +31,7 @@ interface ApiResponse<T> {
 }
 
 const AnnouncementBarManagement: React.FC = () => {
+  const queryClient = useQueryClient();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<string>('');
@@ -49,23 +52,12 @@ const AnnouncementBarManagement: React.FC = () => {
 
   
 
-  // Fetch all announcements
-  const fetchAnnouncements = async () => {
-    setLoading(true);
-    try {
-      const result = await apiCall(API_ENDPOINTS.ANNOUNCEMENT_BAR);
-      const data = Array.isArray(result) ? result : (result?.data || []);
-      setAnnouncements(data);
-    } catch (err) {
-      setError('فشل في الاتصال بالخادم');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const { data: listResp, isLoading: listLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.ANNOUNCEMENT_BAR, queryKey: ['announcement-bar-list'] });
   useEffect(() => {
-    fetchAnnouncements();
-  }, []);
+    if (!listResp) return;
+    const data = Array.isArray(listResp) ? listResp : (listResp?.data || []);
+    setAnnouncements(data);
+  }, [listResp]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -104,7 +96,7 @@ const AnnouncementBarManagement: React.FC = () => {
         } else {
           setSuccess('تم إنشاء شريط الإعلان بنجاح');
         }
-        await fetchAnnouncements();
+        queryClient.invalidateQueries({ queryKey: ['announcement-bar-list'] });
         setIsModalOpen(false);
         resetForm();
         setTimeout(() => setSuccess(''), 3000);
@@ -147,7 +139,7 @@ const AnnouncementBarManagement: React.FC = () => {
 
       if (result?.success !== false) {
         setSuccess('تم حذف شريط الإعلان بنجاح');
-        await fetchAnnouncements();
+        queryClient.invalidateQueries({ queryKey: ['announcement-bar-list'] });
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError('حدث خطأ أثناء الحذف');

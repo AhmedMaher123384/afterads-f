@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import WhatsAppButton from './ui/WhatsAppButton';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 import { addToCartUnified, addToWishlistUnified, removeFromWishlistUnified } from '../utils/cartUtils';
 import { commentService, Comment, CreateCommentData } from '../services/commentService';
 import AuthModal from './modals/AuthModal';
@@ -211,6 +212,9 @@ const ProductDetail: React.FC = () => {
   // استخراج ID من slug أو استخدام id مباشرة
   const productId = slug ? extractIdFromSlug(slug).toString() : id;
 
+  const { data: productResp, isLoading: productLoading } = useApiQuery<any>({ endpoint: productId ? API_ENDPOINTS.PRODUCT_BY_ID(productId) : '', queryKey: ['product', productId], enabled: !!productId });
+  const { data: categoryResp, isLoading: categoryLoading } = useApiQuery<any>({ endpoint: productResp?.categoryId ? API_ENDPOINTS.CATEGORY_BY_ID(productResp.categoryId) : '', queryKey: ['category', productResp?.categoryId], enabled: !!productResp?.categoryId });
+
   // Helper function to get localized content
   const getLocalizedContent = (field: 'name' | 'description' | 'shortDescription', item?: any) => {
     const currentLang = i18n.language;
@@ -251,40 +255,23 @@ const ProductDetail: React.FC = () => {
   };
 
   useEffect(() => {
-    if (productId) {
-      fetchProduct();
-    } else {
+    if (!productId) {
       setError(t('invalid_product_id'));
       setLoading(false);
     }
-    
-    // Check if user is logged in
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
-  }, [productId]);
+  }, [productId, t]);
 
   useEffect(() => {
-    if (product) {
-      fetchComments();
-    }
-  }, [product]);
-
-  const fetchProduct = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const data = await apiCall(API_ENDPOINTS.PRODUCT_BY_ID(productId!));
-      
-      if (!data) {
-        throw new Error(t('failed_to_load'));
-      }
-      
-      // معالجة productOptions - تحويل من تنسيق قاعدة البيانات إلى تنسيق الواجهة الأمامية
-      if (data.productOptions && data.productOptions.length > 0) {
-        data.productOptions = data.productOptions.map((option: any) => ({
+    if (!productResp) return;
+    let data = productResp;
+    if (data.productOptions && data.productOptions.length > 0) {
+      data = {
+        ...data,
+        productOptions: data.productOptions.map((option: any) => ({
           id: option.id || Math.random().toString(36).substr(2, 9),
           type: option.type,
           name: {
@@ -311,32 +298,28 @@ const ProductDetail: React.FC = () => {
           },
           validation: option.validation,
           order: option.order || 0
-        }));
-      }
-      
-      setProduct(data);
-      setSelectedImage(data.mainImage);
-      
-      // جلب معلومات التصنيف - Only if needed
-      if (data.categoryId) {
-        fetchCategory(data.categoryId);
-      }
-    } catch (error) {
-      console.error('Error fetching product:', error);
-      setError(t('failed_to_load'));
-    } finally {
-      setLoading(false);
+        }))
+      } as Product;
     }
-  };
+    setProduct(data);
+    setSelectedImage(data.mainImage);
+  }, [productResp]);
 
-  const fetchCategory = async (categoryId: number) => {
-    try {
-      const data = await apiCall(API_ENDPOINTS.CATEGORY_BY_ID(categoryId));
-      setCategory(data);
-    } catch (error) {
-      console.error('Error fetching category:', error);
+  useEffect(() => {
+    if (categoryResp) setCategory(categoryResp);
+  }, [categoryResp]);
+
+  useEffect(() => {
+    setLoading(productLoading);
+  }, [productLoading]);
+
+  useEffect(() => {
+    if (product) {
+      fetchComments();
     }
-  };
+  }, [product]);
+
+  
 
   const handleAttachmentImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -749,19 +732,24 @@ const ProductDetail: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 lg:py-16 mt-[70px] sm:mt-[80px]">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm mb-4 sm:mb-8 overflow-x-auto" dir="ltr">
-          <button onClick={() => navigate('/')} className="text-[#7a7a7a] hover:text-white transition-colors whitespace-nowrap text-xs sm:text-sm">
-            {t('nav.home')}
-          </button>
-          <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-[#7a7a7a] flex-shrink-0" />
-          {category && (
-            <>
-              <span className="text-[#7a7a7a] whitespace-nowrap text-xs sm:text-sm">{getCategoryLocalizedContent('name')}</span>
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-[#7a7a7a] flex-shrink-0" />
-            </>
-          )}
-          <span className="text-white font-medium truncate text-xs sm:text-sm">{getLocalizedContent('name')}</span>
-        </nav>
+      <nav className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm mb-4 sm:mb-8 overflow-x-auto" dir="ltr">
+        <button onClick={() => navigate('/')} className="text-[#7a7a7a] hover:text-white transition-colors whitespace-nowrap text-xs sm:text-sm">
+          {t('home')}
+        </button>
+        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-[#7a7a7a] flex-shrink-0" />
+        {category && (
+          <>
+            <Link
+              to={`/category/${createCategorySlug(category.id, getCategoryLocalizedContent('name'))}`}
+              className="text-[#7a7a7a] hover:text-white transition-colors whitespace-nowrap text-xs sm:text-sm"
+            >
+              {getCategoryLocalizedContent('name')}
+            </Link>
+            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-[#7a7a7a] flex-shrink-0" />
+          </>
+        )}
+        <span className="text-white font-medium truncate text-xs sm:text-sm">{getLocalizedContent('name')}</span>
+      </nav>
 
         {/* Main Product Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-12">

@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { smartToast } from '../utils/toastConfig';
 import { ShoppingCart, User, CreditCard, CheckCircle, ArrowLeft, Package, MapPin, Phone, Mail, Gift, ChevronDown } from 'lucide-react';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import PriceDisplay from './ui/PriceDisplay';
+import LoadingSpinner from './ui/LoadingSpinner';
 import { useCurrency } from '../contexts/CurrencyContext';
 
 interface Product {
@@ -100,89 +103,88 @@ const [availableLoyaltyPoints, setAvailableLoyaltyPoints] = useState<number>(0);
   const [serverLoyaltyAvailable, setServerLoyaltyAvailable] = useState<number | null>(null);
   
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const userId = useMemo(() => {
+    try {
+      const u = localStorage.getItem('user');
+      if (!u) return undefined;
+      const obj = JSON.parse(u);
+      return obj?.id;
+    } catch {
+      return undefined;
+    }
+  }, []);
+  const { data: serverCartResp, isLoading: serverCartLoading } = useApiQuery<any>({ endpoint: userId ? API_ENDPOINTS.USER_CART(userId) : '', queryKey: ['user-cart', userId], enabled: !!userId });
+  const { data: customerResp } = useApiQuery<any>({ endpoint: userId ? API_ENDPOINTS.CUSTOMER_BY_ID(userId) : '', queryKey: ['customer', userId], enabled: !!userId });
 
   const paymentMethods: PaymentMethod[] = [
     { id: 'cod', name: t('checkout.cashOnDelivery'), description: t('checkout.cashOnDeliveryDesc') }
   ];
 
-  const fetchCart = useCallback(async () => {
+  useEffect(() => {
     try {
-      setLoading(true);
-      const userData = localStorage.getItem('user');
-      
-      if (userData) {
-        const user = JSON.parse(userData);
-        try {
-          const data = await apiCall(API_ENDPOINTS.USER_CART(user.id));
-          if (Array.isArray(data) && data.length > 0) {
-            setCartItems(data);
-            setServerSubtotal(null);
-            setServerTotal(null);
-            setServerLoyaltyDiscount(null);
-            setServerLoyaltyAvailable(null);
-            return;
-          } else if (data && typeof data === 'object') {
-            if (Array.isArray((data as any).cart) && (data as any).cart.length > 0) {
-              setCartItems((data as any).cart);
-            } else if (Array.isArray((data as any).items) && (data as any).items.length > 0) {
-              setCartItems((data as any).items);
-            } else {
-              setCartItems([]);
-            }
-            setServerSubtotal(typeof (data as any).subtotal === 'number' ? (data as any).subtotal : null);
-            setServerTotal(typeof (data as any).total === 'number' ? (data as any).total : null);
-            setServerLoyaltyDiscount(typeof (data as any).loyaltyDiscount === 'number' ? (data as any).loyaltyDiscount : null);
-            setServerLoyaltyAvailable(typeof (data as any).loyaltyAvailable === 'number' ? (data as any).loyaltyAvailable : null);
-            return;
+      if (serverCartResp) {
+        const data = serverCartResp;
+        if (Array.isArray(data) && data.length > 0) {
+          setCartItems(data);
+          setServerSubtotal(null);
+          setServerTotal(null);
+          setServerLoyaltyDiscount(null);
+          setServerLoyaltyAvailable(null);
+        } else if (data && typeof data === 'object') {
+          if (Array.isArray((data as any).cart) && (data as any).cart.length > 0) {
+            setCartItems((data as any).cart);
+          } else if (Array.isArray((data as any).items) && (data as any).items.length > 0) {
+            setCartItems((data as any).items);
+          } else {
+            setCartItems([]);
           }
-        } catch (error) {
-          console.error('Error fetching from server, falling back to localStorage:', error);
+          setServerSubtotal(typeof (data as any).subtotal === 'number' ? (data as any).subtotal : null);
+          setServerTotal(typeof (data as any).total === 'number' ? (data as any).total : null);
+          setServerLoyaltyDiscount(typeof (data as any).loyaltyDiscount === 'number' ? (data as any).loyaltyDiscount : null);
+          setServerLoyaltyAvailable(typeof (data as any).loyaltyAvailable === 'number' ? (data as any).loyaltyAvailable : null);
+        }
+      } else {
+        const localCart = localStorage.getItem('cart');
+        if (localCart) {
+          const localItems = JSON.parse(localCart);
+          if (Array.isArray(localItems) && localItems.length > 0) {
+            const formattedItems = localItems.map((item: any) => ({
+              id: item.id || Date.now() + Math.random(),
+              productId: item.productId,
+              quantity: item.quantity || 1,
+              selectedOptions: item.selectedOptions || {},
+              optionsPricing: item.optionsPricing || {},
+              attachments: item.attachments || {},
+              addOns: item.addOns || [],
+              productOptions: item.productOptions || [],
+              productOptionsPriceModifier: item.productOptionsPriceModifier || 0,
+              basePrice: item.basePrice,
+              addOnsPrice: item.addOnsPrice,
+              totalPrice: item.totalPrice,
+              product: item.product || {
+                id: item.productId,
+                name: 'منتج غير معروف',
+                price: 0,
+                mainImage: '',
+                productType: item.product?.productType || ''
+              }
+            }));
+            setCartItems(formattedItems);
+          } else {
+            setCartItems([]);
+          }
+        } else {
+          setCartItems([]);
         }
       }
-      
-      const localCart = localStorage.getItem('cart');
-      if (localCart) {
-        const localItems = JSON.parse(localCart);
-        if (Array.isArray(localItems) && localItems.length > 0) {
-          const formattedItems = localItems.map((item: any) => ({
-            id: item.id || Date.now() + Math.random(),
-            productId: item.productId,
-            quantity: item.quantity || 1,
-            selectedOptions: item.selectedOptions || {},
-            optionsPricing: item.optionsPricing || {},
-            attachments: item.attachments || {},
-            addOns: item.addOns || [],
-            productOptions: item.productOptions || [],
-            productOptionsPriceModifier: item.productOptionsPriceModifier || 0,
-            basePrice: item.basePrice,
-            addOnsPrice: item.addOnsPrice,
-            totalPrice: item.totalPrice,
-            product: item.product || {
-              id: item.productId,
-              name: 'منتج غير معروف',
-              price: 0,
-              mainImage: '',
-              productType: item.product?.productType || ''
-            }
-          }));
-          setCartItems(formattedItems);
-          return;
-        }
-      }
-      
-      setCartItems([]);
-    } catch (error) {
-      console.error('Error in fetchCart:', error);
+    } catch {
       smartToast.frontend.error('فشل في تحميل السلة');
       setCartItems([]);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+  }, [serverCartResp]);
 
 
 
@@ -205,25 +207,11 @@ const [availableLoyaltyPoints, setAvailableLoyaltyPoints] = useState<number>(0);
 
   // Fetch customer loyalty points
 useEffect(() => {
-  const fetchLoyaltyPoints = async () => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        if (user?.id) {
-          const customerData = await apiCall(API_ENDPOINTS.CUSTOMER_BY_ID(user.id));
-          const points = (customerData && customerData.customer && typeof customerData.customer.loyaltyPoints === 'number')
-            ? customerData.customer.loyaltyPoints
-            : (typeof customerData?.loyaltyPoints === 'number' ? customerData.loyaltyPoints : 0);
-          setAvailableLoyaltyPoints(points || 0);
-        }
-      } catch (error) {
-        console.error('Error fetching loyalty points:', error);
-      }
-    }
-  };
-  fetchLoyaltyPoints();
-}, []);
+  if (!customerResp) return;
+  const data = customerResp?.customer || customerResp;
+  const points = typeof data?.loyaltyPoints === 'number' ? data.loyaltyPoints : 0;
+  setAvailableLoyaltyPoints(points || 0);
+}, [customerResp]);
 
 useEffect(() => {
   if (!applyLoyalty) return;
@@ -508,6 +496,7 @@ const getFinalTotal = () => {
 
       if (!isGuest && user && user.id) {
         await apiCall(API_ENDPOINTS.USER_CART(user.id), { method: 'DELETE' });
+        queryClient.invalidateQueries({ queryKey: ['user-cart'] });
       } else {
         localStorage.removeItem('cart');
       }
@@ -540,40 +529,7 @@ const getFinalTotal = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#292929] flex items-center justify-center" dir="rtl">
-        <style>
-          {`
-            @keyframes float {
-              0%, 100% { transform: translateY(0) rotate(0deg); }
-              50% { transform: translateY(-15px) rotate(5deg); }
-            }
-            @keyframes glow {
-              0%, 100% { filter: drop-shadow(0 0 5px rgba(24, 181, 216, 0.3)); transform: scale(1); }
-              50% { filter: drop-shadow(0 0 10px rgba(24, 181, 216, 0.7)); transform: scale(1.05); }
-            }
-            @keyframes shimmer {
-              0% { background-position: -200% 0; }
-              100% { background-position: 200% 0; }
-            }
-            .animate-shimmer {
-              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-              background-size: 200% 100%;
-              animation: shimmer 2s infinite;
-            }
-          `}
-        </style>
-        <div className="text-center">
-          <div className="relative w-20 h-20 mx-auto mb-8">
-            <div className="absolute -inset-2 bg-gradient-to-br from-[#18b5d8] to-[#16a2c7] rounded-lg blur opacity-75"></div>
-            <div className="relative bg-[#292929] p-2 sm:p-3 rounded-lg">
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-[#18b5d8]" />
-            </div>
-          </div>
-          <h2 className="text-lg font-black text-white">جاري تحميل السلة...</h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (cartItems.length === 0) {

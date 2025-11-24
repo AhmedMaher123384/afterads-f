@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { HelmetProvider } from 'react-helmet-async';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import i18n from './i18n/config';
@@ -256,20 +257,34 @@ if (!rootElement.hasAttribute('data-root-created')) {
   root = (rootElement as any)._reactRootContainer || ReactDOM.createRoot(rootElement);
 }
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 30,
+      gcTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      retry: 1
+    }
+  }
+});
+
 root.render(
   <React.StrictMode>
     <HelmetProvider>
-      <Router
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true
-        }}
-      >
-        <LoadingProvider>
-          <CurrencyProvider>
-            <ScrollToTop />
-            <LayoutWrapper />
-               <ToastContainer 
+      <QueryClientProvider client={queryClient}>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
+          <LoadingProvider>
+            <CurrencyProvider>
+              <ScrollToTop />
+              <LayoutWrapper />
+                 <ToastContainer 
         position="top-center"
         autoClose={1800}
         hideProgressBar={true}
@@ -299,11 +314,12 @@ root.render(
           textAlign: 'center'
         }}
         />
-          </CurrencyProvider>
-        </LoadingProvider>
-
-     
-      </Router>
+            </CurrencyProvider>
+          </LoadingProvider>
+        
+        
+        </Router>
+      </QueryClientProvider>
     </HelmetProvider>
   </React.StrictMode>
 );

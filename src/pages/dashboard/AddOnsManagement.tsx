@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit, Trash2, Package, DollarSign, FileText, HelpCircle, MessageSquare } from 'lucide-react';
 import { smartToast } from '../../utils/toastConfig';
 import { apiCall, API_ENDPOINTS } from '../../config/api';
+import { useApiQuery } from '../../hooks/useApiQuery';
 
 interface AddOn {
   id?: number;
@@ -43,23 +45,16 @@ const AddOnsManagement: React.FC<AddOnsManagementProps> = ({ onClose }) => {
   const [newFAQ, setNewFAQ] = useState<FAQ>({ question: '', answer: '' });
   const [editingFAQ, setEditingFAQ] = useState<FAQ | null>(null);
   const [activeTab, setActiveTab] = useState<'addons' | 'faqs'>('addons');
+  const queryClient = useQueryClient();
+
+  const { data: productsResp, isLoading: productsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.PRODUCTS, queryKey: ['products'] });
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await apiCall(API_ENDPOINTS.PRODUCTS);
-      setProducts(response.data || []);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      smartToast.dashboard.error('حدث خطأ في تحميل المنتجات');
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!productsResp) return;
+    const arr = Array.isArray(productsResp) ? productsResp : (productsResp?.data || productsResp?.products || []);
+    setProducts(arr);
+    setLoading(false);
+  }, [productsResp]);
 
   const handleAddAddOn = (product: Product) => {
     setSelectedProduct(product);
@@ -100,6 +95,7 @@ const AddOnsManagement: React.FC<AddOnsManagementProps> = ({ onClose }) => {
       ));
       
       smartToast.dashboard.success('تم حذف المنتج الإضافية بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error) {
       console.error('Error deleting add-on:', error);
       smartToast.dashboard.error('حدث خطأ في حذف المنتج الإضافية');
@@ -159,6 +155,7 @@ const AddOnsManagement: React.FC<AddOnsManagementProps> = ({ onClose }) => {
       
       setShowAddOnModal(false);
       smartToast.dashboard.success(editingAddOn ? 'تم تحديث المنتج الإضافية بنجاح' : 'تم إضافة المنتج الإضافية بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error) {
       console.error('Error saving add-on:', error);
       smartToast.dashboard.error('حدث خطأ في حفظ المنتج الإضافية');
@@ -190,6 +187,7 @@ const AddOnsManagement: React.FC<AddOnsManagementProps> = ({ onClose }) => {
       setSelectedProduct({ ...selectedProduct, faqs: updatedFAQs });
       setNewFAQ({ question: '', answer: '' });
       smartToast.dashboard.success('تم إضافة السؤال بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error) {
       console.error('Error adding FAQ:', error);
       smartToast.dashboard.error('حدث خطأ أثناء إضافة السؤال');
@@ -219,6 +217,7 @@ const AddOnsManagement: React.FC<AddOnsManagementProps> = ({ onClose }) => {
       setSelectedProduct({ ...selectedProduct, faqs: updatedFAQs });
       setEditingFAQ(null);
       smartToast.dashboard.success('تم تحديث السؤال بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error) {
       console.error('Error updating FAQ:', error);
       smartToast.dashboard.error('حدث خطأ أثناء تحديث السؤال');
@@ -242,6 +241,7 @@ const AddOnsManagement: React.FC<AddOnsManagementProps> = ({ onClose }) => {
 
       setSelectedProduct({ ...selectedProduct, faqs: updatedFAQs });
       smartToast.dashboard.success('تم حذف السؤال بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error) {
       console.error('Error deleting FAQ:', error);
       smartToast.dashboard.error('حدث خطأ أثناء حذف السؤال');
@@ -250,7 +250,7 @@ const AddOnsManagement: React.FC<AddOnsManagementProps> = ({ onClose }) => {
     }
   };
 
-  if (loading) {
+  if (loading || productsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>

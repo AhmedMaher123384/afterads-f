@@ -6,6 +6,7 @@ import { Search, Grid, List, FolderOpen, X, ArrowUpDown } from 'lucide-react';
 import GlobalFooter from './layout/GlobalFooter';
 import { createCategorySlug } from '../utils/slugify';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 
 interface Category {
   id: number;
@@ -41,7 +42,8 @@ const AllCategories: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [loading, setLoading] = useState(false);
+  const { data: categoriesData, isLoading: categoriesLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CATEGORIES, queryKey: ['categories'] });
+  const loading = categoriesLoading;
 
   // Helper function to get localized content
   const getLocalizedContent = (category: Category, field: 'name' | 'description') => {
@@ -57,27 +59,18 @@ const AllCategories: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (!categoriesData) return;
+    const arr = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.data || categoriesData);
+    const filtered = arr.filter((category: Category) => category.name !== t('categories.themes'));
+    setCategories(filtered);
+    localStorage.setItem('cachedAllCategories', JSON.stringify(filtered));
+  }, [categoriesData, t]);
 
   useEffect(() => {
     filterAndSortCategories();
   }, [categories, searchTerm, sortBy]);
 
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const data = await apiCall(API_ENDPOINTS.CATEGORIES);
-      const filteredCategories = data.filter((category: Category) => category.name !== t('categories.themes'));
-      setCategories(filteredCategories);
-      localStorage.setItem('cachedAllCategories', JSON.stringify(filteredCategories));
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      smartToast.frontend.error(t('categories.error_loading'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const filterAndSortCategories = () => {
     let filtered = [...categories];

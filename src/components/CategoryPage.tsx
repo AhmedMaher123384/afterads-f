@@ -7,6 +7,7 @@ import ProductCard from './ui/ProductCard';
 import WhatsAppButton from './ui/WhatsAppButton';
 import { extractIdFromSlug, isValidSlug } from '../utils/slugify';
 import { apiCall, API_ENDPOINTS } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 
 interface Product {
   id: number;
@@ -68,6 +69,12 @@ const CategoryPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(true);
 
+  const effectiveCategoryId = useMemo(() => {
+    if (slug && isValidSlug(slug)) return extractIdFromSlug(slug);
+    if (categoryId) return parseInt(categoryId);
+    return undefined;
+  }, [slug, categoryId]);
+
   const getLocalizedContent = useCallback((item: any, field: string) => {
     const currentLang = i18n.language;
     const langField = `${field}_${currentLang}`;
@@ -85,44 +92,21 @@ const CategoryPage: React.FC = () => {
     return item[field] || '';
   }, [i18n.language]);
 
-  const fetchCategoryAndProducts = useCallback(async (catId: number) => {
-    try {
-      setLoading(true);
-      const [categoryData, productsResponse] = await Promise.all([
-        apiCall(API_ENDPOINTS.CATEGORY_BY_ID(catId)),
-        apiCall(API_ENDPOINTS.PRODUCTS),
-      ]);
-
-      setCategory(categoryData);
-      const allProducts = productsResponse.products || productsResponse;
-      const categoryProducts = allProducts.filter((product: Product) => product.categoryId === catId);
-      setProducts(categoryProducts);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      smartToast.frontend.error(t('category_load_error'));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const { data: categoryResp, isLoading: categoryLoading } = useApiQuery<any>({ endpoint: effectiveCategoryId ? API_ENDPOINTS.CATEGORY_BY_ID(Number(effectiveCategoryId)) : '', queryKey: ['category', effectiveCategoryId], enabled: !!effectiveCategoryId });
+  const { data: productsResp, isLoading: productsLoading } = useApiQuery<any>({ endpoint: effectiveCategoryId ? API_ENDPOINTS.PRODUCTS_BY_CATEGORY(Number(effectiveCategoryId)) : '', queryKey: ['products-by-category', effectiveCategoryId], enabled: !!effectiveCategoryId });
 
   useEffect(() => {
-    let catId: number | null = null;
+    if (!categoryLoading && !productsLoading) setLoading(false);
+  }, [categoryLoading, productsLoading]);
 
-    if (slug) {
-      if (isValidSlug(slug)) {
-        catId = extractIdFromSlug(slug);
-      } else {
-        smartToast.frontend.error('رابط التصنيف غير صحيح');
-        return;
-      }
-    } else if (categoryId) {
-      catId = parseInt(categoryId);
-    }
-
-    if (catId) {
-      fetchCategoryAndProducts(catId);
-    }
-  }, [categoryId, slug, fetchCategoryAndProducts]);
+  useEffect(() => {
+    if (categoryResp) setCategory(categoryResp);
+  }, [categoryResp]);
+  useEffect(() => {
+    if (!productsResp) return;
+    const arr = productsResp?.products || productsResp || [];
+    setProducts(arr);
+  }, [productsResp]);
 
   const sortedProducts = useMemo(() => {
     return [...products].sort((a, b) => {
@@ -138,7 +122,8 @@ const CategoryPage: React.FC = () => {
     });
   }, [products, sortBy]);
 
-  if (loading) {
+  const queryLoading = categoryLoading || productsLoading;
+  if (loading || queryLoading) {
     return (
       <section className="min-h-screen bg-[#0a0a0a] relative overflow-hidden flex items-center justify-center px-4">
         <TechBackground />
@@ -157,7 +142,7 @@ const CategoryPage: React.FC = () => {
     <section className="min-h-screen bg-[#0a0a0a] relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       <TechBackground />
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 mt-[70px] sm:mt-[80px]">
+              <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 mt-[70px] sm:mt-[80px]">
         
         {/* Back Button */}
         <Link 
@@ -253,17 +238,15 @@ const CategoryPage: React.FC = () => {
 
         {/* Products Grid/List */}
         {sortedProducts.length > 0 ? (
-          <div
+            <div
             className={
               viewMode === 'grid'
-                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 auto-rows-max'
                 : 'flex flex-col gap-6 max-w-5xl mx-auto'
             }
           >
             {sortedProducts.map((product) => (
-              <div key={product.id} className="w-full">
-                <MemoizedProductCard product={product} viewMode={viewMode} />
-              </div>
+              <MemoizedProductCard key={product.id} product={product} viewMode={viewMode} />
             ))}
           </div>
         ) : (

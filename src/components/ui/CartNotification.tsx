@@ -133,15 +133,15 @@ const CartNotification: React.FC<CartNotificationProps> = ({
   if (!isVisible || !product) return null;
 
   return (
-    <div className={`hidden sm:block fixed top-16 sm:top-20 ${isRTL ? 'left-2 sm:left-4' : 'right-2 sm:right-4'} z-50 max-w-xs sm:max-w-sm w-full px-2 sm:px-0`}>
+    <div className={`hidden sm:block fixed top-24 sm:top-24 ${isRTL ? 'left-4' : 'right-4'} z-50 max-w-xs sm:max-w-sm w-full`}>
       <div 
         className={`bg-white/10 backdrop-blur-2xl border border-white/20 rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-4 transform transition-all duration-500 ease-out ${
           isAnimating ? 'translate-x-0 opacity-100 scale-100' : `${isRTL ? '-translate-x-full' : 'translate-x-full'} opacity-0 scale-95`
         }`}
         style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+          background: '#292929',
           backdropFilter: 'blur(20px)',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08)'
         }}
       >
         {/* Header with success indicator */}
@@ -316,7 +316,7 @@ const CartNotification: React.FC<CartNotificationProps> = ({
           >
             <span className="hidden sm:inline">{t('cart_notification.checkout')}</span>
               <span className="sm:hidden">{t('cart_notification.order')}</span>
-            <ArrowRight className={`w-3 h-3 sm:w-4 sm:h-4 group-hover:${isRTL ? '-translate-x-1' : 'translate-x-1'} transition-transform`} />
+            <ArrowRight className={`w-3 h-3 sm:w-4 sm:h-4 ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
           </button>
         </div>
       </div>

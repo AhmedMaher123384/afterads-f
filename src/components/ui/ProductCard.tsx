@@ -159,7 +159,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
   // ---- LIST VIEW ----
   if (viewMode === 'list') {
     return (
-      <div className="relative w-full">
+      <div className="relative w-full mb-6">
         {/* Sale Badge - خارج الكارت */}
         {product.originalPrice && 
           <div className="absolute -top-3 -left-3 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-2xl backdrop-blur-sm  z-[100]">
@@ -169,7 +169,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
 
         <Link
           to={`/product/${createProductSlug(product.id, getLocalizedContent('name'))}`}
-          className="relative group block bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] w-full overflow-hidden"
+          className="relative group block bg-gradient-to-br from-[#18b5d5]/95 via-[#7a7a7a]/30 to-[#18b5d5]/90 rounded-2xl backdrop-blur-xl border border-[#18b5d5]/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] w-full overflow-hidden min-h-[200px]"
           onClick={handleProductClick}
           aria-label={t('product:view_product_details', { name: getLocalizedContent('name') })}
         >
@@ -236,6 +236,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
                     originalPrice={product.originalPrice}
                     size="md"
                     variant="card"
+                    className="min-h-[28px]"
                   />
                 </li>
                 <li className="flex items-center gap-2">
@@ -294,7 +295,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
 
   // ---- GRID VIEW ----
   return (
-    <div className="relative w-full max-w-[280px] sm:max-w-xs md:max-w-sm lg:w-80 h-auto">
+    <div className="relative w-full px-2 py-3">
       {/* Sale Badge - خارج الكارت تماماً */}
       {product.originalPrice &&   
         <div className="absolute -top-3 -left-3 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl backdrop-blur-sm  z-[100]">
@@ -304,11 +305,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
 
       <Link
         to={`/product/${createProductSlug(product.id, getLocalizedContent('name'))}`}
-        className="relative group block transform hover:scale-105 transition-all duration-500 w-full h-auto"
+        className="relative group block transform hover:scale-105 transition-all duration-500 w-full h-full"
         onClick={handleProductClick}
         aria-label={t('product:view_product_details', { name: getLocalizedContent('name') })}
       >
-        <div className="absolute inset-0 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl group-hover:shadow-3xl transition-all duration-500 bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90"></div>
+        <div className="absolute inset-0 rounded-3xl backdrop-blur-xl border border-[#18b5d5]/20 shadow-2xl group-hover:shadow-3xl transition-all duration-500 bg-gradient-to-br from-[#18b5d5]/95 via-[#7a7a7a]/30 to-[#18b5d5]/90"></div>
         
         <div className="absolute inset-0 rounded-3xl overflow-hidden">
           <div className="absolute top-4 right-4 text-xs text-white/20 font-mono group-hover:text-white/30 transition-colors duration-500">
@@ -332,7 +333,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
           </div>
         </div>
 
-        <div className="relative p-8 text-center">
+        <div className="relative p-8 text-center flex flex-col min-h-[450px]">
           <div className="relative mx-auto mb-8 w-20 h-20">
             <div className="absolute -inset-2 bg-gradient-to-br from-[#18b5d8]/30 to-[#0d8aa3]/30 blur-sm transform rotate-0 group-hover:rotate-6 transition-all duration-500"
                  style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}>
@@ -397,6 +398,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
                 originalPrice={product.originalPrice}
                 size="md"
                 variant="card"
+                className="min-h-[28px]"
               />
             </li>
             <li className="flex items-center justify-center gap-2">
@@ -406,7 +408,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
           </ul>
 
           {product.isAvailable && (
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-4 mt-auto">
               <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={decreaseQuantity}

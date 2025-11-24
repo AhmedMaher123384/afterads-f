@@ -140,9 +140,6 @@ const navigate = useNavigate();
     };
   }, []);
 
-  const handleAddToCart = () => {
-    navigate(`/theme/${theme.id}`, { state: { scrollToPurchase: true } });
-  };
 
   return (
     <div
@@ -151,7 +148,7 @@ const navigate = useNavigate();
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Main Container */}
-      <div className="relative bg-gradient-to-br from-[#292929]/95 to-[#292929]/90 rounded-3xl backdrop-blur-xl border border-[#18b5d5]/20 shadow-2xl overflow-hidden transition-transform transition-shadow transition-border duration-300 hover:shadow-xl hover:border-[#18b5d5]/40 hover:-translate-y-1 will-change-transform neon-glow">
+      <div className="relative bg-gradient-to-br hover:shadow-[#18b5d5]/30 from-[#292929]/95 to-[#292929]/90 rounded-3xl backdrop-blur-xl border border-[#18b5d5]/20 shadow-2xl overflow-hidden transition-transform transition-shadow transition-border duration-300 hover:shadow-xl hover:border-[#18b5d5]/40 hover:-translate-y-1 will-change-transform neon-glow">
 
         {/* Minimalist Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
@@ -208,20 +205,11 @@ const navigate = useNavigate();
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 max-w-lg mx-auto">
-              <button
-                onClick={handleAddToCart}
-                disabled={!theme.isAvailable}
-                className="group bg-gradient-to-r from-[#18b5d5] to-[#292929] text-[#ffffff] px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 rounded-lg sm:rounded-xl md:rounded-2xl hover:from-[#292929] hover:to-[#18b5d5] disabled:opacity-50 transition-transform transition-shadow transition-border duration-300 font-semibold shadow-lg hover:shadow-md transform hover:scale-105 active:scale-95 will-change-transform text-xs sm:text-sm md:text-base"
-              >
-                <div className="flex items-center justify-center gap-2 sm:gap-3">
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {t('home.themes.add_to_cart')}
-                </div>
-              </button>
+        
 
               <button
                 onClick={() => navigate(`/theme/${theme.id}`)}
-                className="group bg-[#292929]/50 backdrop-blur-md border border-[#ffffff]/50 text-[#ffffff] px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 rounded-lg sm:rounded-xl md:rounded-2xl hover:bg-[#292929]/70 hover:border-[#18b5d5]/40 transition-transform transition-shadow transition-border duration-300 font-semibold transform hover:scale-105 active:scale-95 will-change-transform text-xs sm:text-sm md:text-base"
+                className="group bg-gradient-to-r from-[#18b5d5] to-[#292929] text-[#ffffff] px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 rounded-lg sm:rounded-xl md:rounded-2xl hover:from-[#292929] hover:to-[#18b5d5] disabled:opacity-50 transition-transform transition-shadow transition-border duration-300 font-semibold shadow-lg hover:shadow-md transform hover:scale-105 active:scale-95 will-change-transform text-xs sm:text-sm md:text-base"
               >
                 <div className="flex items-center justify-center gap-2 sm:gap-3">
                   <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -295,6 +283,7 @@ interface ThemesSectionProps {
 const ThemesSection: React.FC<ThemesSectionProps> = ({ themes }) => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
+  const navigate = useNavigate();
   console.log('ThemesSection received themes:', themes);
   console.log('Number of themes:', themes.length);
   
@@ -371,6 +360,16 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({ themes }) => {
             <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 text-[#18b5d5] font-semibold">
               <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 flex-shrink-0" />
               <span className="text-xs sm:text-sm md:text-base text-center">{t('home.themes.guarantees')}</span>
+            </div>
+            <div className="mt-6 sm:mt-8">
+              <button
+                onClick={() => navigate(`/theme/${themes[0]?.id ?? 55}`)}
+                className="inline-flex items-center gap-2 bg-[#292929] text-white px-6 py-3 rounded-xl hover:bg-[#1f1f1f] transition-all font-semibold shadow-lg"
+              >
+                <Headphones className="w-5 h-5" />
+                {isRTL ? 'تواصل معنا' : 'Contact Us'}
+                <ArrowLeft className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

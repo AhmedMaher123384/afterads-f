@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Grid, List, Package, ChevronDown, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
@@ -7,6 +7,7 @@ import LoadingSpinner from './ui/LoadingSpinner';
 import GlobalFooter from './layout/GlobalFooter';
 import { createCategorySlug, createProductSlug } from '../utils/slugify';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 
 interface Product {
   id: number;
@@ -39,21 +40,13 @@ interface Category {
 const AllProducts: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('cachedAllProducts');
-    try {
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+  const { data: categoriesData, isLoading: categoriesLoading } = useApiQuery<Category[]>({
+    endpoint: API_ENDPOINTS.CATEGORIES,
+    queryKey: ['categories']
   });
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem('cachedCategories');
-    try {
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+  const { data: productsResponse, isLoading: productsLoading } = useApiQuery<any>({
+    endpoint: API_ENDPOINTS.PRODUCTS,
+    queryKey: ['products']
   });
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('cachedAllProducts');
@@ -63,15 +56,7 @@ const AllProducts: React.FC = () => {
       return [];
     }
   });
-  const [loading, setLoading] = useState<boolean>(() => {
-    const saved = localStorage.getItem('cachedAllProducts');
-    try {
-      const initial = saved ? JSON.parse(saved) : [];
-      return initial.length === 0;
-    } catch {
-      return true;
-    }
-  });
+  const loading = categoriesLoading || productsLoading;
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -102,55 +87,37 @@ const AllProducts: React.FC = () => {
     }
   };
 
+  const baseProducts: Product[] = useMemo(() => {
+    if (!productsResponse || !categoriesData) return [];
+    const productsData = productsResponse.products || productsResponse;
+    const themesCategory = categoriesData.find((category: Category) => {
+      const categoryName = getCategoryLocalizedContent(category, 'name').toLowerCase();
+      return categoryName === 'ثيمات' || categoryName === 'themes';
+    });
+    const themesCategoryId = themesCategory ? themesCategory.id : null;
+    const filtered = (productsData as Product[]).filter((product: Product) => 
+      product.categoryId !== themesCategoryId && product.id !== 55
+    );
+    return filtered;
+  }, [productsResponse, categoriesData]);
+
   useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchProducts(), fetchCategories()])
-      .finally(() => setLoading(false));
-  }, []);
+    if (baseProducts.length === 0 || !categoriesData) return;
+    localStorage.setItem('cachedAllProducts', JSON.stringify(baseProducts));
+    localStorage.setItem('cachedCategories', JSON.stringify(categoriesData));
+    setFilteredProducts(baseProducts);
+  }, [baseProducts, categoriesData]);
 
   useEffect(() => {
     filterAndSortProducts();
-  }, [products, selectedCategory, searchTerm, sortBy]);
+  }, [selectedCategory, searchTerm, sortBy]);
 
-  const fetchProducts = async () => {
-    try {
-      const [productsResponse, categoriesData] = await Promise.all([
-        apiCall(API_ENDPOINTS.PRODUCTS),
-        apiCall(API_ENDPOINTS.CATEGORIES)
-      ]);
-      
-      // Handle response object that contains products array
-      const productsData = productsResponse.products || productsResponse;
-      
-      const themesCategory = categoriesData.find((category: Category) => {
-        const categoryName = getCategoryLocalizedContent(category, 'name').toLowerCase();
-        return categoryName === 'ثيمات' || categoryName === 'themes';
-      });
-      const themesCategoryId = themesCategory ? themesCategory.id : null;
-      
-      const filteredProducts = productsData.filter((product: Product) => 
-        product.categoryId !== themesCategoryId && product.id !== 55
-      );
-      
-      setProducts(filteredProducts);
-      localStorage.setItem('cachedAllProducts', JSON.stringify(filteredProducts));
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
-  };
+  const productsDataForFilter = baseProducts;
 
-  const fetchCategories = async () => {
-    try {
-      const data = await apiCall(API_ENDPOINTS.CATEGORIES);
-      setCategories(data);
-      localStorage.setItem('cachedCategories', JSON.stringify(data));
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
+  
 
   const filterAndSortProducts = () => {
-    let filtered = [...products];
+    let filtered = [...productsDataForFilter];
     if (selectedCategory) filtered = filtered.filter(product => product.categoryId === selectedCategory);
     if (searchTerm) {
       filtered = filtered.filter(product => {

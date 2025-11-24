@@ -5,6 +5,7 @@ import { ChevronLeft, ArrowRight, Package, Filter, Grid, List, RefreshCw } from 
 import ProductCard from './ui/ProductCard';
 import { extractIdFromSlug, isValidSlug, createProductSlug } from '../utils/slugify';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 
 interface Product {
   id: number;
@@ -29,9 +30,7 @@ interface Category {
   image: string;
 }
 
-// Cache للبيانات
-const dataCache = new Map();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 دقائق
+ 
 
 const ProductsByCategory: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -56,107 +55,22 @@ const ProductsByCategory: React.FC = () => {
     }
   };
   
-  // تحميل البيانات من Cache أولاً
-  const [products, setProducts] = useState<Product[]>(() => {
-    const cacheKey = `products_${categoryId}`;
-    const cached = dataCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data;
-    }
-    return [];
-  });
-  
-  const [category, setCategory] = useState<Category | null>(() => {
-    const cacheKey = `category_${categoryId}`;
-    const cached = dataCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data;
-    }
-    return null;
-  });
-  
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [category, setCategory] = useState<Category | null>(null);
 
-  // تحميل البيانات بشكل متوازي
-  const fetchData = useCallback(async () => {
-    if (!categoryId) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // تحقق من Cache أولاً
-      const categoryCache = dataCache.get(`category_${categoryId}`);
-      const productsCache = dataCache.get(`products_${categoryId}`);
-      
-      const now = Date.now();
-      const categoryFromCache = categoryCache && (now - categoryCache.timestamp < CACHE_DURATION) ? categoryCache.data : null;
-      const productsFromCache = productsCache && (now - productsCache.timestamp < CACHE_DURATION) ? productsCache.data : null;
-
-      // إذا البيانات موجودة في Cache، استخدمها فوراً
-      if (categoryFromCache && productsFromCache) {
-        setCategory(categoryFromCache);
-        setProducts(productsFromCache);
-        setLoading(false);
-        return;
-      }
-
-      // تحميل البيانات بشكل متوازي
-      const promises = [];
-      
-      if (!categoryFromCache) {
-        promises.push(
-          apiCall(API_ENDPOINTS.CATEGORY_BY_ID(categoryId))
-            .then(data => {
-              setCategory(data);
-              dataCache.set(`category_${categoryId}`, { data, timestamp: now });
-              return data;
-            })
-            .catch(err => {
-              console.error('Error fetching category:', err);
-              return null;
-            })
-        );
-      } else {
-        setCategory(categoryFromCache);
-      }
-
-      if (!productsFromCache) {
-        promises.push(
-          apiCall(API_ENDPOINTS.PRODUCTS_BY_CATEGORY(categoryId))
-            .then(data => {
-              setProducts(data);
-              dataCache.set(`products_${categoryId}`, { data, timestamp: now });
-              return data;
-            })
-            .catch(err => {
-              console.error('Error fetching products:', err);
-              return [];
-            })
-        );
-      } else {
-        setProducts(productsFromCache);
-      }
-
-      // انتظار جميع الطلبات
-      if (promises.length > 0) {
-        await Promise.allSettled(promises);
-      }
-      
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [categoryId]);
-
+  const { data: categoryResp, isLoading: categoryLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CATEGORY_BY_ID(Number(categoryId)), queryKey: ['category', Number(categoryId)], enabled: !!categoryId });
+  const { data: productsResp, isLoading: productsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.PRODUCTS_BY_CATEGORY(Number(categoryId)), queryKey: ['products-by-category', Number(categoryId)], enabled: !!categoryId });
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (categoryResp) setCategory(categoryResp);
+  }, [categoryResp]);
+  useEffect(() => {
+    if (!productsResp) return;
+    const arr = productsResp?.products || productsResp || [];
+    setProducts(arr);
+  }, [productsResp]);
 
   // تحسين عرض Loading
+  const loading = categoryLoading || productsLoading;
   if (loading) {
     return (
       <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 mt-[70px] sm:mt-[80px]" dir="rtl">

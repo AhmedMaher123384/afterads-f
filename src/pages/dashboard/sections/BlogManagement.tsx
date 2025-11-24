@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { buildImageUrl, apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, FileText, Calendar, User } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
@@ -29,7 +30,8 @@ interface BlogPost {
 
 const BlogManagement: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: postsData, isLoading: postsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.BLOG_POSTS, queryKey: ['blog-posts'] });
+  const loading = postsLoading;
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,21 +57,11 @@ const BlogManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const data = await apiCall(API_ENDPOINTS.BLOG_POSTS);
-      setPosts(Array.isArray(data) ? data : (data.posts || data?.data || []));
-      setError('');
-    } catch (err) {
-      setError('فشل في تحميل المقالات');
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!postsData) return;
+    const arr = Array.isArray(postsData) ? postsData : (postsData.posts || postsData?.data || []);
+    setPosts(arr);
+    setError('');
+  }, [postsData]);
 
 const blocksToHtml = (value: any) => {
   if (Array.isArray(value)) {
@@ -453,8 +445,8 @@ return (
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
-                <div className="flex items-center justify-between">
+              <div className="sticky z-10 top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
+                <div className="flex  items-center justify-between">
                   <h3 className="text-2xl font-bold">
                     {editingPost ? '✏️ تعديل المقال' : '➕ إضافة مقال جديد'}
                   </h3>

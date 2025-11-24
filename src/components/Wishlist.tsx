@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { smartToast } from '../utils/toastConfig';
 import { Heart, ShoppingCart, Trash2, Package } from 'lucide-react';
 import { createProductSlug } from '../utils/slugify';
 import { addToCartUnified, removeFromWishlistUnified } from '../utils/cartUtils';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import PriceDisplay from './ui/PriceDisplay';
 import notfoundImg from '../assets/search_not_found.png';
 import ConfirmationModal from './modals/ConfirmationModal';
@@ -25,57 +27,59 @@ const Wishlist: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadWishlistProducts();
-
-    const handleWishlistUpdate = () => loadWishlistProducts();
-    window.addEventListener('wishlistUpdated', handleWishlistUpdate);
-    return () => window.removeEventListener('wishlistUpdated', handleWishlistUpdate);
+  const userId = useMemo(() => {
+    try {
+      const u = localStorage.getItem('user');
+      if (!u) return undefined;
+      const obj = JSON.parse(u);
+      return obj?.id;
+    } catch {
+      return undefined;
+    }
   }, []);
 
-  const loadWishlistProducts = async () => {
+  const { data: productsResp, isLoading: productsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.PRODUCTS, queryKey: ['products'] });
+  const { data: userWishlistResp, isLoading: userWishlistLoading } = useApiQuery<any>({ endpoint: userId ? API_ENDPOINTS.USER_WISHLIST(userId) : '', queryKey: ['user-wishlist', userId], enabled: !!userId });
+
+  useEffect(() => {
+    const handleWishlistUpdate = () => {
+      const saved = localStorage.getItem('wishlist');
+      const ids = saved ? JSON.parse(saved) : [];
+      const allProducts = productsResp?.products || productsResp || [];
+      const list = Array.isArray(allProducts) ? allProducts.filter((p: Product) => ids.includes(p.id)) : [];
+      setWishlistProducts(list);
+    };
+    window.addEventListener('wishlistUpdated', handleWishlistUpdate);
+    return () => window.removeEventListener('wishlistUpdated', handleWishlistUpdate);
+  }, [productsResp]);
+
+  useEffect(() => {
     try {
-      setLoading(true);
       let wishlistIds: number[] = [];
-      const userData = localStorage.getItem('user');
-
-      if (userData) {
-        try {
-          const user = JSON.parse(userData);
-          if (user?.id) {
-            const serverWishlist = await apiCall(API_ENDPOINTS.USER_WISHLIST(user.id));
-            wishlistIds = serverWishlist.map((item: any) => item.productId || item.id);
-            localStorage.setItem('wishlist', JSON.stringify(wishlistIds));
-          }
-        } catch (serverError) {
-          const savedWishlist = localStorage.getItem('wishlist');
-          if (savedWishlist) wishlistIds = JSON.parse(savedWishlist) || [];
-        }
+      if (userWishlistResp) {
+        const arr = Array.isArray(userWishlistResp) ? userWishlistResp : (userWishlistResp?.data || []);
+        wishlistIds = arr.map((item: any) => item.productId || item.id);
+        localStorage.setItem('wishlist', JSON.stringify(wishlistIds));
       } else {
-        const savedWishlist = localStorage.getItem('wishlist');
-        if (savedWishlist) wishlistIds = JSON.parse(savedWishlist) || [];
+        const saved = localStorage.getItem('wishlist');
+        if (saved) wishlistIds = JSON.parse(saved) || [];
       }
-
+      const allProducts = productsResp?.products || productsResp || [];
       if (wishlistIds.length === 0) {
         setWishlistProducts([]);
         setLoading(false);
         return;
       }
-
-      const productsResponse = await apiCall(API_ENDPOINTS.PRODUCTS);
-      // Handle response object that contains products array
-      const allProducts = productsResponse.products || productsResponse;
-      const wishlistProducts = allProducts.filter((product: Product) =>
-        wishlistIds.includes(product.id)
-      );
-      setWishlistProducts(wishlistProducts);
-    } catch (error) {
+      const list = Array.isArray(allProducts) ? allProducts.filter((p: Product) => wishlistIds.includes(p.id)) : [];
+      setWishlistProducts(list);
+    } catch {
       smartToast.frontend.error('فشل في تحميل قائمة المفضلة');
     } finally {
       setLoading(false);
     }
-  };
+  }, [productsResp, userWishlistResp]);
 
   const removeFromWishlist = async (productId: number, productName: string) => {
     try {
@@ -143,6 +147,7 @@ const Wishlist: React.FC = () => {
       setWishlistProducts([]);
       window.dispatchEvent(new CustomEvent('wishlistUpdated', { detail: [] }));
       window.dispatchEvent(new CustomEvent('wishlistCleared'));
+      queryClient.invalidateQueries({ queryKey: ['user-wishlist'] });
       document.querySelectorAll('[data-wishlist-count]').forEach((element) => {
         if (element instanceof HTMLElement) {
           element.textContent = '0';

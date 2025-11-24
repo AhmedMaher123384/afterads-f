@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { smartToast } from '../../../utils/toastConfig';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import ImageUploader from '../components/layout/ImageUploaderProps';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import Spinner from '../../../components/ui/Spinner';
@@ -27,6 +29,7 @@ interface Testimonial {
 }
 
 const TestimonialsManagement: React.FC = () => {
+  const queryClient = useQueryClient();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [filteredTestimonials, setFilteredTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -59,24 +62,14 @@ const TestimonialsManagement: React.FC = () => {
     loading: false
   });
 
-  // Fetch testimonials
-  const fetchTestimonials = async () => {
-    setLoading(true);
-    try {
-      const response = await apiCall(API_ENDPOINTS.TESTIMONIALS);
-      // التأكد من أن البيانات في الشكل الصحيح
-      const testimonialsArray = response.testimonials || response || [];
-      setTestimonials(testimonialsArray);
-      setFilteredTestimonials(testimonialsArray);
-    } catch (error) {
-      console.error('Error fetching testimonials:', error);
-      smartToast.dashboard.error('فشل في جلب شهادات العملاء');
-      setTestimonials([]);
-      setFilteredTestimonials([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: testimonialsData, isLoading: testimonialsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.TESTIMONIALS, queryKey: ['testimonials'] });
+  useEffect(() => {
+    if (!testimonialsData) return;
+    const arr = testimonialsData.testimonials || testimonialsData || [];
+    setTestimonials(arr);
+    setFilteredTestimonials(arr);
+    setLoading(false);
+  }, [testimonialsData]);
 
   // Filter testimonials based on search and filters
   const filterTestimonials = () => {
@@ -167,7 +160,7 @@ const TestimonialsManagement: React.FC = () => {
         position: '',
         testimonial: ''
       });
-      fetchTestimonials(); // Refresh the list
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
     } catch (error) {
       console.error('Error saving testimonial:', error);
       smartToast.dashboard.error('خطأ في حفظ الشهادة');
@@ -220,6 +213,7 @@ const handleEditTestimonial = (testimonial: Testimonial) => {
       
       smartToast.dashboard.success(`تم حذف الشهادة "${deleteModal.name}" بنجاح`);
       closeDeleteModal();
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
     } catch (error) {
       console.error('Error deleting testimonial:', error);
       smartToast.dashboard.error('فشل في حذف الشهادة');
@@ -259,10 +253,9 @@ const handleEditTestimonial = (testimonial: Testimonial) => {
 
   
 
-  // Load testimonials on component mount and when filters change
   useEffect(() => {
-    fetchTestimonials();
-  }, []);
+    setLoading(testimonialsLoading);
+  }, [testimonialsLoading]);
 
   useEffect(() => {
     filterTestimonials();
@@ -429,7 +422,7 @@ const handleEditTestimonial = (testimonial: Testimonial) => {
    {isTestimonialModalOpen && (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
     <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-      <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
+      <div className="sticky top-0 z-10 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
         <h3 className="text-2xl font-bold">
           {editingTestimonial ? '✏️ تعديل الشهادة' : '➕ إضافة شهادة جديدة'}
         </h3>

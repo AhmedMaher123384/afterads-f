@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FileText, ArrowLeft, Menu, X, ChevronDown, Search, Filter, BookOpen, Layers, Home } from 'lucide-react';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 interface Documentation {
@@ -92,58 +93,40 @@ const DocumentationPost: React.FC = () => {
   const [showMainDropdown, setShowMainDropdown] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
-  // Fetch all categories from main classifications
+  const { data: structureResp, isLoading: structureLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.DOCUMENTATION_STRUCTURE, queryKey: ['documentation-structure'] });
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const response = await apiCall(`${API_ENDPOINTS.DOCUMENTATIONS}/structure`);
-        
-        let mains: MainClassification[] = [];
-        
-        if (response?.navigation && Array.isArray(response.navigation)) {
-          mains = response.navigation;
-        } else if (Array.isArray(response)) {
-          mains = response;
-        } else {
-          console.error('Unexpected API response structure:', response);
-          setError(t('documentation.error_loading_data'));
-          setLoading(false);
-          setCategoriesLoaded(true);
-          return;
-        }
-
-        mains = mains.map(main => ({
-          ...main,
-          categories: Array.isArray(main.categories) ? main.categories.map(cat => ({
-            ...cat,
-            classifications: Array.isArray(cat.classifications) ? cat.classifications : [],
-            documentations: Array.isArray(cat.documentations) ? cat.documentations : []
-          })) : []
-        }));
-
-        setMainClassifications(mains);
-
-        const allCategories: Category[] = [];
-        mains.forEach(main => {
-          if (Array.isArray(main.categories)) {
-            main.categories.forEach(cat => {
-              allCategories.push(cat);
-            });
-          }
+    if (!structureResp) return;
+    let mains: MainClassification[] = [];
+    if (structureResp?.navigation && Array.isArray(structureResp.navigation)) {
+      mains = structureResp.navigation;
+    } else if (Array.isArray(structureResp)) {
+      mains = structureResp;
+    } else {
+      setError(t('documentation.error_loading_data'));
+      setCategoriesLoaded(true);
+      return;
+    }
+    mains = mains.map(main => ({
+      ...main,
+      categories: Array.isArray(main.categories) ? main.categories.map(cat => ({
+        ...cat,
+        classifications: Array.isArray(cat.classifications) ? cat.classifications : [],
+        documentations: Array.isArray(cat.documentations) ? cat.documentations : []
+      })) : []
+    }));
+    setMainClassifications(mains);
+    const allCategories: Category[] = [];
+    mains.forEach(main => {
+      if (Array.isArray(main.categories)) {
+        main.categories.forEach(cat => {
+          allCategories.push(cat);
         });
-
-        setCategories(allCategories);
-      } catch (err) {
-        console.error('Failed to fetch categories:', err);
-        setError(t('documentation.error_loading_data'));
-      } finally {
-        setLoading(false);
-        setCategoriesLoaded(true);
       }
-    };
-    fetchCategories();
-  }, []);
+    });
+    setCategories(allCategories);
+    setLoading(false);
+    setCategoriesLoaded(true);
+  }, [structureResp, t]);
 
   useEffect(() => {
     if (mainClassifications.length === 0) return;

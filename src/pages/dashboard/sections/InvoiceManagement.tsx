@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { smartToast } from '../../../utils/toastConfig';
 import { apiCall, API_ENDPOINTS, buildApiUrl } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
 import Spinner from '../../../components/ui/Spinner';
 
 interface OrderItem {
@@ -53,7 +54,11 @@ interface Order {
 
 const InvoiceManagement: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { data: ordersData, isLoading: ordersLoading } = useApiQuery<any>({
+    endpoint: API_ENDPOINTS.ORDERS,
+    queryKey: ['orders']
+  });
+  const loading = ordersLoading;
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -63,21 +68,11 @@ const InvoiceManagement: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
 
-  // Fetch orders
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const response = await apiCall(API_ENDPOINTS.ORDERS);
-      // التأكد من أن الاستجابة تحتوي على البيانات بشكل صحيح
-      const ordersData = Array.isArray(response) ? response : response?.orders || response?.data || [];
-      setOrders(ordersData);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      smartToast.dashboard.error('فشل في جلب الطلبات');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!ordersData) return;
+    const arr = Array.isArray(ordersData) ? ordersData : ordersData?.orders || ordersData?.data || [];
+    setOrders(arr);
+  }, [ordersData]);
 
   // Filter orders based on search and filters
   const filteredOrders = orders.filter(order => {
@@ -578,10 +573,7 @@ const InvoiceManagement: React.FC = () => {
     return statusMap[status] || status;
   };
 
-  // Load orders on component mount
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  
 
  return (
     <div className="p-6 space-y-8">

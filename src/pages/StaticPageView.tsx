@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { FileText, Calendar, Eye, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 import RichTextDisplay from '../components/ui/RichTextDisplay';
 
 interface StaticPage {
@@ -20,82 +22,62 @@ interface StaticPage {
 const StaticPageView: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [page, setPage] = useState<StaticPage | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: pageResp, isLoading: loading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.STATIC_PAGE_BY_SLUG(slug || ''), queryKey: ['static-page-by-slug', slug], enabled: Boolean(slug), staleTime: 1000 * 60 * 30 });
   const [notFound, setNotFound] = useState(false);
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   useEffect(() => {
-    const fetchPage = async () => {
-      try {
-        setLoading(true);
-        let pages: StaticPage[] = [];
-        
-        // Try to fetch from API
-        try {
-          const response = await apiCall(API_ENDPOINTS.STATIC_PAGES);
-          pages = Array.isArray(response) ? response : (response.data || []);
-          console.log('✅ Fetched static pages from API:', pages.length);
-        } catch (apiError) {
-          console.warn('⚠️ API fetch failed, trying localStorage:', apiError);
-          
-          // Fallback to localStorage
-          const savedPages = localStorage.getItem('staticPages');
-          if (savedPages) {
-            try {
-              const parsedPages = JSON.parse(savedPages);
-              if (Array.isArray(parsedPages)) {
-                pages = parsedPages;
-                console.log('📦 Using localStorage pages:', pages.length);
-              }
-            } catch (error) {
-              console.error('Error parsing saved static pages:', error);
-            }
-          }
+    if (!slug) return;
+    const resp = pageResp as any;
+    if (!resp) return;
+    const foundPage: StaticPage | null = Array.isArray(resp) ? (resp.find((p: any) => p.slug === slug) || null) : (resp?.data ?? resp);
+    if (foundPage && foundPage.isActive) {
+      setPage(foundPage);
+      document.title = `${foundPage.title} - AfterAds`;
+      if (foundPage.metaDescription) {
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+          metaDesc.setAttribute('content', foundPage.metaDescription);
         }
-
-        const foundPage = pages.find(p => p.slug === slug && p.isActive);
-        
-        if (foundPage) {
-          setPage(foundPage);
-          document.title = `${foundPage.title} - AfterAds`;
-          if (foundPage.metaDescription) {
-            const metaDesc = document.querySelector('meta[name="description"]');
-            if (metaDesc) {
-              metaDesc.setAttribute('content', foundPage.metaDescription);
-            }
-          }
-        } else {
-          setNotFound(true);
-        }
-      } catch (error) {
-        console.error('Error fetching page:', error);
-        setNotFound(true);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    if (slug) {
-      fetchPage();
+      setNotFound(false);
+    } else {
+      setNotFound(true);
     }
-  }, [slug]);
+  }, [slug, pageResp]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] flex items-center justify-center px-3 sm:px-4" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] flex items-center justify-center px-3 sm:px-4" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="text-center animate-fadeInUp">
           <div className="w-10 h-10 sm:w-12 sm:h-12 border-3 sm:border-4 border-[#7a7a7a] border-t-transparent rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
-          <div className="text-lg sm:text-xl text-white font-medium">جاري التحميل...</div>
+          <div className="text-lg sm:text-xl text-white font-medium">{t('nav.loading')}</div>
         </div>
       </div>
     );
   }
 
   if (notFound || !page) {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] flex items-center justify-center px-3 sm:px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="text-center animate-fadeInUp">
+          <div className="text-lg sm:text-xl text-white font-medium mb-4">{t('static_page.not_found')}</div>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#7a7a7a] to-[#4a4a4a] text-white px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-lg hover:from-[#8a8a8a] hover:to-[#5a5a5a] transition-all duration-300 font-bold shadow-lg text-sm sm:text-base"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t('static_page.back_to_home')}
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-SA', {
+    const locale = isRTL ? 'ar-SA' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -103,7 +85,7 @@ const StaticPageView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       <style>
         {`
           @keyframes fadeInUp {
@@ -206,12 +188,12 @@ const StaticPageView: React.FC = () => {
           <div className="bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-xl sm:rounded-2xl backdrop-blur-xl border border-white/15 p-3 sm:p-4 max-w-xs sm:max-w-sm md:max-w-2xl mx-auto animate-fadeInUp">
             <div className="flex items-center gap-2 justify-center flex-wrap">
               <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[#7a7a7a]" />
-              <span className="text-sm sm:text-base text-white font-bold">آخر تحديث: {formatDate(page.updatedAt)}</span>
+              <span className="text-sm sm:text-base text-white font-bold">{t('static_page.last_update')}: {formatDate(page.updatedAt)}</span>
             </div>
             {page.updatedAt !== page.createdAt && (
               <div className="flex items-center gap-2 justify-center mt-2 flex-wrap">
                 <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-[#7a7a7a]" />
-                <span className="text-sm sm:text-base text-white font-bold">تم الإنشاء: {formatDate(page.createdAt)}</span>
+                <span className="text-sm sm:text-base text-white font-bold">{t('static_page.created_on')}: {formatDate(page.createdAt)}</span>
               </div>
             )}
           </div>
@@ -251,7 +233,7 @@ const StaticPageView: React.FC = () => {
                     const isHorizontal = hasImages && block.images.every((img: any) => img.orientation === 'horizontal');
                     return (
                       <div key={idx} className="space-y-4">
-                        {block.text && <div dangerouslySetInnerHTML={{ __html: block.text }} />}
+                        {block.text && <div className='text-white' dangerouslySetInnerHTML={{ __html: block.text }} />}
                         {hasImages && (
                           isHorizontal ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
@@ -288,7 +270,7 @@ const StaticPageView: React.FC = () => {
                 className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#7a7a7a] to-[#4a4a4a] text-white px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-lg sm:rounded-xl hover:from-[#8a8a8a] hover:to-[#5a5a5a] transition-all duration-300 transform hover:scale-105 font-bold shadow-lg text-sm sm:text-base"
               >
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                العودة للصفحة الرئيسية
+                {t('static_page.back_to_home')}
               </Link>
             </div>
           </div>

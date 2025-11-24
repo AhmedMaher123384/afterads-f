@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaInstagram, FaWhatsapp, FaTwitter, FaFacebookF, FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import { ArrowUp, ExternalLink, Award, Users, Zap, Mail, Phone, MapPin } from 'lucide-react';
 import { apiCall, API_ENDPOINTS } from '../../config/api';
+import { useApiQuery } from '../../hooks/useApiQuery';
 import { useTranslation } from 'react-i18next';
 import logo from "../../assets/logo.webp";
 import salla from "../../assets/sallalogo.webp";
@@ -10,25 +11,27 @@ import R from "../../assets/R.png";
 import Heart from "../../assets/red-heart-element-png.webp";
 import KSA from "../../assets/45266df85e3e2526fc96a3dd6adea56a.png";
 
-
 interface StaticPage {
-  id: string;
+  _id: string;  // ✅ البيانات جاية بـ _id مش id
   title: string;
   slug: string;
-  content: string;
-  showInFooter: boolean;
+  content: any;
+  showInFooter?: boolean;
+  isActive?: boolean;
   createdAt: string;
 }
-
 const GlobalFooter: React.FC = () => {
   const { t } = useTranslation();
   const [staticPages, setStaticPages] = useState<StaticPage[]>([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();
 
-  useEffect(() => {
-    fetchStaticPages();
-    
+const { data: pagesResp } = useApiQuery<any>({ 
+  endpoint: API_ENDPOINTS.STATIC_PAGES, 
+  queryKey: ['static-pages'],
+  staleTime: Infinity, // البيانات تفضل في الكاش للأبد
+  cacheTime: 1000 * 60 * 60 * 24 // تتمسح من الذاكرة بعد 24 ساعة
+});  useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
     };
@@ -36,18 +39,25 @@ const GlobalFooter: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const fetchStaticPages = async () => {
-    try {
-      const data = await apiCall(API_ENDPOINTS.STATIC_PAGES);
-      if (data && Array.isArray(data)) {
-        const footerPages = data.filter((page: StaticPage) => page.showInFooter);
-        setStaticPages(footerPages);
-      }
-    } catch (error) {
-      console.error('Error fetching static pages:', error);
-    }
-  };
+  console.log('Footer static pages:', staticPages);
 
+ useEffect(() => {
+  if (!pagesResp) return;
+  
+  const arr = Array.isArray(pagesResp) ? pagesResp : pagesResp?.data || [];
+  console.log("📄 [Footer] Raw data:", arr);
+  
+  // تحويل _id إلى id + فلترة البيانات النشطة فقط
+  const activePages = arr
+    .filter((p: any) => p?.isActive !== false) // ✅ عرض كل حاجة ما عدا اللي isActive: false
+    .map((p: any) => ({
+      ...p,
+      id: p._id || p.id // تحويل _id إلى id
+    }));
+  
+  console.log("✅ [Footer] Active pages:", activePages);
+  setStaticPages(activePages);
+}, [pagesResp]);
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -169,16 +179,16 @@ const GlobalFooter: React.FC = () => {
                       </Link>
                     </li>
                   ))}
-                  {staticPages.map((page) => (
-                    <li key={page.id}>
-                      <Link
-                        to={`/page/${page.slug}`}
-                        className="text-gray-400 hover:text-[#18b5d5] transition-colors duration-300 text-sm block"
-                      >
-                        {page.title}
-                      </Link>
-                    </li>
-                  ))}
+   {staticPages.map((page) => (
+  <li key={page.id}>
+    <Link
+      to={`/page/${page.slug}`}  // ✅ تصحيح الـ syntax
+      className="text-gray-400 hover:text-[#18b5d5] transition-colors duration-300 text-sm block"
+    >
+      {page.title}
+    </Link>
+  </li>
+))}
                 </ul>
               </div>
 

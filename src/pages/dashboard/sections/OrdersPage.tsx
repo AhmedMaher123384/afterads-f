@@ -5,6 +5,8 @@ import {
   TrendingUp, AlertTriangle, Package, Users, DollarSign
 } from 'lucide-react';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import Spinner from '../../../components/ui/Spinner';
 
@@ -111,23 +113,18 @@ const OrdersPage: React.FC = () => {
   const [noteText, setNoteText] = useState<string>('');
   const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState<boolean>(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  // دالة جلب الطلبات
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const response = await apiCall(API_ENDPOINTS.ORDERS);
-      // التأكد من أن الاستجابة تحتوي على البيانات بشكل صحيح
-      const ordersData = Array.isArray(response) ? response : response?.orders || response?.data || [];
-      setOrders(ordersData);
-      setFilteredOrders(ordersData);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      // toast.error('فشل في جلب الطلبات');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const queryClient = useQueryClient();
+  const { data: ordersResp, isLoading: ordersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.ORDERS, queryKey: ['orders'] });
+  useEffect(() => {
+    if (!ordersResp) return;
+    const ordersData = Array.isArray(ordersResp) ? ordersResp : ordersResp?.orders || ordersResp?.data || [];
+    setOrders(ordersData);
+    setFilteredOrders(ordersData);
+    setLoading(false);
+  }, [ordersResp]);
 
   // دالة حساب الإحصائيات
   const calculateOrderStats = (): OrderStats => {
@@ -229,6 +226,7 @@ const handleOrderStatusUpdate = async (orderId: number, newStatus: string) => {
       setFilteredOrders(result);
 
       console.log('✅ Order status updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     } else {
       console.error('❌ Failed to update order status:', response);
     }
@@ -255,7 +253,7 @@ const handleOrderStatusUpdate = async (orderId: number, newStatus: string) => {
       filterOrders(orderFilters); // إعادة التصفية بعد التحديث
       setEditingOrderNotes(null);
       setNoteText('');
-      // toast.success('تم تحديث ملاحظات الطلب بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     } catch (error) {
       console.error('Error updating order notes:', error);
       // toast.error('فشل في تحديث ملاحظات الطلب');
@@ -298,6 +296,7 @@ const handleDeleteOrder = async (orderId: number) => {
       setFilteredOrders(result);
 
       console.log('✅ Order deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     } else {
       console.error('❌ Failed to delete order:', response);
     }
@@ -314,8 +313,13 @@ const handleDeleteOrder = async (orderId: number) => {
   // دالة فتح مودال العرض (يمكن تكاملها لاحقاً)
   const openOrderModal = (order: Order) => {
     console.log("Opening order details modal for order ID:", order.id);
-    // setIsOrderModalOpen(true);
-    // setSelectedOrder(order);
+    setIsOrderModalOpen(true);
+    setSelectedOrder(order);
+  };
+
+  const closeOrderModal = () => {
+    setIsOrderModalOpen(false);
+    setSelectedOrder(null);
   };
 
  const openDeleteModal = (type: string, id: number, name: string) => {
@@ -379,8 +383,8 @@ const handleDeleteOrder = async (orderId: number) => {
 
   // تحميل البيانات عند تحميل المكون
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (!ordersLoading) setLoading(false);
+  }, [ordersLoading]);
 
   // حساب الإحصائيات
   const stats = calculateOrderStats();
@@ -714,15 +718,96 @@ const handleDeleteOrder = async (orderId: number) => {
 
       )}
 
-      <ConfirmationModal
-        isOpen={isConfirmOpen}
+  <ConfirmationModal
+    isOpen={isConfirmOpen}
         title="تأكيد حذف الطلب"
         message="هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء."
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         confirmText="حذف"
         cancelText="إلغاء"
-      />
+  />
+
+      {/* Order Details Modal */}
+      {isOrderModalOpen && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+            <div className="bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold">تفاصيل الطلب #{selectedOrder.id}</h3>
+                <button onClick={closeOrderModal} className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-all">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">العميل</p>
+                    <p className="font-semibold text-gray-900">{selectedOrder.customerName}</p>
+                    <p className="text-sm text-gray-600">{selectedOrder.customerEmail}</p>
+                    <p className="text-sm text-gray-600">{selectedOrder.customerPhone}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text_sm text-gray-600">العنوان</p>
+                    <p className="font-semibold text-gray-900">{selectedOrder.address}</p>
+                    <p className="text-sm text-gray-600">{selectedOrder.city}</p>
+                    <p className="text-sm text-gray-600">التاريخ: {new Date(selectedOrder.createdAt).toLocaleString('ar-SA')}</p>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-3">عناصر الطلب</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-[#203f61] text-white">
+                        <tr>
+                          <th className="px-4 py-2 text-right text-sm font-semibold">المنتج</th>
+                          <th className="px-4 py-2 text-right text-sm font-semibold">السعر</th>
+                          <th className="px-4 py-2 text_right text-sm font-semibold">الكمية</th>
+                          <th className="px-4 py-2 text-right text-sm font-semibold">الإجمالي</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {selectedOrder.items.map((item, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-4 py-2">
+                              <div className="text-sm font-medium text-gray-900">{item.productName}</div>
+                            </td>
+                            <td className="px-4 py-2">
+                              <div className="text-sm text-gray-700">{item.price.toFixed(2)} ر.س</div>
+                            </td>
+                            <td className="px-4 py-2">
+                              <div className="text-sm text-gray-700">{item.quantity}</div>
+                            </td>
+                            <td className="px-4 py-2">
+                              <div className="text-sm font-semibold text-[#203f61]">{(item.price * item.quantity).toFixed(2)} ر.س</div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">طريقة الدفع</p>
+                    <p className="font-semibold text-gray-900">{selectedOrder.paymentMethod || 'غير محدد'}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">حالة الدفع</p>
+                    <p className="font-semibold text-gray-900">{selectedOrder.paymentStatus || 'غير محدد'}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">إجمالي الطلب</p>
+                    <p className="font-bold text-[#203f61]">{selectedOrder.total.toFixed(2)} ر.س</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

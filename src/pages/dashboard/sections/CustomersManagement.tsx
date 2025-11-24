@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, User, Mail, Phone, MapPin, Lock, Users, UserX, UserCheck, Calendar, Shield, UserPlus } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
 
 interface Customer {
   _id: string;
@@ -23,7 +24,8 @@ interface Customer {
 }
 const CustomersManagement: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: customersData, isLoading: customersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CUSTOMERS, queryKey: ['customers'] });
+  const loading = customersLoading;
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,21 +49,11 @@ const [formData, setFormData] = useState<Partial<Customer>>({
 
 
   useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-const fetchCustomers = async () => {
-  try {
-    setLoading(true);
-    const data = await apiCall(API_ENDPOINTS.CUSTOMERS);
-    setCustomers(Array.isArray(data) ? data : (data.customers || data || []));
+    if (!customersData) return;
+    const arr = Array.isArray(customersData) ? customersData : (customersData.customers || customersData || []);
+    setCustomers(arr);
     setError('');
-  } catch (err) {
-    setError('فشل في تحميل العملاء');
-  } finally {
-    setLoading(false);
-  }
-};
+  }, [customersData]);
 
  const openModal = (customer?: Customer) => {
   if (customer) {
@@ -419,7 +411,7 @@ const handleSubmit = async (e: React.MouseEvent) => {
     {isModalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
-          <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
+          <div className="sticky z-10 top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold">
                 {editingCustomer ? '✏️ تعديل العميل' : '➕ إضافة عميل جديد'}

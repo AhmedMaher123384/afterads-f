@@ -3,6 +3,8 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Trash2, AlertCircle, MessageSquare, Star, User, Mail, Package, Calendar, X, Eye } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Comment {
   _id: string;
@@ -25,23 +27,17 @@ const CommentsManagement: React.FC = () => {
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
   const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const { data: commentsResp, isLoading: commentsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.COMMENTS, queryKey: ['comments'] });
 
   useEffect(() => {
-    fetchComments();
-  }, []);
-
-  const fetchComments = async () => {
-    try {
-      setLoading(true);
-      const data = await apiCall(API_ENDPOINTS.COMMENTS);
-      setComments(Array.isArray(data) ? data : (data.comments || data || []));
-      setError('');
-    } catch (err) {
-      setError('فشل في تحميل التعليقات');
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!commentsResp) return;
+    const list = Array.isArray(commentsResp) ? commentsResp : (commentsResp?.comments || commentsResp || []);
+    setComments(list);
+    setError('');
+    setLoading(false);
+  }, [commentsResp]);
 
   const handleDelete = (id: string) => {
     setDeleteTargetId(id);
@@ -53,7 +49,7 @@ const CommentsManagement: React.FC = () => {
     try {
       await apiCall(API_ENDPOINTS.COMMENT_BY_ID(deleteTargetId), { method: 'DELETE' });
       setSuccess('تم حذف التعليق بنجاح');
-      fetchComments();
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError('حدث خطأ أثناء حذف التعليق');

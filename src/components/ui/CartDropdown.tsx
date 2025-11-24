@@ -546,10 +546,10 @@ const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, onHoverCha
       <div 
         className="relative w-64 xs:w-72 sm:w-96 md:w-80 lg:w-96 backdrop-blur-lg border border-white/20 rounded-xl shadow-xl z-50 max-h-[60vh] xs:max-h-[65vh] sm:max-h-[80vh] overflow-hidden"
         style={{
-          background: 'rgba(41, 41, 41, 0.85)',
+          background: '#292929',
           backdropFilter: 'blur(16px) saturate(150%)',
           WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-          boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04)'
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}

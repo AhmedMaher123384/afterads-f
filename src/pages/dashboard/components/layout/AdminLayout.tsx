@@ -19,18 +19,18 @@ import ThemeCardsManagement from "../../sections/ThemeCardsManagement";
 import ThemeWorksManagement from "../../sections/ThemeWorksManagement";
 import DocumentationManagement from "../../sections/DocumentationManagement";
 import AnnouncementBarManagement from '../../sections/AnnouncementBarManagement';
- 
+
 const AdminLayout: React.FC = () => {
-  
+
   return (
-    <div className="flex relative">
+    <div className="flex h-screen overflow-hidden relative">
       {/* الشريط الجانبي */}
-      <div className="relative z-50">
+      <div className="relative z-50 h-full overflow-y-auto">
         <Sidebar />
       </div>
 
       {/* المحتوى الرئيسي */}
-      <div className="flex-1 bg-gray-100 min-h-full p-4 relative z-10">
+      <div className="flex-1 bg-gray-100 h-full overflow-y-auto p-4 relative z-10">
         <Routes>
           <Route path="products" element={<ProductsManagement />} />
           {/* تقدر تضيف باقي الصفحات هنا زي */}
@@ -50,7 +50,7 @@ const AdminLayout: React.FC = () => {
           <Route path="employees" element={<EmployeeManagement />} />
           <Route path="theme-cards" element={<ThemeCardsManagement />} />
           <Route path="theme-works" element={<ThemeWorksManagement />} />
-          <Route path="announcement-bar" element={<AnnouncementBarManagement  />} />
+          <Route path="announcement-bar" element={<AnnouncementBarManagement />} />
         </Routes>
       </div>
     </div>

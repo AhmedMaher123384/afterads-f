@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { smartToast } from '../utils/toastConfig';
 import { ShoppingCart as CartIcon, Plus, Minus, Trash2, Package, ArrowRight } from 'lucide-react';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import AuthModal from './modals/AuthModal';
 import CheckoutAuthModal from './modals/CheckoutAuthModal';
 import PriceDisplay from './ui/PriceDisplay';
@@ -72,6 +74,18 @@ const ShoppingCart: React.FC = () => {
   const [serverTotal, setServerTotal] = useState<number | null>(null);
   const [serverLoyaltyDiscount, setServerLoyaltyDiscount] = useState<number | null>(null);
   const [serverLoyaltyAvailable, setServerLoyaltyAvailable] = useState<number | null>(null);
+  const queryClient = useQueryClient();
+  const userId = useMemo(() => {
+    try {
+      const u = localStorage.getItem('user');
+      if (!u) return undefined;
+      const obj = JSON.parse(u);
+      return obj?.id;
+    } catch {
+      return undefined;
+    }
+  }, []);
+  const { data: serverCartResp, isLoading: serverCartLoading } = useApiQuery<any>({ endpoint: userId ? API_ENDPOINTS.USER_CART(userId) : '', queryKey: ['user-cart', userId], enabled: !!userId });
 
   // Helper function to get localized content for add-ons
   const getLocalizedAddOnContent = (field: 'name' | 'description', addOn: any) => {
@@ -88,81 +102,40 @@ const ShoppingCart: React.FC = () => {
 
   // Load cart from server for logged users, fallback to localStorage
   useEffect(() => {
-    const loadCart = async () => {
-      try {
-        // Check if user is logged in
-        const userData = localStorage.getItem('user');
-        let cartToLoad = [];
-        
-        if (userData) {
-          try {
-            const user = JSON.parse(userData);
-            if (user?.id) {
-              console.log('🔄 [ShoppingCart] User is logged in, loading cart from server:', user.id);
-              
-              // Load cart from server for logged users
-              const serverCart = await apiCall(API_ENDPOINTS.USER_CART(user.id));
-              
-              if (Array.isArray(serverCart)) {
-                cartToLoad = serverCart;
-                setServerSubtotal(null);
-                setServerTotal(null);
-                setServerLoyaltyDiscount(null);
-                setServerLoyaltyAvailable(null);
-                console.log('✅ [ShoppingCart] Loaded cart from server (array):', cartToLoad.length, 'items');
-              } else if (serverCart && typeof serverCart === 'object') {
-                if (Array.isArray((serverCart as any).cart)) {
-                  cartToLoad = (serverCart as any).cart;
-                } else if (Array.isArray((serverCart as any).items)) {
-                  cartToLoad = (serverCart as any).items;
-                } else {
-                  console.warn('⚠️ [ShoppingCart] Server returned unexpected cart format, falling back to local storage');
-                  throw new Error('Invalid server cart format');
-                }
-                setServerSubtotal(typeof (serverCart as any).subtotal === 'number' ? (serverCart as any).subtotal : null);
-                setServerTotal(typeof (serverCart as any).total === 'number' ? (serverCart as any).total : null);
-                setServerLoyaltyDiscount(typeof (serverCart as any).loyaltyDiscount === 'number' ? (serverCart as any).loyaltyDiscount : null);
-                setServerLoyaltyAvailable(typeof (serverCart as any).loyaltyAvailable === 'number' ? (serverCart as any).loyaltyAvailable : null);
-              } else {
-                console.warn('⚠️ [ShoppingCart] Server returned non-object cart format');
-                throw new Error('Invalid server cart format');
-              }
-              
-              // Update local storage with server cart
-              localStorage.setItem('cart', JSON.stringify(cartToLoad));
-              console.log('✅ [ShoppingCart] Local storage synced with server cart');
-              
-              // Dispatch cart update event
-              window.dispatchEvent(new CustomEvent('cartUpdated'));
-            }
-          } catch (serverError) {
-            console.error('❌ [ShoppingCart] Error loading cart from server, falling back to local storage:', serverError);
-            // Fallback to local storage if server fails
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-              cartToLoad = JSON.parse(savedCart);
-            }
+    try {
+      let cartToLoad: any[] = [];
+      if (serverCartResp) {
+        const srv = serverCartResp;
+        if (Array.isArray(srv)) {
+          cartToLoad = srv;
+          setServerSubtotal(null);
+          setServerTotal(null);
+          setServerLoyaltyDiscount(null);
+          setServerLoyaltyAvailable(null);
+        } else if (srv && typeof srv === 'object') {
+          if (Array.isArray((srv as any).cart)) {
+            cartToLoad = (srv as any).cart;
+          } else if (Array.isArray((srv as any).items)) {
+            cartToLoad = (srv as any).items;
           }
-        } else {
-          console.log('👤 [ShoppingCart] User not logged in, loading from local storage');
-          // Load from local storage for non-logged users
-          const savedCart = localStorage.getItem('cart');
-          if (savedCart) {
-            cartToLoad = JSON.parse(savedCart);
-          }
+          setServerSubtotal(typeof (srv as any).subtotal === 'number' ? (srv as any).subtotal : null);
+          setServerTotal(typeof (srv as any).total === 'number' ? (srv as any).total : null);
+          setServerLoyaltyDiscount(typeof (srv as any).loyaltyDiscount === 'number' ? (srv as any).loyaltyDiscount : null);
+          setServerLoyaltyAvailable(typeof (srv as any).loyaltyAvailable === 'number' ? (srv as any).loyaltyAvailable : null);
         }
-        
-        setCartItems(cartToLoad);
-      } catch (error) {
-        console.error('Error loading cart:', error);
-        smartToast.frontend.error('فشل في تحميل السلة');
-      } finally {
-        setIsInitialLoading(false);
+        localStorage.setItem('cart', JSON.stringify(cartToLoad));
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+      } else {
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) cartToLoad = JSON.parse(savedCart);
       }
-    };
-
-    loadCart();
-  }, []);
+      setCartItems(cartToLoad);
+    } catch {
+      smartToast.frontend.error('فشل في تحميل السلة');
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, [serverCartResp]);
 
   // Save cart to localStorage
   const saveCartToLocalStorage = useCallback((items: CartItem[]) => {
@@ -193,6 +166,7 @@ const ShoppingCart: React.FC = () => {
               method: 'PUT',
               body: JSON.stringify({ quantity: newQuantity })
             });
+            queryClient.invalidateQueries({ queryKey: ['user-cart'] });
              
             console.log('✅ [ShoppingCart] Successfully updated quantity on server');
           }
@@ -239,6 +213,7 @@ const ShoppingCart: React.FC = () => {
             await apiCall(API_ENDPOINTS.CART_ITEM(user.id, itemId), {
               method: 'DELETE'
             });
+            queryClient.invalidateQueries({ queryKey: ['user-cart'] });
             
             console.log('✅ [ShoppingCart] Successfully removed item from server');
           }
@@ -280,6 +255,7 @@ const ShoppingCart: React.FC = () => {
           if (user?.id) {
             await apiCall(API_ENDPOINTS.USER_CART(user.id), { method: 'DELETE' });
             localStorage.setItem(`cartCount_${user.id}`, '0');
+            queryClient.invalidateQueries({ queryKey: ['user-cart'] });
           }
         } catch (error) {
           console.error('Error clearing server cart:', error);
@@ -425,7 +401,7 @@ const ShoppingCart: React.FC = () => {
 
         {/* Loading State */}
         {isInitialLoading && (
-      <LoadingSpinner message={t('home.themes.loading')} />
+      <LoadingSpinner />
         )}
 
         {/* Empty Cart State */}

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
 import { smartToast } from '../../../utils/toastConfig';
 import Spinner from '../../../components/ui/Spinner';
 
@@ -107,43 +108,38 @@ const AnalyticsDashboard: React.FC = () => {
     dailyVisitors: 0
   });
   const [dailySalesData, setDailySalesData] = useState<DailySalesData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [monthlySalesData, setMonthlySalesData] = useState<{ month: string; sales: number; orders: number }[]>([]);
+  const { data: ordersData, isLoading: ordersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.ORDERS, queryKey: ['orders'] });
+  const { data: customersData, isLoading: customersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CUSTOMERS, queryKey: ['customers'] });
+  const { data: couponsData, isLoading: couponsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.COUPONS, queryKey: ['coupons'] });
+  const loading = ordersLoading || customersLoading || couponsLoading;
+
+  useEffect(() => {
+    if (!ordersData) return;
+    const arr = Array.isArray(ordersData) ? ordersData : ordersData?.orders || ordersData?.data || [];
+    setOrders(arr);
+  }, [ordersData]);
+
+  useEffect(() => {
+    if (!customersData) return;
+    const arr = Array.isArray(customersData) ? customersData : customersData?.customers || customersData?.data || [];
+    setCustomers(arr);
+  }, [customersData]);
+
+  useEffect(() => {
+    if (!couponsData) return;
+    const arr = Array.isArray(couponsData) ? couponsData : couponsData?.coupons || couponsData?.data || [];
+    setCoupons(arr);
+  }, [couponsData]);
 
   // Fetch orders
-  const fetchOrders = async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.ORDERS);
-      const ordersArray = Array.isArray(response) ? response : response?.orders || response?.data || [];
-      setOrders(ordersArray);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      smartToast.dashboard.error('فشل في جلب الطلبات');
-    }
-  };
+  
 
   // Fetch customers
-  const fetchCustomers = async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.CUSTOMERS);
-      const customersArray = Array.isArray(response) ? response : response?.customers || response?.data || [];
-      setCustomers(customersArray);
-    } catch (error) {
-      console.error('Error fetching customers:', error);
-      smartToast.dashboard.error('فشل في جلب العملاء');
-    }
-  };
+  
 
   // Fetch coupons
-  const fetchCoupons = async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.COUPONS);
-      const couponsArray = Array.isArray(response) ? response : response?.coupons || response?.data || [];
-      setCoupons(couponsArray);
-    } catch (error) {
-      console.error('Error fetching coupons:', error);
-      smartToast.dashboard.error('فشل في جلب الكوبونات');
-    }
-  };
+  
 
   // Fetch visitor stats
   const fetchVisitorStats = async () => {
@@ -161,7 +157,7 @@ const AnalyticsDashboard: React.FC = () => {
     }
   };
 
-  // Generate daily sales data based on orders
+  // Generate daily sales data based on orders (last 30 days)
   const generateDailySalesData = () => {
     if (orders.length === 0) {
       // If no orders, create empty data for last 30 days
@@ -223,6 +219,27 @@ const AnalyticsDashboard: React.FC = () => {
     });
 
     setDailySalesData(data);
+  };
+
+  // Generate monthly sales data based on orders (current year)
+  const generateMonthlySalesData = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+    const monthly: { sales: number; orders: number }[] = Array.from({ length: 12 }, () => ({ sales: 0, orders: 0 }));
+
+    orders.forEach(order => {
+      const d = new Date(order.createdAt);
+      if (d.getFullYear() === year) {
+        const m = d.getMonth();
+        monthly[m].sales += order.total;
+        monthly[m].orders += 1;
+      }
+    });
+
+    const data = monthly.map((v, i) => ({ month: months[i], sales: v.sales, orders: v.orders }));
+    setMonthlySalesData(data);
   };
 
   // Calculate metrics
@@ -409,33 +426,14 @@ const getCustomerMetrics = () => {
 
 // في السطر ~345
 useEffect(() => {
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        fetchOrders(),
-        fetchCustomers(),
-        fetchCoupons(),
-        fetchVisitorStats()
-      ]);
-      // ✅ لا تستدعي generateDailySalesData هنا
-    } catch (error) {
-      console.error('Error loading analytics ', error);
-      smartToast.dashboard.error('فشل في تحميل بيانات التحليلات');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  loadData();
+  fetchVisitorStats();
 }, []);
 
 // ✅ أضف useEffect جديد لتوليد البيانات عندما تتغير الطلبات
 useEffect(() => {
-  if (orders.length > 0) {
-    generateDailySalesData();
-  }
-}, [orders]); // سيعمل تلقائياً عندما تُحمّل الطلبات
+  generateDailySalesData();
+  generateMonthlySalesData();
+}, [orders]);
 
   if (loading) {
     return <Spinner overlay />;
@@ -560,15 +558,15 @@ const couponMetrics = getCouponMetrics();
           <div className="bg-[#203f61] text-white px-6 py-4">
             <h3 className="text-lg font-bold flex items-center">
               <BarChart3 className="w-5 h-5 ml-2" />
-              المبيعات الشهرية
+              المبيعات حسب الأشهر
             </h3>
           </div>
           <div className="p-6">
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailySalesData}>
+                <BarChart data={monthlySalesData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" stroke="#666" fontSize={12} />
+                  <XAxis dataKey="month" stroke="#666" fontSize={12} />
                   <YAxis stroke="#666" fontSize={12} />
                   <Tooltip />
                   <Bar dataKey="sales" fill="#203f61" radius={[4, 4, 0, 0]} />

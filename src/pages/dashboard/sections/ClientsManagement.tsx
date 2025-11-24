@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { smartToast } from '../../../utils/toastConfig';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import ImageUploader from '../components/layout/ImageUploaderProps';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import Spinner from '../../../components/ui/Spinner';
@@ -26,9 +28,11 @@ interface Client {
 }
 
 const ClientsManagement: React.FC = () => {
+  const queryClient = useQueryClient();
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { data: clientsData, isLoading: clientsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CLIENTS, queryKey: ['clients'] });
+  const loading = clientsLoading;
   const [clientSearchTerm, setClientSearchTerm] = useState('');
  const [clientStatusFilter, setClientStatusFilter] = useState<'all' | 'active' | 'inactive' | 'featured'>('all');
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
@@ -53,52 +57,32 @@ const ClientsManagement: React.FC = () => {
   });
 
   // Fetch clients
-  const fetchClients = async () => {
-    setLoading(true);
-    try {
-      const response = await apiCall(API_ENDPOINTS.CLIENTS);
-      // Handle the correct API response format: {clients: [...], total: ...}
-      const clientsArray = response?.clients || response || [];
-      console.log('📋 Initial clients array:', clientsArray.length, 'items');
-      
-      // Normalize IDs to ensure no duplicate or invalid IDs
-      const normalizedClients = clientsArray.map((client: any, index: number) => {
-        // If ID exists and is unique, keep it as is
-        if (client.id && typeof client.id === 'number' && !Number.isNaN(client.id)) {
-          return client;
+  useEffect(() => {
+    if (!clientsData) return;
+    const clientsArray = clientsData?.clients || clientsData || [];
+    const normalizedClients = clientsArray.map((client: any, index: number) => {
+      if (client.id && typeof client.id === 'number' && !Number.isNaN(client.id)) {
+        return client;
+      }
+      return { ...client, id: -(index + 1) };
+    });
+    const seenIds = new Set();
+    const finalClients = normalizedClients.map((client: any, index: number) => {
+      if (seenIds.has(client.id)) {
+        let newId = -(index + normalizedClients.length + 1);
+        while (seenIds.has(newId)) {
+          newId -= 1;
         }
-        // Create a temporary ID based on index if no valid ID exists
-        return { ...client, id: -(index + 1) };
-      });
-      
-      // Check for duplicate IDs and fix them
-      const seenIds = new Set();
-      const finalClients = normalizedClients.map((client: any, index: number) => {
-        if (seenIds.has(client.id)) {
-          // If ID is duplicate, create a new unique ID
-          let newId = -(index + normalizedClients.length + 1);
-          while (seenIds.has(newId)) {
-            newId -= 1;
-          }
-          seenIds.add(newId);
-          return { ...client, id: newId };
-        } else {
-          seenIds.add(client.id);
-          return client;
-        }
-      });
-      
-      setClients(finalClients);
-      setFilteredClients(finalClients);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-      setClients([]);
-      setFilteredClients([]);
-      smartToast.dashboard.error('فشل في جلب العملاء');
-    } finally {
-      setLoading(false);
-    }
-  };
+        seenIds.add(newId);
+        return { ...client, id: newId };
+      } else {
+        seenIds.add(client.id);
+        return client;
+      }
+    });
+    setClients(finalClients);
+    setFilteredClients(finalClients);
+  }, [clientsData]);
 
   // Filter clients based on search and filters
   const filterClients = () => {
@@ -208,7 +192,7 @@ const ClientsManagement: React.FC = () => {
         logo: null,
         website: '',
       });
-      fetchClients(); // Refresh the list
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
     } catch (error) {
       console.error('Error saving client:', error);
       smartToast.dashboard.error('خطأ في حفظ العميل');
@@ -252,6 +236,7 @@ const ClientsManagement: React.FC = () => {
       
       smartToast.dashboard.success(`تم حذف العميل "${deleteModal.name}" بنجاح`);
       closeDeleteModal();
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
     } catch (error) {
       console.error('Error deleting client:', error);
       smartToast.dashboard.error('فشل في حذف العميل');
@@ -289,10 +274,7 @@ const ClientsManagement: React.FC = () => {
     }));
   };
 
-  // Load clients on component mount and when filters change
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  
 
   useEffect(() => {
     filterClients();
@@ -458,14 +440,14 @@ onChange={(e) => setClientStatusFilter(e.target.value as 'all' | 'active' | 'ina
       {/* Modal for adding/editing client */}
       {isClientModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r z-10 from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
               <h3 className="text-2xl font-bold">
                 {editingClient ? '✏️ تعديل العميل' : '➕ إضافة عميل جديد'}
               </h3>
             </div>
             
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">الاسم</label>
@@ -540,7 +522,7 @@ onChange={(e) => setClientStatusFilter(e.target.value as 'all' | 'active' | 'ina
         </div>
       )}
 
-      {loading && <Spinner overlay />}
+      
 
       {/* Delete Confirmation Modal */}
       <ConfirmationModal

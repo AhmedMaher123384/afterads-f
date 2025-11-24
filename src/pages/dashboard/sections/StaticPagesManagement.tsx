@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { smartToast } from '../../../utils/toastConfig';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import Spinner from '../../../components/ui/Spinner';
 import RichTextEditor from '../components/layout/RichTextEditor';
@@ -28,6 +30,7 @@ interface StaticPage {
   createdAt?: string;      
   updatedAt?: string;      
   isActive: boolean;
+  showInFooter?: boolean;
 }
 
 const StaticPagesManagement: React.FC = () => {
@@ -42,7 +45,8 @@ const StaticPagesManagement: React.FC = () => {
     metaTitle: '',
     metaDescription: '',
     keywords: '',
-    isActive: true
+    isActive: true,
+    showInFooter: true
   });
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -60,27 +64,19 @@ const StaticPagesManagement: React.FC = () => {
 
   // Fetch static pages
   // Fetch static pages
-const fetchStaticPages = async () => {
-  setIsStaticPagesLoading(true);
-  try {
-    const response = await apiCall(API_ENDPOINTS.STATIC_PAGES);
-    const pages = Array.isArray(response) ? response : (response.data || response || []);
-    
-    // حول البيانات من Backend إلى ما يتوقعه Frontend
- const transformedPages = pages.map((page: any) => ({
-  ...page,
-  metaTitle: page.seoTitle || '',
-  keywords: page.seoKeywords ? page.seoKeywords.join(', ') : ''
-}));
-    
+  const queryClient = useQueryClient();
+  const { data: pagesResp, isLoading: pagesLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.STATIC_PAGES, queryKey: ['static-pages'] });
+  useEffect(() => {
+    if (!pagesResp) return;
+    const pages = Array.isArray(pagesResp) ? pagesResp : (pagesResp.data || pagesResp || []);
+    const transformedPages = pages.map((page: any) => ({
+      ...page,
+      metaTitle: page.seoTitle || '',
+      keywords: page.seoKeywords ? page.seoKeywords.join(', ') : ''
+    }));
     setStaticPages(transformedPages);
-  } catch (error) {
-    console.error('Error fetching static pages:', error);
-    smartToast.dashboard.error('فشل في جلب الصفحات الثابتة');
-  } finally {
     setIsStaticPagesLoading(false);
-  }
-};
+  }, [pagesResp]);
 
   // Handle save static page
 const blocksToHtml = (value: any) => {
@@ -221,6 +217,7 @@ try {
       );
       setStaticPages(updatedPages);
       smartToast.dashboard.success('تم تحديث الصفحة بنجاح!');
+      queryClient.invalidateQueries({ queryKey: ['static-pages'] });
     } else {
       // Create new page
       const response = await apiCall(API_ENDPOINTS.STATIC_PAGES, {
@@ -238,6 +235,7 @@ try {
       const newPages = [...staticPages, frontendResponse];
       setStaticPages(newPages);
       smartToast.dashboard.success('تم إنشاء الصفحة بنجاح!');
+      queryClient.invalidateQueries({ queryKey: ['static-pages'] });
     }
     
     setIsStaticPageModalOpen(false);
@@ -275,7 +273,8 @@ const handleEditStaticPage = (page: StaticPage) => {
     metaTitle: frontendPage.metaTitle,
     metaDescription: frontendPage.metaDescription || '',
     keywords: frontendPage.keywords,
-    isActive: frontendPage.isActive
+    isActive: frontendPage.isActive,
+    showInFooter: frontendPage.showInFooter ?? true
   });
   setIsStaticPageModalOpen(true);
 };
@@ -315,6 +314,7 @@ const handleEditStaticPage = (page: StaticPage) => {
       
       smartToast.dashboard.success(`تم حذف الصفحة "${deleteModal.name}" بنجاح`);
       closeDeleteModal();
+      queryClient.invalidateQueries({ queryKey: ['static-pages'] });
     } catch (error) {
       console.error('Error deleting static page:', error);
       smartToast.dashboard.error('فشل في حذف الصفحة');
@@ -353,8 +353,8 @@ const handleEditStaticPage = (page: StaticPage) => {
 
   // Load static pages on component mount
   useEffect(() => {
-    fetchStaticPages();
-  }, []);
+    if (!pagesLoading) setIsStaticPagesLoading(false);
+  }, [pagesLoading]);
 
   if (isStaticPagesLoading) {
     return <div className="p-6">جاري التحميل...</div>;
@@ -468,7 +468,7 @@ const handleEditStaticPage = (page: StaticPage) => {
       {isStaticPageModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
+            <div className="sticky  z-10 top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
               <h3 className="text-2xl font-bold">
                 {editingStaticPage ? '✏️ تعديل الصفحة' : '➕ إضافة صفحة جديدة'}
               </h3>
@@ -559,6 +559,18 @@ const handleEditStaticPage = (page: StaticPage) => {
                     <option value="true">نشط</option>
                     <option value="false">غير نشط</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">إظهار في الفوتر</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(newPageData.showInFooter)}
+                      onChange={(e) => setNewPageData(prev => ({ ...prev, showInFooter: e.target.checked }))}
+                      className="w-4 h-4 border-gray-300 rounded"
+                    />
+                    <span className="text-sm text-gray-600">عرض الرابط ضمن روابط الفوتر</span>
+                  </div>
                 </div>
               </div>
               

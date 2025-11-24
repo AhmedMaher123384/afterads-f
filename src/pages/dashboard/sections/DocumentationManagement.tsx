@@ -4,6 +4,8 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import RichTextEditor from '../components/layout/RichTextEditor';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 // --- Interfaces for the hierarchical structure ---
 interface Documentation {
@@ -100,39 +102,30 @@ const DocumentationManagement: React.FC = () => {
   });
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
+  const queryClient = useQueryClient();
+  const { data: structResp, isLoading: structLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.DOCUMENTATION_STRUCTURE, queryKey: ['documentation-structure'] });
   useEffect(() => {
-    fetchStructure();
-  }, []);
-
-  const fetchStructure = async () => {
-    try {
-      setLoading(true);
-      const response = await apiCall(API_ENDPOINTS.DOCUMENTATION_STRUCTURE);
-      const mains: MainClassification[] = Array.isArray((response as any)?.mainClassifications)
-        ? (response as any).mainClassifications
-        : (Array.isArray((response as any)?.navigation) ? (response as any).navigation : (Array.isArray(response) ? response : []));
-      setMainClassifications(mains || []);
-      const cats: Category[] = [];
-      (mains || []).forEach((m) => {
-        const mcats = Array.isArray(m.categories) ? m.categories : [];
-        mcats.forEach((c) => {
-          cats.push({
-            ...c,
-            mainClassificationId: (c as any).mainClassificationId || m.id,
-            classifications: Array.isArray(c.classifications) ? c.classifications : [],
-            documentations: Array.isArray(c.documentations) ? c.documentations : [],
-          });
+    if (!structResp) return;
+    const mains: MainClassification[] = Array.isArray((structResp as any)?.mainClassifications)
+      ? (structResp as any).mainClassifications
+      : (Array.isArray((structResp as any)?.navigation) ? (structResp as any).navigation : (Array.isArray(structResp) ? structResp : []));
+    setMainClassifications(mains || []);
+    const cats: Category[] = [];
+    (mains || []).forEach((m) => {
+      const mcats = Array.isArray(m.categories) ? m.categories : [];
+      mcats.forEach((c) => {
+        cats.push({
+          ...c,
+          mainClassificationId: (c as any).mainClassificationId || m.id,
+          classifications: Array.isArray(c.classifications) ? c.classifications : [],
+          documentations: Array.isArray(c.documentations) ? c.documentations : [],
         });
       });
-      setStructure(cats);
-      setError('');
-    } catch (err) {
-      setError('فشل في تحميل هيكل التوثيق');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
+    setStructure(cats);
+    setError('');
+    setLoading(false);
+  }, [structResp]);
 
   // --- Helper Functions ---
   const blocksToHtml = (value: any) => {
@@ -373,7 +366,7 @@ const DocumentationManagement: React.FC = () => {
             : `تم ${editingLevel === 'category' ? 'إضافة الفئة' : editingLevel === 'classification' ? 'إضافة التصنيف' : 'إضافة التوثيق'} بنجاح`
         );
         closeModal();
-        fetchStructure();
+        queryClient.invalidateQueries({ queryKey: ['documentation-structure'] });
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(`فشل في ${editingItem ? 'تحديث' : 'حفظ'} ${editingLevel === 'category' ? 'الفئة' : editingLevel === 'classification' ? 'التصنيف' : 'التوثيق'}`);
@@ -429,7 +422,7 @@ const DocumentationManagement: React.FC = () => {
         setSuccess(
           `تم حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'} بنجاح`
         );
-        fetchStructure();
+        queryClient.invalidateQueries({ queryKey: ['documentation-structure'] });
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(`فشل في حذف ${deleteTarget.level === 'category' ? 'الفئة' : deleteTarget.level === 'classification' ? 'التصنيف' : 'التوثيق'}`);

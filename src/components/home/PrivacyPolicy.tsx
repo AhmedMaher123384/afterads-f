@@ -488,8 +488,8 @@ const PrivacyPolicy: React.FC = () => {
                 to="/"
                 className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#18b5d5] to-[#7a7a7a] text-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl hover:from-[#20c5e5] hover:to-[#8a8a8a] transition-all duration-300 transform hover:scale-105 font-bold shadow-lg text-sm sm:text-base hover-lift animate-glow"
               >
-                {isRTL ? <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" /> : <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />}
                 {t('privacy_policy.back_to_home')}
+                {isRTL ? <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />:<ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />  }
               </Link>
             </div>
           </div>

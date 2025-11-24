@@ -18,6 +18,8 @@ import {
 import Spinner from '../../../components/ui/Spinner';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import { smartToast } from '../../../utils/toastConfig';
 import ImageUploader from '../components/layout/ImageUploaderProps';
 
@@ -37,6 +39,7 @@ interface ThemeWork {
 }
 
 const ThemeWorksManagement: React.FC = () => {
+  const queryClient = useQueryClient();
   const [works, setWorks] = useState<ThemeWork[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -58,24 +61,17 @@ const ThemeWorksManagement: React.FC = () => {
     isActive: true,
   });
 
-  const fetchWorks = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await apiCall(API_ENDPOINTS.THEME_WORKS.LIST);
-      const data = Array.isArray(res) ? res : res?.data || res?.items || [];
-      setWorks(data);
-    } catch (err) {
-      console.error('Error fetching theme works:', err);
-      setError('حدث خطأ أثناء جلب البيانات');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const { data: worksResp, isLoading: worksLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.THEME_WORKS.LIST, queryKey: ['theme-works'] });
   useEffect(() => {
-    fetchWorks();
-  }, []);
+    if (!worksResp) return;
+    const data = Array.isArray(worksResp) ? worksResp : worksResp?.data || worksResp?.items || [];
+    setWorks(data);
+    setLoading(false);
+    setError('');
+  }, [worksResp]);
+  useEffect(() => {
+    setLoading(worksLoading);
+  }, [worksLoading]);
 
   const filteredWorks = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -218,7 +214,7 @@ const ThemeWorksManagement: React.FC = () => {
       }
 
       closeModal();
-      fetchWorks();
+      queryClient.invalidateQueries({ queryKey: ['theme-works'] });
     } catch (error) {
       console.error('Error saving theme work:', error);
       smartToast.dashboard.error('فشل في حفظ البيانات');
@@ -237,7 +233,7 @@ const ThemeWorksManagement: React.FC = () => {
       smartToast.dashboard.success('تم حذف العمل بنجاح');
       setConfirmOpen(false);
       setDeleteTargetId(null);
-      fetchWorks();
+      queryClient.invalidateQueries({ queryKey: ['theme-works'] });
     } catch (error) {
       console.error('Error deleting theme work:', error);
       smartToast.dashboard.error('فشل في حذف العمل');
@@ -485,7 +481,7 @@ const ThemeWorksManagement: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
+            <div className="sticky z-10 top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">

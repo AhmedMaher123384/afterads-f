@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { smartToast } from '../../../utils/toastConfig';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../../../components/ui/Spinner';
@@ -161,14 +163,7 @@ const EmployeeManagement: React.FC = () => {
     updatePinActivity(); // تحديث النشاط عند التحميل
   }, [isPinAuthenticated, updatePinActivity]);
 
-  // أضف هذا useEffect:
-useEffect(() => {
-  // عند دخول الصفحة، نعيد تعيين الحالة ونعرض PIN
-  setIsPinAuthenticated(false);
-  setShowPinModal(true);
-  setPinInput('');
-  setPinError('');
-}, []); // تعتمد على [] لتشغيله مرة واحدة عند التحميل
+  
 
   // إضافة مستمعات الأحداث لتحديث وقت النشاط
   useEffect(() => {
@@ -207,64 +202,71 @@ useEffect(() => {
   }, [isPinAuthenticated, pinAuthTime, PIN_SESSION_DURATION]);
   // --- نهاية إضافة PIN ---
 
-  // Fetch users
-  const fetchUsers = async () => {
-    setIsLoadingUsers(true);
-    try {
-      const response = await apiCall(API_ENDPOINTS.USERS);
-      console.log('🔍 Raw API response:', response);
-      
-      if (response.success) {
-        let usersArray: any[];
-        
-        if (Array.isArray(response.data)) {
-          usersArray = response.data;
-        } else if (response.data && Array.isArray(response.data.users)) {
-          usersArray = response.data.users;
-        } else if (Array.isArray(response)) {
-          usersArray = response;
-        } else {
-          console.warn('⚠️ Unexpected response format:', response);
-          usersArray = [];
-        }
-        
-        console.log('🔍 Users array:', usersArray);
-        
-        const usersData = usersArray.map((user: any) => ({
-          id: user._id || user.id || '',
-          username: user.email || user.username || '',
-          name: user.name || user.fullName || user.firstName || 'غير معروف',
-          email: user.email || '',
-          phone: user.phone || '',
-          role: user.role || user.userRole || 'staff',
-          isActive: user.isActive || user.active || true,
-          createdAt: user.createdAt || user.created_at || new Date().toISOString(),
-          lastLogin: user.lastLogin || user.last_login || new Date().toISOString(),
-          password: undefined
-        }));
-        
-        console.log('✅ Processed users ', usersData);
-        
-        setUsers(usersData);
-        setFilteredUsers(usersData);
-      } else {
-        console.error('❌ API response not successful:', response);
-        smartToast.dashboard.error('فشل في جلب الموظفين: استجابة غير ناجحة');
-      }
-    } catch (error: any) {
-      console.error('Error fetching users:', error);
-      if (error.message && error.message.includes('401')) {
-        smartToast.dashboard.error('انتهت صلاحية جلسة العمل. يرجى تسجيل الدخول مرة أخرى');
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('adminUser');
-      } else {
-        smartToast.dashboard.error('فشل في جلب الموظفين');
-      }
-    } finally {
-      setIsLoadingUsers(false);
+  const queryClient = useQueryClient();
+  const { data: usersResp, isLoading: usersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.USERS, queryKey: ['users'], enabled: isPinAuthenticated });
+  const { data: activityResp, isLoading: activityLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.ACTIVITY_LOGS, queryKey: ['activity-logs'], enabled: isPinAuthenticated && showLogsModal && activeLogsTab === 'activity' });
+  const { data: loginResp, isLoading: loginLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.LOGIN_LOGS, queryKey: ['login-logs'], enabled: isPinAuthenticated && showLogsModal && activeLogsTab === 'login' });
+  useEffect(() => {
+    if (!usersResp) return;
+    const response: any = usersResp;
+    let usersArray: any[];
+    if (response.success && Array.isArray(response.data)) {
+      usersArray = response.data;
+    } else if (response.success && response.data && Array.isArray(response.data.users)) {
+      usersArray = response.data.users;
+    } else if (Array.isArray(response)) {
+      usersArray = response;
+    } else {
+      usersArray = response?.users || response?.data || [];
     }
-  };
+    const usersData = (usersArray || []).map((user: any) => ({
+      id: user._id || user.id || '',
+      username: user.email || user.username || '',
+      name: user.name || user.fullName || user.firstName || 'غير معروف',
+      email: user.email || '',
+      phone: user.phone || '',
+      role: user.role || user.userRole || 'staff',
+      isActive: user.isActive || user.active || true,
+      createdAt: user.createdAt || user.created_at || new Date().toISOString(),
+      lastLogin: user.lastLogin || user.last_login || new Date().toISOString(),
+      password: undefined
+    }));
+    setUsers(usersData);
+    setFilteredUsers(usersData);
+    setIsLoadingUsers(false);
+  }, [usersResp]);
+
+  useEffect(() => {
+    if (!activityResp) return;
+    const resp: any = activityResp;
+    const data = Array.isArray(resp) ? resp : resp?.data || resp?.logs || [];
+    const normalized = (data || []).map((log: any) => ({
+      id: log._id || log.id || '',
+      userId: log.userId || log.user_id || '',
+      action: log.action || log.event || '',
+      description: log.description || log.message || '',
+      timestamp: log.timestamp || log.createdAt || log.date || new Date().toISOString(),
+      ip: log.ip || log.ipAddress || '',
+      userAgent: log.userAgent || log.agent || ''
+    }));
+    setActivityLogs(normalized);
+  }, [activityResp]);
+
+  useEffect(() => {
+    if (!loginResp) return;
+    const resp: any = loginResp;
+    const data = Array.isArray(resp) ? resp : resp?.data || resp?.logs || [];
+    const normalized = (data || []).map((log: any) => ({
+      id: log._id || log.id || '',
+      userId: log.userId || log.user_id || '',
+      action: log.action || log.event || '',
+      description: log.description || log.message || '',
+      timestamp: log.timestamp || log.createdAt || log.date || new Date().toISOString(),
+      ip: log.ip || log.ipAddress || '',
+      userAgent: log.userAgent || log.agent || ''
+    }));
+    setLoginLogs(normalized);
+  }, [loginResp]);
 
   // Filter users based on search and filters
   const filterUsers = () => {
@@ -335,6 +337,7 @@ const handleSaveUser = async (e: React.FormEvent) => {
         setUsers(updatedUsers);
         setFilteredUsers(updatedUsers);
         smartToast.dashboard.success('تم تحديث الموظف بنجاح');
+        queryClient.invalidateQueries({ queryKey: ['users'] });
       } else {
         throw new Error(response.message || 'فشل في تحديث الموظف');
       }
@@ -367,6 +370,7 @@ const handleSaveUser = async (e: React.FormEvent) => {
         setUsers([...users, newUserItem]);
         setFilteredUsers([...users, newUserItem]);
         smartToast.dashboard.success('تم إضافة الموظف بنجاح');
+        queryClient.invalidateQueries({ queryKey: ['users'] });
       } else {
         throw new Error(response.message || 'فشل في إضافة الموظف');
       }
@@ -401,6 +405,7 @@ const handleDeleteUser = async () => {
       setUsers(updatedUsers);
       setFilteredUsers(updatedUsers);
       smartToast.dashboard.success('تم حذف الموظف بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     } else {
       smartToast.dashboard.error('فشل في حذف الموظف');
     }
@@ -445,6 +450,7 @@ const handlePasswordChange = async (e: React.FormEvent) => {
       setShowPasswordModal(false);
       setPasswordData({ newPassword: '', confirmPassword: '' });
       setEditingUser(null);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     } else {
       smartToast.dashboard.error(response.message || 'فشل في تغيير كلمة المرور');
     }
@@ -454,27 +460,7 @@ const handlePasswordChange = async (e: React.FormEvent) => {
   }
 };
 
-  // Fetch activity logs
-  const fetchActivityLogs = async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.ACTIVITY_LOGS);
-      setActivityLogs(response.data || []);
-    } catch (error) {
-      console.error('Error fetching activity logs:', error);
-      smartToast.dashboard.error('فشل في جلب سجلات النشاط');
-    }
-  };
-
-  // Fetch login logs
-  const fetchLoginLogs = async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.LOGIN_LOGS);
-      setLoginLogs(response.data || []);
-    } catch (error) {
-      console.error('Error fetching login logs:', error);
-      smartToast.dashboard.error('فشل في جلب سجلات الدخول');
-    }
-  };
+  
 
   // Handle user search
   const handleUserSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -483,10 +469,9 @@ const handlePasswordChange = async (e: React.FormEvent) => {
 
   // Load users on component mount and when filters change
   useEffect(() => {
-    if (isPinAuthenticated) { // تأكد من أن المستخدم مصادق عليه قبل الجلب
-      fetchUsers();
-    }
-  }, [isPinAuthenticated]); // اعتمد على حالة PIN بدلاً من []
+    if (!isPinAuthenticated) return;
+    if (!usersLoading) setIsLoadingUsers(false);
+  }, [isPinAuthenticated, usersLoading]);
 
   useEffect(() => {
     filterUsers();
@@ -534,7 +519,6 @@ return (
             onClick={() => {
               setActiveLogsTab('activity');
               setShowLogsModal(true);
-              fetchActivityLogs();
             }}
             className="flex items-center gap-2 bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl hover:bg-opacity-30 transition-all duration-300 font-medium border border-white/30 shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
           >
@@ -545,7 +529,6 @@ return (
             onClick={() => {
               setActiveLogsTab('login');
               setShowLogsModal(true);
-              fetchLoginLogs();
             }}
             className="flex items-center gap-2 bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl hover:bg-opacity-30 transition-all duration-300 font-medium border border-white/30 shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
           >
@@ -821,7 +804,7 @@ return (
       </div>
     )}
 
-    {isLoadingUsers && <Spinner overlay />}
+    {isLoadingUsers && !showPinModal && <Spinner overlay />}
 
     {/* Delete User Modal */}
     <ConfirmationModal
@@ -968,7 +951,6 @@ return (
                 <button
                   onClick={() => {
                     setActiveLogsTab('activity');
-                    fetchActivityLogs();
                   }}
                   className={`py-2 px-1 border-b-2 font-medium text-sm transition-all ${
                     activeLogsTab === 'activity'
@@ -981,7 +963,6 @@ return (
                 <button
                   onClick={() => {
                     setActiveLogsTab('login');
-                    fetchLoginLogs();
                   }}
                   className={`py-2 px-1 border-b-2 font-medium text-sm transition-all ${
                     activeLogsTab === 'login'

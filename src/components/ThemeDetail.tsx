@@ -44,6 +44,7 @@ import {
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 import { addToCartUnified, addToWishlistUnified } from '../utils/cartUtils';
 import WhatsAppButton from './ui/WhatsAppButton';
 import AuthModal from './modals/AuthModal';
@@ -110,7 +111,8 @@ interface Category {
 }
 
 const ThemeDetail: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const { param } = useParams<{ param?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -201,10 +203,10 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
             
             <div className={`flex ${currentDevice === 'mobile' ? 'flex-col' : 'flex-col xl:flex-row'}`}>
               {/* قسم الصورة مع الخلفية البيضاء والشريط الأصفر */}
-              <div className={`${currentDevice === 'mobile' ? 'w-full' : 'w-full xl:w-64'} flex-shrink-0 relative`}>
+              <div className={`${currentDevice === 'mobile' ? 'w-full' : 'w-full xl:w-56'} flex-shrink-0 relative`}>
                 <div className="relative overflow-hidden rounded-t-xl sm:rounded-t-3xl xl:rounded-l-3xl xl:rounded-tr-none bg-white">
                   {/* ارتفاع ثابت للخلفية البيضاء */}
-                  <div className="relative h-64 sm:h-72 lg:h-80">
+                  <div className="relative h-48 sm:h-60 lg:h-72">
                     
                     {/* الشريط الأصفر مع النجمة */}
                     <div className="absolute top-0 left-0 w-16 h-16 bg-[#fec72d] transform -rotate-0 origin-top-left z-10">
@@ -309,26 +311,13 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
     return () => clearInterval(id);
   }, [isAutoPlaying, images.length]);
 
-useEffect(() => {
-  const fetchDynamicComponents = async () => {
-    try {
-      setComponentsLoading(true);
-      // ✅ استخدم apiCall بدل fetch مباشرة
-      const response = await apiCall('theme-card?isActive=true');
-      
-      if (response.success) {
-        setDynamicComponents(response.data);
-        console.log('Fetched components:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching components:', error);
-    } finally {
-      setComponentsLoading(false);
-    }
-  };
-
-  fetchDynamicComponents();
-}, []);
+  const { data: activeCardsResp, isLoading: cardsLoading } = useApiQuery<any>({ endpoint: 'theme-card?isActive=true', queryKey: ['theme-cards-active'] });
+  useEffect(() => {
+    if (!activeCardsResp) return;
+    const list = Array.isArray(activeCardsResp) ? activeCardsResp : (activeCardsResp?.data || []);
+    setDynamicComponents(list);
+    setComponentsLoading(false);
+  }, [activeCardsResp]);
   const nextImage = () => {
     setCurrentImageIndex(prev => (prev + 1) % images.length);
     setIsAutoPlaying(false);
@@ -346,31 +335,26 @@ useEffect(() => {
   };
 
 
-  // ---------- جلب بيانات الثيم ----------
+  const { data: themeResp, isLoading: themeLoading } = useApiQuery<any>({ endpoint: themeId ? API_ENDPOINTS.PRODUCT_BY_ID(themeId) : '', queryKey: ['theme', themeId], enabled: !!themeId });
+  const { data: categoryResp, isLoading: categoryLoading } = useApiQuery<any>({ endpoint: themeResp?.categoryId ? API_ENDPOINTS.CATEGORY_BY_ID(themeResp.categoryId) : '', queryKey: ['category', themeResp?.categoryId], enabled: !!themeResp?.categoryId });
   useEffect(() => {
-    const fetchTheme = async () => {
-      if (!themeId) return;
-      try {
-        setLoading(true);
-        const resp = await apiCall(API_ENDPOINTS.PRODUCT_BY_ID(themeId));
-        const data = resp.success ? resp.data : resp;
-        if (data?.id) {
-          setTheme(data);
-          setSelectedImage(data.mainImage);
-          if (data.categoryId) {
-            const catResp = await apiCall(API_ENDPOINTS.CATEGORY_BY_ID(data.categoryId));
-            if (catResp.success) setCategory(catResp.data);
-          }
-        } else setError('لم يتم العثور على الثيم');
-      } catch {
-        setError('حدث خطأ أثناء تحميل الثيم');
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (themeId) fetchTheme();
-
-    // GSAP global animations
+    if (!themeResp) return;
+    const data = themeResp?.data || themeResp;
+    if (!data?.id) {
+      setError('لم يتم العثور على الثيم');
+      setLoading(false);
+      return;
+    }
+    setTheme(data);
+    setSelectedImage(data.mainImage);
+    setLoading(false);
+  }, [themeResp]);
+  useEffect(() => {
+    if (!categoryResp) return;
+    const cat = categoryResp?.data || categoryResp;
+    setCategory(cat);
+  }, [categoryResp]);
+  useEffect(() => {
     gsap.utils.toArray('.animate-section').forEach((el: any) => {
       gsap.from(el, {
         opacity: 0,
@@ -379,11 +363,9 @@ useEffect(() => {
         scrollTrigger: { trigger: el, start: 'top 80%', toggleActions: 'play none none reverse' }
       });
     });
-
-    // جلب بيانات المستخدم
     const u = localStorage.getItem('user');
     if (u) setUser(JSON.parse(u));
-  }, [themeId, t]);
+  }, [t]);
 
   // ---------- IntersectionObserver للعدادات ----------
   useEffect(() => {
@@ -411,25 +393,7 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }, [featuresInView]);
 
-  useEffect(() => {
-  const fetchDynamicComponents = async () => {
-    try {
-      setComponentsLoading(true);
-      // ✅ استخدم apiCall بدل fetch مباشرة
-      const response = await apiCall('theme-card?isActive=true');
-      
-      if (response.success) {
-        setDynamicComponents(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching components:', error);
-    } finally {
-      setComponentsLoading(false);
-    }
-  };
-
-  fetchDynamicComponents();
-}, []);
+  
 
   // ---------- Handlers ----------
   const handleAddToCart = async () => {
@@ -492,7 +456,7 @@ useEffect(() => {
   if (loading) return <LoadingSpinner message={t('home.themes.loading')} />;
   if (error || !theme) {
     return (
-      <div className="min-h-screen bg-[#292929] flex items-center justify-center px-4" dir="rtl">
+      <div className="min-h-screen bg-[#292929] flex items-center justify-center px-4" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">{t('home.themes.error_loading')}</h2>
           <p className="text-[#7a7a7a] mb-6">{error || t('home.themes.not_found')}</p>
@@ -506,7 +470,7 @@ useEffect(() => {
       </div>
     );
   }return (
-  <section className="min-h-screen bg-[#292929] relative overflow-hidden" dir="rtl">
+  <section className="min-h-screen bg-[#292929] relative overflow-hidden" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
     {/* Animated Background Pattern */}
     <div className="absolute inset-0">
       <div className="absolute inset-0 bg-gradient-to-br from-[#292929] via-[#4a4a4a] to-[#2a2a2a] opacity-90" />
@@ -722,8 +686,8 @@ useEffect(() => {
               {isAutoPlaying && (
                 <div className="absolute top-2 sm:top-6 left-2 sm:left-6 bg-gradient-to-r from-green-500/90 to-emerald-500/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-2 rounded-full text-xs font-semibold flex items-center gap-1 sm:gap-2 border border-white/20">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
-                  <span className="hidden sm:inline">تشغيل تلقائي</span>
-                  <span className="sm:hidden">تلقائي</span>
+                  <span className="hidden sm:inline">{t('home.themes.autoplay_on')}</span>
+                  <span className="sm:hidden">{t('home.themes.autoplay_short')}</span>
                 </div>
               )}
               <div className="absolute bottom-0 left-0 w-full h-1 bg-black/30">
@@ -770,7 +734,7 @@ useEffect(() => {
             >
               <Play className="w-4 h-4 sm:w-6 sm:h-6" />
               <span className="hidden sm:inline">{t('home.themes.video_explanation')}</span>
-              <span className="sm:hidden">شرح فيديو</span>
+              <span className="sm:hidden">{t('home.themes.video_explanation')}</span>
             </a>
             
             <a
@@ -781,7 +745,7 @@ useEffect(() => {
             >
               <Eye className="w-4 h-4 sm:w-6 sm:h-6" />
               <span className="hidden sm:inline">{t('home.themes.preview_theme')}</span>
-              <span className="sm:hidden">معاينة</span>
+              <span className="sm:hidden">{t('home.themes.preview_theme')}</span>
             </a>
           </div>
         </div>
@@ -789,22 +753,13 @@ useEffect(() => {
 
 {/* Device Preview Section */}
 <div className="mt-6 mb-6 animate-section flex justify-center">
-  <div className="bg-gradient-to-br from-[#1a1a1a]/95 via-[#292929]/90 to-[#1a1a1a]/95 rounded-lg backdrop-blur-xl border border-[#18b5d8]/20 shadow-2xl p-3 w-fit">
+  <div className="   shadow-2xl p-3 w-fit">
     
-    {/* العنوان */}
-    <div className="text-center mb-3">
-      <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#18b5d8]/20 to-[#18b5d8]/10 px-3 py-1 rounded-full border border-[#18b5d8]/30 mb-2">
-        <div className="w-1.5 h-1.5 bg-[#18b5d8] rounded-full animate-pulse"></div>
-        <span className="text-[#18b5d8] font-medium text-xs">معاينة متعددة الأجهزة</span>
-      </div>
-      <h2 className="text-base font-bold text-white mb-1">
-        شاهد القالب على جميع الأجهزة
-      </h2>
-    </div>
+ 
 
     {/* شريط الأزرار */}
     <div className="flex justify-center items-center gap-2 mb-3 bg-gradient-to-r from-[#18b5d8]/10 to-transparent px-3 py-1.5 rounded-lg border border-[#18b5d8]/20 w-fit mx-auto">
-      <span className="text-[#18b5d8] text-xs font-medium">معاينة:</span>
+      <span className="text-[#18b5d8] text-xs font-medium">{t('home.themes.preview_label')}</span>
       <button
         onClick={() => setMainPreviewDevice('desktop')}
         className={`p-1 rounded-lg transition-all ${
@@ -848,11 +803,11 @@ useEffect(() => {
         </div>
 
         <div className="p-3">
-          <div className={`bg-white/5 rounded-lg overflow-hidden transition-all duration-500 ${
-            mainPreviewDevice === 'desktop' ? 'w-[500px] h-[280px]' :
-            mainPreviewDevice === 'tablet' ? 'w-[350px] h-[470px]' :
-            'w-[250px] h-[540px]'
-          }`}>
+   <div className={`bg-white/5 rounded-lg overflow-hidden transition-all duration-500 ${
+  mainPreviewDevice === 'desktop' ? 'w-[640px] h-[350px]' :
+  mainPreviewDevice === 'tablet' ? 'w-[300px] h-[400px]' :
+  'w-full max-w-[280px] h-[520px]'
+}`}>
             <img 
               src={
                 mainPreviewDevice === 'desktop' ? theme1 :
@@ -988,15 +943,15 @@ useEffect(() => {
       </div>
 
   {/* CTA Section - Fixed Horizontal Bar */}
-<div className="fixed bottom-0 left-0 right-0 bg-[#09363f] z-[9999] animate-section">
-  <div ref={purchaseSectionRef} className="bg-gradient-to-r from-white/98 via-[#f8f8f8]/95 to-white/98 backdrop-blur-2xl border-t border-[#18b5d8]/30 shadow-2xl">
+<div className="fixed bottom-0 left-0 right-0 bg-[#292929] z-[9999] animate-section">
+  <div ref={purchaseSectionRef} className="bg-[#292929] backdrop-blur-2xl border-t border-[#18b5d8]/30 shadow-2xl">
     
     <div className="max-w-7xl mx-auto px-4 py-3">
       <div className="flex items-center justify-between gap-4">
         
         {/* الجزء الأيمن: الصورة + الاسم + السعر */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="w-16 h-16 rounded-lg overflow-hidden border border-[#18b5d8]/20 flex-shrink-0">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-[#18b5d8]/20 flex-shrink-0">
             <img 
               src={buildImageUrl(theme.mainImage)}
               alt={theme.name}
@@ -1034,7 +989,7 @@ useEffect(() => {
             className="flex items-center gap-2 bg-gradient-to-r from-[#041a20] to-[#051c20] text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:from-[#16a8cc] hover:to-[#18b5d8] transition-all duration-300 shadow-lg hover:shadow-xl group"
           >
             <ShoppingCart className="w-4 h-4 group-hover:animate-bounce" />
-            <span>احصل على الثيم الآن</span>
+            <span>{t('home.themes.get_theme_now')}</span>
           </button>
           
           <a
@@ -1044,7 +999,7 @@ useEffect(() => {
             className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 border border-gray-200"
           >
             <Play className="w-4 h-4" />
-            <span>فيديو</span>
+            <span>{t('home.themes.video')}</span>
           </a>
           
           <a
@@ -1054,7 +1009,7 @@ useEffect(() => {
             className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 border border-gray-200"
           >
             <Eye className="w-4 h-4" />
-            <span>معاينة</span>
+            <span>{t('home.themes.preview_theme')}</span>
           </a>
         </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // --- تعريف الواجهات ---
 interface Order {
@@ -94,6 +95,7 @@ interface StoreStats {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Legend } from 'recharts';
 import { ShoppingCart, Package, Users, DollarSign, Clock, CheckCircle, AlertCircle, TrendingUp, MessageCircle, Award, Briefcase, AlertTriangle, BarChart3, Eye } from 'lucide-react';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
 import { smartToast } from '../../../utils/toastConfig';
 import Spinner from '../../../components/ui/Spinner';
 
@@ -223,11 +225,26 @@ const NewOverviewPage: React.FC = () => {
   const [stats, setStats] = useState<StoreStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [monthlyTarget] = useState<number>(50000);
+  const [monthlyTarget, setMonthlyTarget] = useState<number>(() => {
+    const saved = localStorage.getItem('dashboardMonthlyTarget');
+    const parsed = saved ? parseInt(saved, 10) : 50000;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 50000;
+  });
+  const [monthlyTargetInput, setMonthlyTargetInput] = useState<number>(monthlyTarget);
+  const navigate = useNavigate();
   const [visitTotal, setVisitTotal] = useState<number>(0);
+  const { data: ordersData, isLoading: ordersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.ORDERS, queryKey: ['orders'] });
+  const { data: productsData, isLoading: productsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.PRODUCTS, queryKey: ['products'] });
+  const { data: customersData, isLoading: customersLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CUSTOMERS, queryKey: ['customers'] });
+  const { data: testimonialsData, isLoading: testimonialsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.TESTIMONIALS, queryKey: ['testimonials'] });
+  const { data: clientsData, isLoading: clientsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CLIENTS, queryKey: ['clients'] });
+  const { data: blogPostsData, isLoading: blogPostsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.BLOG_POSTS, queryKey: ['blog-posts'] });
+  const { data: commentsData, isLoading: commentsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.COMMENTS, queryKey: ['comments'] });
+  const { data: visitsData, isLoading: visitsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.VISITS_COUNTER, queryKey: ['visits-counter'] });
 
   useEffect(() => {
     const loadData = async () => {
+      return;
       try {
         setLoading(true);
         setError(null);
@@ -305,6 +322,88 @@ const NewOverviewPage: React.FC = () => {
 
     loadData();
   }, [monthlyTarget]);
+
+  useEffect(() => {
+    setLoading(
+      ordersLoading || productsLoading || customersLoading || testimonialsLoading ||
+      clientsLoading || blogPostsLoading || commentsLoading || visitsLoading
+    );
+    setError(null);
+  }, [
+    ordersLoading, productsLoading, customersLoading, testimonialsLoading,
+    clientsLoading, blogPostsLoading, commentsLoading, visitsLoading
+  ]);
+
+  useEffect(() => {
+    if (ordersData) {
+      const arr = Array.isArray(ordersData) ? ordersData : (ordersData?.data || ordersData?.orders || []);
+      setOrders(arr);
+    }
+  }, [ordersData]);
+
+  useEffect(() => {
+    if (productsData) {
+      const arr = Array.isArray(productsData) ? productsData : (productsData?.data || productsData?.products || []);
+      setProducts(arr);
+    }
+  }, [productsData]);
+
+  useEffect(() => {
+    if (customersData) {
+      const arr = Array.isArray(customersData) ? customersData : (customersData?.data || customersData?.customers || []);
+      setCustomers(arr);
+    }
+  }, [customersData]);
+
+  useEffect(() => {
+    if (testimonialsData) {
+      const arr = Array.isArray(testimonialsData) ? testimonialsData : (testimonialsData?.data || testimonialsData?.testimonials || []);
+      setTestimonials(arr);
+    }
+  }, [testimonialsData]);
+
+  useEffect(() => {
+    if (clientsData) {
+      const arr = Array.isArray(clientsData) ? clientsData : (clientsData?.data || clientsData?.clients || []);
+      setClients(arr);
+    }
+  }, [clientsData]);
+
+  useEffect(() => {
+    if (blogPostsData) {
+      const arr = Array.isArray(blogPostsData) ? blogPostsData : (blogPostsData?.data || blogPostsData?.posts || []);
+      setBlogPosts(arr);
+    }
+  }, [blogPostsData]);
+
+  useEffect(() => {
+    if (commentsData) {
+      const arr = Array.isArray(commentsData) ? commentsData : (commentsData?.data || commentsData?.comments || []);
+      setComments(arr);
+    }
+  }, [commentsData]);
+
+  useEffect(() => {
+    if (visitsData) {
+      const vd = (visitsData && typeof visitsData === 'object') ? (visitsData.data || visitsData) : {};
+      const total = typeof vd.total === 'number' ? vd.total : 0;
+      setVisitTotal(total);
+    }
+  }, [visitsData]);
+
+  useEffect(() => {
+    const calculated = calculateStats(
+      orders,
+      products,
+      customers,
+      testimonials,
+      clients,
+      blogPosts,
+      comments,
+      monthlyTarget
+    );
+    setStats(calculated);
+  }, [orders, products, customers, testimonials, clients, blogPosts, comments, monthlyTarget]);
 
   // --- بيانات الرسم البياني (useMemo) ---
   const salesData = useMemo(() => {
@@ -439,6 +538,25 @@ const NewOverviewPage: React.FC = () => {
           </div>
           <div className="mt-2 text-sm text-gray-600">
             المبلغ المحقق هذا الشهر: {stats.monthRevenue.toLocaleString()} ر.س
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <input
+              type="number"
+              min={0}
+              value={monthlyTargetInput}
+              onChange={(e) => setMonthlyTargetInput(parseInt(e.target.value || '0', 10) || 0)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#203f61] focus:border-[#203f61]"
+            />
+            <button
+              onClick={() => {
+                const value = Number.isFinite(monthlyTargetInput) && monthlyTargetInput > 0 ? monthlyTargetInput : 50000;
+                setMonthlyTarget(value);
+                localStorage.setItem('dashboardMonthlyTarget', String(value));
+              }}
+              className="px-4 py-2 bg-[#203f61] text-white rounded-lg hover:bg-[#2a537e]"
+            >
+              تحديث الهدف
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -575,7 +693,7 @@ const NewOverviewPage: React.FC = () => {
                 <ShoppingCart className="w-5 h-5 ml-2 text-[#203f61]" />
                 آخر 5 طلبات جديدة
               </CardTitle>
-              <button className="text-sm font-medium text-[#203f61] hover:underline transition-all">
+              <button onClick={() => navigate('orders')} className="text-sm font-medium text-[#203f61] hover:underline transition-all">
                 عرض الكل ←
               </button>
             </div>
@@ -633,7 +751,7 @@ const NewOverviewPage: React.FC = () => {
         <MessageCircle className="w-5 h-5 ml-2 text-[#203f61]" />
         أحدث التعليقات
       </CardTitle>
-      <button className="text-sm font-medium text-[#203f61] hover:underline transition-all">
+      <button onClick={() => navigate('comments')} className="text-sm font-medium text-[#203f61] hover:underline transition-all">
         عرض الكل ←
       </button>
     </div>
@@ -652,10 +770,10 @@ const NewOverviewPage: React.FC = () => {
           <div key={comment.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-[#203f61] rounded-full flex items-center justify-center text-white text-sm font-bold">
-                {comment.author ? comment.author.charAt(0).toUpperCase() : '؟'}
+                {(((comment as any).userName || comment.author || (comment as any).userEmail || 'غير معروف') as string).charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="font-semibold text-gray-900 text-sm">{comment.author || 'غير معروف'}</p>
+                <p className="font-semibold text-gray-900 text-sm">{(comment as any).userName || comment.author || (comment as any).userEmail || 'غير معروف'}</p>
                 <p className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString('ar-SA')}</p>
               </div>
             </div>
@@ -675,7 +793,7 @@ const NewOverviewPage: React.FC = () => {
           <TrendingUp className="w-5 h-5 ml-2 text-[#203f61]" />
           المنتجات الأكثر مبيعاً
         </CardTitle>
-        <button className="text-sm font-medium text-[#203f61] hover:underline transition-all">
+        <button onClick={() => navigate('products')} className="text-sm font-medium text-[#203f61] hover:underline transition-all">
           عرض الكل ←
         </button>
       </div>
@@ -703,7 +821,6 @@ const NewOverviewPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">{product.name}</p>
-                  <p className="text-sm text-gray-500">الكمية: {product.quantity || 0}</p>
                 </div>
               </div>
               <div className="text-left">
@@ -737,21 +854,7 @@ const NewOverviewPage: React.FC = () => {
         </Card>
       )}
 
-      {/* --- ملاحظات --- */}
-      <Card className='gap-2'>
-        <CardHeader>
-          <CardTitle className="flex items-center px-2">
-            <MessageCircle className="h-5 w-5   text-gray-500" />
-            ملاحظات
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600 ">
-            هذه الصفحة تقدم نظرة شاملة مبنية على نفس المنطق المستخدم في تبويب "النظرة العامة" الأصلي.
-            تم تعديل التصميم ليكون مختلفًا قليلاً باستخدام مكونات بطاقة مخصصة ورسومات بيانية.
-          </p>
-        </CardContent>
-      </Card>
+
     </div>
   );
 };

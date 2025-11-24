@@ -357,6 +357,18 @@
       "more_creativity_awaits": "More creativity awaits you",
       "quantity": "Quantity",
       "faq": "Frequently Asked Questions",
+      "autoplay_on": "Auto Play",
+      "autoplay_short": "Auto",
+      "go_to_image_sr": "Go to image",
+      "preview_label": "Preview:",
+      "devices": {
+        "desktop": "Desktop",
+        "tablet": "Tablet",
+        "mobile": "Mobile"
+      },
+      "get_theme_now": "Get the theme now",
+      "video": "Video",
+      "no_components": "No components available",
       "platform_features": "Designed specifically for Salla platform • Speed optimized • Responsive on all devices",
       "features": {
         "advanced_elements": {
@@ -781,6 +793,12 @@
       "phone_label": "Mobile / WhatsApp:"
     },
     "back_to_home": "Back to Home"
+  },
+  "static_page": {
+    "not_found": "Page not found or unavailable",
+    "back_to_home": "Back to Home",
+    "last_update": "Last update",
+    "created_on": "Created on"
   },
   "contact": {
     "title": "Contact Us",

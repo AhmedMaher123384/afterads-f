@@ -80,20 +80,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({
   currentUser = { role: 'admin' },
-  stats = {
-    totalProducts: 45,
-    totalCategories: 12,
-    totalBlogPosts: 8,
-    pendingOrders: 5,
-    activeCoupons: 3,
-    totalTestimonials: 24,
-    totalClients: 18,
-    totalComments: 36
-  },
-  customers = Array(15).fill(null),
-  orders = Array(28).fill(null),
-  staticPages = Array(6).fill(null),
-  users = Array(4).fill(null)
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const location = useLocation();
@@ -117,38 +103,38 @@ const Sidebar: React.FC<SidebarProps> = ({
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
-    
+
     // توجيه إلى صفحة تسجيل الدخول
     navigate('/login');
   };
 
-const isTokenExpired = () => {
-  const token = localStorage.getItem('adminToken');
-  if (!token) return true;
-  try {
-    const payload = token.split('.')[1]
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-    const padding = '='.repeat((4 - payload.length % 4) % 4);
-    const decoded = atob(payload + padding);
-    const { exp } = JSON.parse(decoded);
-    return Date.now() >= exp * 1000;
-  } catch (e) {
-    console.error('Error decoding token:', e);
-    return true;
-  }
-};
-
-useEffect(() => {
-  const checkToken = () => {
-    if (isTokenExpired()) {
-      handleLogout();
+  const isTokenExpired = () => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return true;
+    try {
+      const payload = token.split('.')[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+      const padding = '='.repeat((4 - payload.length % 4) % 4);
+      const decoded = atob(payload + padding);
+      const { exp } = JSON.parse(decoded);
+      return Date.now() >= exp * 1000;
+    } catch (e) {
+      console.error('Error decoding token:', e);
+      return true;
     }
   };
-  checkToken();
-  const interval = setInterval(checkToken, 60000);
-  return () => clearInterval(interval);
-}, []);
+
+  useEffect(() => {
+    const checkToken = () => {
+      if (isTokenExpired()) {
+        handleLogout();
+      }
+    };
+    checkToken();
+    const interval = setInterval(checkToken, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const menuSections: MenuSection[] = [
     {
@@ -169,21 +155,18 @@ useEffect(() => {
           path: 'products',
           name: 'المنتجات',
           icon: <Package className="w-5 h-5" />,
-          badge: stats.totalProducts,
           role: 'admin'
         },
         {
           path: 'categories',
           name: 'التصنيفات',
           icon: <Grid className="w-5 h-5" />,
-          badge: stats.totalCategories,
           role: 'admin'
         },
         {
           path: 'blog',
           name: 'المدونة',
           icon: <PenSquare className="w-5 h-5" />,
-          badge: stats.totalBlogPosts,
           role: 'admin'
         }
       ]
@@ -195,21 +178,36 @@ useEffect(() => {
           path: 'orders',
           name: 'الطلبات',
           icon: <ShoppingCart className="w-5 h-5" />,
-          badge: stats.pendingOrders,
           role: 'both'
         },
         {
           path: 'customers',
           name: 'العملاء',
           icon: <Users className="w-5 h-5" />,
-          badge: customers.length,
           role: 'admin'
         },
         {
           path: 'invoices',
           name: 'إدارة الفواتير',
           icon: <FileText className="w-5 h-5" />,
-          badge: orders.length,
+          role: 'admin'
+        }
+      ]
+    },
+     {
+      title: 'إدارة الثيم',
+      items: [
+
+        {
+          path: 'theme-works',
+          name: 'شركائنا',
+          icon: <Briefcase className="w-5 h-5" />,
+          role: 'admin'
+        },
+        {
+          path: 'theme-cards',
+          name: 'بطاقات الثيم',
+          icon: <Star className="w-5 h-5" />,
           role: 'admin'
         }
       ]
@@ -221,7 +219,6 @@ useEffect(() => {
           path: 'coupons',
           name: 'الكوبونات',
           icon: <Tag className="w-5 h-5" />,
-          badge: stats.activeCoupons,
           role: 'admin'
         }
       ]
@@ -233,7 +230,6 @@ useEffect(() => {
           path: 'static-pages',
           name: ' صفحات ثابتة',
           icon: <FileText className="w-5 h-5" />,
-          badge: staticPages.length,
           role: 'admin'
         },
         {
@@ -252,33 +248,18 @@ useEffect(() => {
           path: 'testimonials',
           name: 'شهادة العملاء',
           icon: <MessageSquare className="w-5 h-5" />,
-          badge: stats.totalTestimonials,
           role: 'admin'
         },
         {
           path: 'clients',
           name: 'عملائنا',
           icon: <Users className="w-5 h-5" />,
-          badge: stats.totalClients,
-          role: 'admin'
-        },
-        {
-          path: 'theme-works',
-          name: 'أعمالنا',
-          icon: <Briefcase className="w-5 h-5" />,
           role: 'admin'
         },
         {
           path: 'comments',
           name: 'التعليقات',
           icon: <MessageSquare className="w-5 h-5" />,
-          badge: stats.totalComments,
-          role: 'admin'
-        },
-        {
-          path: 'theme-cards',
-          name: 'بطاقات الثيم',
-          icon: <Star className="w-5 h-5" />,
           role: 'admin'
         }
       ]
@@ -296,7 +277,6 @@ useEffect(() => {
           path: 'employees',
           name: 'إدارة الموظفين',
           icon: <Users className="w-5 h-5" />,
-          badge: users.length,
           role: 'admin'
         }
       ]
@@ -319,16 +299,14 @@ useEffect(() => {
 
   return (
     <div
-      className={`bg-gray-900 text-white h-full pt-8 ${
-        isOpen ? 'w-72' : 'w-20'
-      } duration-300 relative flex flex-col`}
+      className={`bg-gray-900 text-white h-full pt-8 ${isOpen ? 'w-72' : 'w-20'
+        } duration-300 relative flex flex-col`}
       dir="rtl"
     >
       <button
         onClick={toggleSidebar}
-        className={`fixed top-9 w-8 h-8 border-2 border-gray-900 bg-white text-gray-900 rounded-full flex items-center justify-center hover:bg-gray-100 hover:scale-110 transition-all duration-200 z-[9999] shadow-lg ${
-          isOpen ? 'right-[270px]' : 'right-16'
-        }`}
+        className={`fixed top-9 w-8 h-8 border-2 border-gray-900 bg-white text-gray-900 rounded-full flex items-center justify-center hover:bg-gray-100 hover:scale-110 transition-all duration-200 z-[9999] shadow-lg ${isOpen ? 'right-[270px]' : 'right-16'
+          }`}
       >
         {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
       </button>
@@ -369,16 +347,16 @@ useEffect(() => {
                     if (item.path === 'logout') {
                       return (
                         <div key={index} className="px-2">
-                        <UserSection
-  currentUser={{ ...savedUser, role: currentUser.role }}
-  onLogout={handleLogout}
-  icons={{ LogOut }}
-  isOpen={isOpen}
-/>
+                          <UserSection
+                            currentUser={{ ...savedUser, role: currentUser.role }}
+                            onLogout={handleLogout}
+                            icons={{ LogOut }}
+                            isOpen={isOpen}
+                          />
                         </div>
                       );
                     }
-                    
+
                     // العناصر العادية
                     return (
                       <Link

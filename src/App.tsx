@@ -7,6 +7,7 @@ declare global {
 import { useTranslation } from 'react-i18next';
 import { smartToast } from './utils/toastConfig';
 import { apiCall, API_ENDPOINTS } from './config/api';
+import { useApiQuery } from './hooks/useApiQuery';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import ThemesSection from './components/home/ThemesSection';
 import ScrollProgressIndicator from './components/ui/ScrollProgressIndicator';
@@ -107,7 +108,6 @@ const App: React.FC = () => {
   // State
   const [categoryProducts, setCategoryProducts] = useState<CategoryProducts[]>([]);
   const [themes, setThemes] = useState<Theme[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
   const [wishlist, setWishlist] = useState<number[]>([]);
@@ -160,135 +160,75 @@ const App: React.FC = () => {
   }, []);
 
   // Memoized fetch functions
-  const fetchCategoryProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [categoriesResponse, productsResponse] = await Promise.all([
-        apiCall(API_ENDPOINTS.CATEGORIES),
-        apiCall(API_ENDPOINTS.PRODUCTS)
-      ]);
-      
-      const categories = Array.isArray(categoriesResponse) ? categoriesResponse : [];
-      const products = Array.isArray(productsResponse?.products) ? productsResponse.products : [];
-      
-      const regularCategories = categories.filter((category: Category) => 
-        category.name !== 'ثيمات'
-      );
-      
-      const themeProducts = products.filter((product: Product) => 
-        product.name?.includes('ثيم') || 
-        product.productType === 'theme' ||
-        product.productType?.includes('ثيم')
-      );
-      
-      const regularProducts = products.filter((product: Product) => 
-        !product.name?.includes('ثيم') && 
-        product.productType !== 'theme' &&
-        !product.productType?.includes('ثيم')
-      );
-      
-      const categoryProductsData = regularCategories.map((category: Category) => ({
-        category,
-        products: regularProducts.filter((product: Product) => product.categoryId === category.id)
-      }));
-      
-      setCategoryProducts(categoryProductsData);
-      setThemes(themeProducts);
-    } catch (error) {
-      console.error('Error fetching category products:', error);
-      setError('فشل في تحميل البيانات. يرجى المحاولة مرة أخرى.');
-      smartToast.frontend.error('فشل في تحميل البيانات');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: categoriesResp, isLoading: categoriesLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CATEGORIES, queryKey: ['categories'] });
+  const { data: productsResp, isLoading: productsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.PRODUCTS, queryKey: ['products'] });
+  const { data: staticResp, isLoading: staticLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.STATIC_PAGES, queryKey: ['static-pages'] });
+  const { data: testimonialsResp, isLoading: testimonialsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.TESTIMONIALS, queryKey: ['testimonials'] });
+  const { data: clientsResp, isLoading: clientsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CLIENTS, queryKey: ['clients'] });
 
-  const fetchStaticPages = useCallback(async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.STATIC_PAGES);
-      
-      if (Array.isArray(response)) {
-        const footerPages = response.filter((page: StaticPage) => page.showInFooter);
-        setStaticPages(footerPages);
-      } else if (response.success && Array.isArray(response.data)) {
-        const footerPages = response.data.filter((page: StaticPage) => page.showInFooter);
-        setStaticPages(footerPages);
-      }
-    } catch (error) {
-      console.error('Error fetching static pages:', error);
-    }
-  }, []);
+  useEffect(() => {
+    const cats = Array.isArray(categoriesResp) ? categoriesResp : [];
+    const products = Array.isArray(productsResp?.products) ? productsResp.products : (Array.isArray(productsResp) ? productsResp : []);
+    const regularCategories = cats.filter((category: Category) => category.name !== 'ثيمات');
+    const themeProducts = products.filter((product: Product) => product.name?.includes('ثيم') || product.productType === 'theme' || product.productType?.includes('ثيم'));
+    const regularProducts = products.filter((product: Product) => !product.name?.includes('ثيم') && product.productType !== 'theme' && !product.productType?.includes('ثيم'));
+    const categoryProductsData = regularCategories.map((category: Category) => ({
+      category,
+      products: regularProducts.filter((product: Product) => product.categoryId === category.id)
+    }));
+    setCategoryProducts(categoryProductsData);
+    setThemes(themeProducts);
+  }, [categoriesResp, productsResp]);
 
-  const fetchTestimonials = useCallback(async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.TESTIMONIALS);
-      
-      if (Array.isArray(response)) {
-        setTestimonials(response);
-      } else if (response.success && Array.isArray(response.data)) {
-        setTestimonials(response.data);
-      } else if (response.testimonials && Array.isArray(response.testimonials)) {
-        setTestimonials(response.testimonials);
-      } else {
-        setTestimonials([]);
-      }
-    } catch (error) {
-      console.error('Error fetching testimonials:', error);
+  useEffect(() => {
+    const resp = staticResp;
+    if (!resp) return;
+    if (Array.isArray(resp)) {
+      setStaticPages(resp.filter((page: StaticPage) => page.showInFooter));
+    } else if ((resp as any).success && Array.isArray((resp as any).data)) {
+      setStaticPages((resp as any).data.filter((page: StaticPage) => page.showInFooter));
+    }
+  }, [staticResp]);
+
+  useEffect(() => {
+    const r = testimonialsResp;
+    if (!r) return;
+    if (Array.isArray(r)) {
+      setTestimonials(r);
+    } else if ((r as any).success && Array.isArray((r as any).data)) {
+      setTestimonials((r as any).data);
+    } else if ((r as any).testimonials && Array.isArray((r as any).testimonials)) {
+      setTestimonials((r as any).testimonials);
+    } else {
       setTestimonials([]);
     }
-  }, []);
+  }, [testimonialsResp]);
 
-  const fetchClients = useCallback(async () => {
-    try {
-      const response = await apiCall(API_ENDPOINTS.CLIENTS);
-      
-      if (Array.isArray(response)) {
-        setClients(response);
-      } else if (response.success && Array.isArray(response.data)) {
-        setClients(response.data);
-      } else if (response.clients && Array.isArray(response.clients)) {
-        setClients(response.clients);
-      } else {
-        setClients([]);
-      }
-    } catch (error) {
-      console.error('Error fetching clients:', error);
+  useEffect(() => {
+    const r = clientsResp;
+    if (!r) return;
+    if (Array.isArray(r)) {
+      setClients(r);
+    } else if ((r as any).success && Array.isArray((r as any).data)) {
+      setClients((r as any).data);
+    } else if ((r as any).clients && Array.isArray((r as any).clients)) {
+      setClients((r as any).clients);
+    } else {
       setClients([]);
     }
-  }, []);
+  }, [clientsResp]);
 
-  // Load all data on mount
   useEffect(() => {
-    const loadAllData = async () => {
-      try {
-        const isMobile = isMobileDevice();
-        
-        if (isMobile) {
-          setIsLoading(false);
-        }
-        
-        await Promise.all([
-          fetchCategoryProducts(),
-          fetchStaticPages(),
-          fetchTestimonials(),
-          fetchClients()
-        ]);
-        
-        loadWishlistFromStorage();
-        
-        if (!isMobile) {
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 300);
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-        setIsLoading(false);
-      }
-    };
-
-    loadAllData();
-  }, [setIsLoading, fetchCategoryProducts, fetchStaticPages, fetchTestimonials, fetchClients, loadWishlistFromStorage]);
+    const loadingDerived = categoriesLoading || productsLoading || staticLoading || testimonialsLoading || clientsLoading;
+    if (loadingDerived) return;
+    const isMobile = isMobileDevice();
+    if (isMobile) {
+      setIsLoading(false);
+    } else {
+      setTimeout(() => setIsLoading(false), 300);
+    }
+    loadWishlistFromStorage();
+  }, [categoriesLoading, productsLoading, staticLoading, testimonialsLoading, clientsLoading, setIsLoading, loadWishlistFromStorage]);
 
   // Memoized cart handlers
   const handleQuantityIncrease = useCallback((productId: number, maxStock: number) => {
@@ -425,7 +365,7 @@ const App: React.FC = () => {
 
         <section data-section="categories">
           <MemoizedCategoriesSection 
-            loading={loading}
+            loading={categoriesLoading || productsLoading}
             categoryProducts={categoryProducts}
           />
         </section>

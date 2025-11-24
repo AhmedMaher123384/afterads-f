@@ -12,10 +12,9 @@ const COLORS = {
   info: '#3b82f6'
 };
 
-// إعدادات Toast الافتراضية
 const defaultToastOptions: ToastOptions = {
   position: "top-center",
-  autoClose: 1800,
+  autoClose: 1600,
   hideProgressBar: true,
   closeOnClick: true,
   pauseOnHover: false,
@@ -23,19 +22,19 @@ const defaultToastOptions: ToastOptions = {
   progress: undefined,
   style: {
     fontFamily: 'Cairo, sans-serif',
-    fontSize: '14px',
+    fontSize: '10px', // رجعناها من 6px إلى 10px (أو حسب رغبتك)
     fontWeight: '600',
-    borderRadius: '14px',
-    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.25)',
-    border: '1px solid rgba(255,255,255,0.18)',
-    minHeight: '56px',
-    padding: '12px 16px',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    textAlign: 'center'
+    borderRadius: '6px',
+    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(255,255,255,0.14)',
+    minHeight: '18px',
+    padding: '4px 6px',
+    backdropFilter: 'blur(4px)',
+    WebkitBackdropFilter: 'blur(4px)',
+    textAlign: 'center',
+    maxWidth: '200px'
   }
 };
-
 // Toast للواجهة الأمامية (Frontend)
 export const frontendToast = {
   success: (message: string, options?: ToastOptions) => {

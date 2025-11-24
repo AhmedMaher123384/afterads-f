@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, Monitor, Tablet, Smartphone, X, Upload, Star, AlertCircle, CheckCircle } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, buildImageUrl } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import { 
   FaUser, FaShoppingCart, FaHeart, FaStar, FaBolt, FaChartLine, 
   FaTrophy, FaGift, FaShieldAlt, FaRocket, FaEnvelope, FaPhone, 
@@ -228,21 +230,14 @@ const [iconCategory, setIconCategory] = useState('all');
     loading: false
   });
 
+  const queryClient = useQueryClient();
+  const { data: cardsResp, isLoading: cardsLoading } = useApiQuery<any>({ endpoint: 'theme-card', queryKey: ['theme-cards'] });
   useEffect(() => {
-    fetchThemeCards();
-  }, []);
-
-  const fetchThemeCards = async (): Promise<void> => {
-    try {
-      setIsLoading(true);
-      const data = await apiCall('theme-card');
-      const list = Array.isArray(data) ? data : (data?.data || []);
-      setThemeCards(list);
-    } catch (error) {
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    if (!cardsResp) return;
+    const list = Array.isArray(cardsResp) ? cardsResp : (cardsResp?.data || []);
+    setThemeCards(list);
+    setIsLoading(false);
+  }, [cardsResp]);
 
   const getIconComponent = (iconName: string) => {
   const icons: { [key: string]: any } = {
@@ -338,9 +333,8 @@ const [iconCategory, setIconCategory] = useState('all');
     const method = editingCard ? 'PUT' : 'POST';
     const data = await apiCall(endpoint, { method, body: submitData });
     if (data?.success !== false) {
-      await fetchThemeCards();
+      queryClient.invalidateQueries({ queryKey: ['theme-cards'] });
       closeModal();
-      // ✅ Toast بدل Alert
       setToast({
         show: true,
         message: editingCard ? 'تم التحديث بنجاح! ✓' : 'تم الإضافة بنجاح! ✓',
@@ -390,9 +384,8 @@ const confirmDelete = async () => {
   try {
     const data = await apiCall(`theme-card/${deleteModal.card._id}`, { method: 'DELETE' });
     if (data?.success !== false) {
-      await fetchThemeCards();
+      queryClient.invalidateQueries({ queryKey: ['theme-cards'] });
       setDeleteModal({ isOpen: false, card: null, loading: false });
-      // ✅ Toast بدل Alert
       setToast({
         show: true,
         message: 'تم الحذف بنجاح! ✓',
@@ -656,7 +649,7 @@ const closeModal = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl flex justify-between items-center">
+            <div className="sticky z-10 top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl flex justify-between items-center">
               <h3 className="text-2xl font-bold">
                 {editingCard ? 'تعديل العنصر' : 'إضافة عنصر جديد'}
               </h3>

@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, Folder, CheckCircle, Layers, FileText, Settings, Image, ArrowUpDown, AlignRight, Grid } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
-import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { apiCall, API_ENDPOINTS, buildImageUrl } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import ImageUploader from '../components/layout/ImageUploaderProps';
 
 interface Category {
   _id: string;
@@ -28,7 +30,8 @@ interface Category {
 
 const CategoriesManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categoriesData, isLoading: categoriesLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CATEGORIES, queryKey: ['categories'] });
+  const loading = categoriesLoading;
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,23 +57,14 @@ const CategoriesManagement: React.FC = () => {
     seoDescription_ar: '',
     seoDescription_en: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const data = await apiCall(API_ENDPOINTS.CATEGORIES);
-      setCategories(Array.isArray(data) ? data : (data?.data || data));
-      setError('');
-    } catch (err) {
-      setError('فشل في تحميل الفئات');
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!categoriesData) return;
+    const arr = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.data || categoriesData);
+    setCategories(arr);
+    setError('');
+  }, [categoriesData]);
 
   const openModal = (category?: Category) => {
     if (category) {
@@ -98,6 +92,7 @@ const CategoriesManagement: React.FC = () => {
         seoDescription_en: ''
       });
     }
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -123,6 +118,18 @@ const CategoriesManagement: React.FC = () => {
       seoDescription_ar: '',
       seoDescription_en: ''
     });
+    setImageFile(null);
+  };
+
+  const base64ToFile = (base64: string, filename: string): File => {
+    const arr = base64.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const bstr = atob(arr[1] || '');
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new File([u8arr], filename, { type: mime });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,15 +139,44 @@ const CategoriesManagement: React.FC = () => {
         ? API_ENDPOINTS.CATEGORY_BY_ID(editingCategory._id)
         : API_ENDPOINTS.CATEGORIES;
       const method = editingCategory ? 'PUT' : 'POST';
+      const submitFormData = new FormData();
+      submitFormData.append('name', (formData.name || '').toString());
+      submitFormData.append('name_ar', (formData.name_ar || '').toString());
+      submitFormData.append('name_en', (formData.name_en || '').toString());
+      submitFormData.append('description', (formData.description || '').toString());
+      submitFormData.append('description_ar', (formData.description_ar || '').toString());
+      submitFormData.append('description_en', (formData.description_en || '').toString());
+      submitFormData.append('categoryType', (formData.categoryType || 'regular').toString());
+      submitFormData.append('isActive', String(formData.isActive ?? true));
+      if (formData.parentId !== undefined && formData.parentId !== null) {
+        submitFormData.append('parentId', String(formData.parentId));
+      }
+      submitFormData.append('order', String(formData.order ?? 0));
+      submitFormData.append('seoTitle', (formData.seoTitle || '').toString());
+      submitFormData.append('seoTitle_ar', (formData.seoTitle_ar || '').toString());
+      submitFormData.append('seoTitle_en', (formData.seoTitle_en || '').toString());
+      submitFormData.append('seoDescription', (formData.seoDescription || '').toString());
+      submitFormData.append('seoDescription_ar', (formData.seoDescription_ar || '').toString());
+      submitFormData.append('seoDescription_en', (formData.seoDescription_en || '').toString());
+
+      if (imageFile) {
+        submitFormData.append('mainImage', imageFile);
+      } else if (typeof formData.image === 'string' && formData.image.startsWith('data:image')) {
+        const file = base64ToFile(formData.image, 'category-image.png');
+        submitFormData.append('mainImage', file);
+      } else if (typeof formData.image === 'string' && formData.image) {
+        submitFormData.append('image', formData.image);
+      }
+
       await apiCall(endpoint, {
         method,
-        body: JSON.stringify(formData),
+        body: submitFormData,
       });
 
       {
         setSuccess(editingCategory ? 'تم تحديث الفئة بنجاح' : 'تم إضافة الفئة بنجاح');
         closeModal();
-        fetchCategories();
+        
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {
@@ -199,7 +235,7 @@ const CategoriesManagement: React.FC = () => {
     </div>
 
     {/* Success Message */}
-    {success && (
+    {!isModalOpen && success && (
       <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl flex items-center gap-3 shadow-sm">
         <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
           <AlertCircle className="w-5 h-5" />
@@ -209,7 +245,7 @@ const CategoriesManagement: React.FC = () => {
     )}
 
     {/* Error Message */}
-    {error && (
+    {!isModalOpen && error && (
       <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-center gap-3 shadow-sm">
         <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
           <AlertCircle className="w-5 h-5" />
@@ -219,7 +255,7 @@ const CategoriesManagement: React.FC = () => {
     )}
 
     {/* Categories Stats */}
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
         <div className="flex items-center justify-between">
           <div>
@@ -244,32 +280,7 @@ const CategoriesManagement: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-600 text-sm font-semibold">فئات ثيمات</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-              {categories.filter(c => c.categoryType === 'themes').length}
-            </p>
-          </div>
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-            <Layers className="w-8 h-8 text-white" />
-          </div>
-        </div>
-      </div>
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-600 text-sm font-semibold">فئات عادية</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-              {categories.filter(c => c.categoryType === 'regular').length}
-            </p>
-          </div>
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-            <Grid className="w-8 h-8 text-white" />
-          </div>
-        </div>
-      </div>
+      
     </div>
 
     {loading && <Spinner overlay />}
@@ -301,7 +312,6 @@ const CategoriesManagement: React.FC = () => {
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">ID</th>
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">الاسم</th>
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">الاسم بالعربي</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-white">النوع</th>
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">الحالة</th>
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">الترتيب</th>
                 <th className="text-center py-4 px-6 text-sm font-semibold text-white">الإجراءات</th>
@@ -324,15 +334,7 @@ const CategoriesManagement: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{category.name_ar}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
-                      category.categoryType === 'themes' 
-                        ? 'bg-purple-100 text-purple-700 border-purple-200' 
-                        : 'bg-blue-100 text-blue-700 border-blue-200'
-                    }`}>
-                      {category.categoryType === 'themes' ? '🎨 ثيمات' : '📦 عادي'}
-                    </span>
-                  </td>
+                  
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
                       category.isActive 
@@ -377,7 +379,7 @@ const CategoriesManagement: React.FC = () => {
     {/* Modal */}
     {isModalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-        <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
           <div className="sticky top-0 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold">
@@ -392,7 +394,13 @@ const CategoriesManagement: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
+            {isModalOpen && error && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">{error}</span>
+              </div>
+            )}
             <div className="space-y-6">
               {/* Basic Info */}
               <div>
@@ -444,20 +452,7 @@ const CategoriesManagement: React.FC = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      نوع الفئة *
-                    </label>
-                    <select
-                      name="categoryType"
-                      value={formData.categoryType}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#203f61] focus:border-[#203f61] transition-all bg-white"
-                    >
-                      <option value="regular">📦 عادي</option>
-                      <option value="themes">🎨 ثيمات</option>
-                    </select>
-                  </div>
+                  
                 </div>
               </div>
 
@@ -505,20 +500,25 @@ const CategoriesManagement: React.FC = () => {
                   الإعدادات
                 </h3>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    رابط الصورة
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#203f61] focus:border-[#203f61] transition-all"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                    <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  </div>
+                  <ImageUploader
+                    value={
+                      typeof formData.image === 'string' && formData.image
+                        ? (
+                            formData.image.startsWith('data:image') || formData.image.startsWith('http')
+                              ? formData.image
+                              : buildImageUrl(formData.image)
+                          )
+                        : ''
+                    }
+                    onChange={(value) => {
+                      const img = Array.isArray(value) ? (value[0] || '') : (value as string);
+                      setFormData(prev => ({ ...prev, image: img }));
+                    }}
+                    onFileSelect={(file) => setImageFile(file)}
+                    label="صورة الفئة"
+                    multiple={false}
+                    required={false}
+                  />
                 </div>
               </div>
 

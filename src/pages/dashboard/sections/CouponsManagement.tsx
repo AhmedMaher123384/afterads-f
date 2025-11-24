@@ -3,6 +3,8 @@ import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, Tag, Percent, DollarSign, Calendar, TrendingUp, XCircle, CheckCircle } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Coupon {
   _id: string;
@@ -23,8 +25,8 @@ interface Coupon {
 }
 
 const CouponsManagement: React.FC = () => {
+  const queryClient = useQueryClient();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,22 +46,13 @@ const CouponsManagement: React.FC = () => {
     isActive: true
   });
 
+  const { data: couponsResp, isLoading: loading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.COUPONS, queryKey: ['coupons'] });
   useEffect(() => {
-    fetchCoupons();
-  }, []);
-
-  const fetchCoupons = async () => {
-    try {
-      setLoading(true);
-      const data = await apiCall(API_ENDPOINTS.COUPONS);
-      setCoupons(Array.isArray(data) ? data : (data.coupons || data || []));
-      setError('');
-    } catch (err) {
-      setError('فشل في تحميل الكوبونات');
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!couponsResp) return;
+    const arr = Array.isArray(couponsResp) ? couponsResp : (couponsResp.coupons || couponsResp || []);
+    setCoupons(arr);
+    setError('');
+  }, [couponsResp]);
 
   const openModal = (coupon?: Coupon) => {
     if (coupon) {
@@ -132,7 +125,7 @@ const CouponsManagement: React.FC = () => {
       {
         setSuccess(editingCoupon ? 'تم تحديث الكوبون بنجاح' : 'تم إضافة الكوبون بنجاح');
         closeModal();
-        fetchCoupons();
+        queryClient.invalidateQueries({ queryKey: ['coupons'] });
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {
@@ -150,7 +143,7 @@ const CouponsManagement: React.FC = () => {
     try {
       await apiCall(API_ENDPOINTS.COUPON_BY_ID(deleteTargetId), { method: 'DELETE' });
       setSuccess('تم حذف الكوبون بنجاح');
-      fetchCoupons();
+      queryClient.invalidateQueries({ queryKey: ['coupons'] });
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError('حدث خطأ أثناء حذف الكوبون');

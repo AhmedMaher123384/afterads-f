@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Monitor, Tablet, Smartphone, Eye, X, ExternalLink, MessageSquare, Calendar, User } from 'lucide-react';
 import { apiCall, API_ENDPOINTS } from '../config/api';
+import { useApiQuery } from '../hooks/useApiQuery';
 import fallbackImg from '../assets/search_not_found.png';
 import { useTranslation } from 'react-i18next';
 
@@ -45,7 +46,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ work, isOpen, onClose }) =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="relative bg-gradient-to-br from-[#1a1a1a]/98 via-[#292929]/95 to-[#1a1a1a]/98 rounded-2xl border border-[#18b5d8]/30 shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-gradient-to-br from-[#1a1a1a]/98 via-[#292929]/95 to-[#1a1a1a]/98 rounded-2xl border border-[#18b5d8]/30 shadow-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#18b5d8]/20">
@@ -118,7 +119,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ work, isOpen, onClose }) =>
               <img 
                 src={getImageUrl(currentImage)}
                 alt={`${device} Preview`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onError={(e) => {
                   e.currentTarget.src = fallbackImg;
                 }}
@@ -197,30 +198,18 @@ const ThemeWorks: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const [works, setWorks] = useState<ThemeWork[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: worksResp, isLoading: loading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.THEME_WORKS.LIST, queryKey: ['theme-works'] });
   const [error, setError] = useState('');
   const [selectedWork, setSelectedWork] = useState<ThemeWork | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchWorks();
-  }, []);
-
-  const fetchWorks = async () => {
-    setLoading(true);
+    if (!worksResp) return;
+    const data = Array.isArray(worksResp) ? worksResp : worksResp?.data || worksResp?.items || [];
+    const activeWorks = data.filter((work: ThemeWork) => work.isActive);
+    setWorks(activeWorks);
     setError('');
-    try {
-      const res = await apiCall(API_ENDPOINTS.THEME_WORKS.LIST);
-      const data = Array.isArray(res) ? res : res?.data || res?.items || [];
-      const activeWorks = data.filter((work: ThemeWork) => work.isActive);
-      setWorks(activeWorks);
-    } catch (err) {
-      console.error('Error fetching theme works:', err);
-      setError(t('theme_works.error_fetching'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [worksResp, t]);
 
   const handlePreview = (work: ThemeWork) => {
     setSelectedWork(work);
@@ -273,7 +262,7 @@ const ThemeWorks: React.FC = () => {
               <div className="w-2 h-2 bg-[#18b5d8] rounded-full animate-pulse"></div>
                 <span className="text-[#18b5d8] font-medium text-sm">{t('theme_works.header.badge')}</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#18b5d8] to-white mb-6 leading-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white mb-4 sm:mb-6 leading-snug">
               {t('theme_works.header.title')}
             </h2>
             <p className="text-lg sm:text-xl text-[#a1a1a1] max-w-3xl mx-auto leading-relaxed">
@@ -291,7 +280,7 @@ const ThemeWorks: React.FC = () => {
                 className="bg-[#1e1e1e]/95 backdrop-blur-lg border border-gray-700/20 rounded-2xl overflow-hidden hover:border-[#18b5d8]/30 transition-all duration-300 group h-full flex flex-col"
               >
                 {/* Image Container */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-white/5">
+                <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden bg-white/5">
                   <img 
                     src={getImageUrl(work.imageDesktop)}
                     alt="Work Preview"

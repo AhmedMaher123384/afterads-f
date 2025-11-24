@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, X, Package } from 'lucide-react';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../../config/api';
+import { useApiQuery } from '../../hooks/useApiQuery';
 import { createProductSlug } from '../../utils/slugify';
 import { useTranslation } from 'react-i18next';
 import PriceDisplay from './PriceDisplay';
@@ -38,42 +39,24 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
   const navigate = useNavigate();
 
   // تحميل المنتجات عند بدء التطبيق
+  const { data: productsResp, isLoading: productsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.PRODUCTS, queryKey: ['products'] });
   useEffect(() => {
-    loadProducts();
-  }, []);
-
-  // تحميل المنتجات من API أو localStorage
-  const loadProducts = async () => {
-    try {
-      setIsLoading(true);
-      
-      // محاولة تحميل من localStorage أولاً
-      const cached = localStorage.getItem('searchProducts');
-      if (cached) {
+    const cached = localStorage.getItem('searchProducts');
+    if (cached) {
+      try {
         const cachedProducts = JSON.parse(cached);
         setAllProducts(cachedProducts);
-        setIsLoading(false);
-      }
-
-      // تحميل من API
-      const productsResponse = await apiCall(API_ENDPOINTS.PRODUCTS);
-      
-      // Handle response object that contains products array
-      const productsData = productsResponse.products || productsResponse;
-      
-      // فلترة المنتجات المتاحة فقط
-      const availableProducts = productsData.filter((product: Product) => 
-        product.isAvailable && product.name && product.name.trim() !== ''
-      );
-      
-      setAllProducts(availableProducts);
-      localStorage.setItem('searchProducts', JSON.stringify(availableProducts));
-      setIsLoading(false);
-    } catch (error) {
-      console.error(t('live_search.loading_error'), error);
-      setIsLoading(false);
+      } catch {}
     }
-  };
+  }, []);
+  useEffect(() => {
+    if (!productsResp) return;
+    const productsData = productsResp?.products || productsResp || [];
+    const availableProducts = productsData.filter((product: Product) => product.isAvailable && product.name && product.name.trim() !== '');
+    setAllProducts(availableProducts);
+    localStorage.setItem('searchProducts', JSON.stringify(availableProducts));
+    setIsLoading(false);
+  }, [productsResp]);
 
   // البحث المحلي البسيط والدقيق
   const performSearch = (query: string) => {

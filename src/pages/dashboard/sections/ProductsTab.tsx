@@ -17,6 +17,8 @@ import Spinner from '../../../components/ui/Spinner';
 import RichTextEditor from '../components/layout/RichTextEditor';
 import ImageUploader from '../components/layout/ImageUploaderProps';
 import { buildImageUrl, apiCall, API_ENDPOINTS } from '../../../config/api';
+import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Types
 interface Product {
@@ -134,38 +136,19 @@ const [categories, setCategories] = useState<any[]>([]);
     productOptions: []
   });
 
-  // Fetch products
-useEffect(() => {
-  fetchProducts();
-  fetchCategories();
-}, []);
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const res = await apiCall(API_ENDPOINTS.PRODUCTS);
-      const data = Array.isArray(res) ? res : (res?.products || res?.data || []);
-      setProducts(data);
-    } catch (err) {
-      setError('فشل تحميل المنتجات');
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const data = await apiCall(API_ENDPOINTS.CATEGORIES);
-      setCategories(Array.isArray(data) ? data : (data?.data || data));
-      setError('');
-    } catch (err) {
-      setError('فشل في تحميل الفئات');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const queryClient = useQueryClient();
+  const { data: productsResp, isLoading: productsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.PRODUCTS, queryKey: ['products'] });
+  const { data: categoriesResp, isLoading: categoriesLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CATEGORIES, queryKey: ['categories'] });
+  useEffect(() => {
+    if (!productsResp) return;
+    const data = Array.isArray(productsResp) ? productsResp : (productsResp?.products || productsResp?.data || []);
+    setProducts(data);
+  }, [productsResp]);
+  useEffect(() => {
+    if (!categoriesResp) return;
+    const data = Array.isArray(categoriesResp) ? categoriesResp : (categoriesResp?.data || categoriesResp);
+    setCategories(data);
+  }, [categoriesResp]);
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -247,7 +230,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     });
     
     setSuccess(editingProduct ? 'تم تعديل المنتج بنجاح' : 'تم إضافة المنتج بنجاح');
-    await fetchProducts();
+    queryClient.invalidateQueries({ queryKey: ['products'] });
     setTimeout(() => closeModal(), 1500);
     
   } catch (err: any) {
@@ -270,7 +253,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     try {
       await apiCall(API_ENDPOINTS.PRODUCT_BY_ID(id), { method: 'DELETE' });
       setSuccess('تم حذف المنتج بنجاح');
-      await fetchProducts();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError('حدث خطأ أثناء حذف المنتج');
@@ -587,7 +570,7 @@ return (
         </div>
 
         {/* Success Message */}
-        {success && (
+        {!isModalOpen && success && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
             <AlertCircle className="w-5 h-5" />
             {success}
@@ -595,7 +578,7 @@ return (
         )}
 
         {/* Error Message */}
-        {error && (
+        {!isModalOpen && error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
             <AlertCircle className="w-5 h-5" />
             {error}
@@ -630,7 +613,6 @@ return (
                     <th className="text-right py-4 px-6 text-sm font-semibold text-white">ID</th>
                     <th className="text-right py-4 px-6 text-sm font-semibold text-white">الاسم</th>
                     <th className="text-right py-4 px-6 text-sm font-semibold text-white">السعر</th>
-                    <th className="text-right py-4 px-6 text-sm font-semibold text-white">النوع</th>
                     <th className="text-right py-4 px-6 text-sm font-semibold text-white">الحالة</th>
                     <th className="text-center py-4 px-6 text-sm font-semibold text-white">الإجراءات</th>
                   </tr>
@@ -659,15 +641,7 @@ return (
                           <span className="font-semibold">{product.price} ج.م</span>
                         </div>
                       </td>
-                      <td className="py-4 px-6">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          product.productType === 'theme'
-                            ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                            : 'bg-blue-100 text-blue-700 border border-blue-200'
-                        }`}>
-                          {product.productType === 'theme' ? 'قالب' : 'منتج'}
-                        </span>
-                      </td>
+                      
                       <td className="py-4 px-6">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                           product.isAvailable && product.isActive
@@ -708,7 +682,7 @@ return (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
               {/* Modal Header */}
-              <div className="bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white p-6">
+              <div className="bg-gradient-to-r z-10 from-[#203f61] to-[#2a537e] text-white p-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-bold">
                     {editingProduct ? '✏️ تعديل المنتج' : '➕ إضافة منتج جديد'}
@@ -746,7 +720,13 @@ return (
               </div>
 
               {/* Modal Body */}
-              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6">
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6" style={{ overscrollBehavior: 'contain' }}>
+                {error && (
+                  <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    {error}
+                  </div>
+                )}
                 {/* Basic Info Tab */}
                 {activeTab === 'basic' && (
                   <div className="space-y-6">
@@ -871,19 +851,6 @@ return (
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          نوع المنتج
-                        </label>
-                        <select
-                          value={formData.productType}
-                          onChange={(e) => setFormData({ ...formData, productType: e.target.value as 'product' | 'theme' })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#203f61] focus:border-[#203f61] transition-all bg-white"
-                        >
-                          <option value="product">منتج</option>
-                          <option value="theme">قالب</option>
-                        </select>
-                      </div>
                      <div>
   <label className="block text-sm font-semibold text-gray-700 mb-2">
     التصنيف *
@@ -1372,14 +1339,14 @@ return (
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all font-medium"
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all font-medium"
                 >
                   إلغاء
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#203f61] to-[#2a537e] text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>

@@ -109,7 +109,7 @@ const TermsAndConditions: React.FC = () => {
   ), []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white" dir="rtl">
+    <div className="min-h-screen bg-[#292929] text-white" dir="rtl">
       <style>
         {`
           @keyframes fadeInUp {

@@ -11,6 +11,7 @@ import LiveSearch from '../ui/LiveSearch';
 import LanguageCurrencySelector from '../ui/LanguageCurrencySelector';
 import { createCategorySlug } from '../../utils/slugify';
 import { apiCall, API_ENDPOINTS, buildImageUrl } from '../../config/api';
+import { useApiQuery } from '../../hooks/useApiQuery';
 
 interface CartItem {
   id: number;
@@ -23,6 +24,13 @@ interface Category {
   name: string;
   description: string;
   image: string;
+}
+
+interface StaticPage {
+  id: number | string;
+  title: string;
+  slug: string;
+  isActive?: boolean;
 }
 
 function Navbar() {
@@ -55,6 +63,7 @@ function Navbar() {
   const cartDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+
 
   // Function to get first letter of each name for mobile display
   const getInitials = (name: string): string => {
@@ -268,7 +277,7 @@ useEffect(() => {
   useEffect(() => {
     fetchCartCount();
     fetchWishlistCount();
-    fetchCategories();
+    
 
     const handleCartUpdate = () => {
       console.log('🔄 [Navbar] Cart update event received');
@@ -310,7 +319,7 @@ useEffect(() => {
       fetchWishlistCount();
     };
 
-    const handleCategoriesUpdate = () => fetchCategories();
+    const handleCategoriesUpdate = () => refetchCategories();
 
     const cartEvents = [
       'cartUpdated',
@@ -603,16 +612,14 @@ useEffect(() => {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const data = await apiCall(API_ENDPOINTS.CATEGORIES);
-      const filteredCategories = data.filter((category: Category) => category.name !== 'ثيمات');
-      setCategories(filteredCategories);
-      localStorage.setItem('cachedCategories', JSON.stringify(filteredCategories));
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
+  const { data: categoriesResp, refetch: refetchCategories } = useApiQuery<any>({ endpoint: API_ENDPOINTS.CATEGORIES, queryKey: ['categories'] });
+  useEffect(() => {
+    if (!categoriesResp) return;
+    const arr = Array.isArray(categoriesResp) ? categoriesResp : categoriesResp?.data || [];
+    const filtered = arr.filter((category: Category) => category.name !== 'ثيمات');
+    setCategories(filtered);
+    localStorage.setItem('cachedCategories', JSON.stringify(filtered));
+  }, [categoriesResp]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -966,7 +973,7 @@ useEffect(() => {
 
       {/* Mobile Menu Overlay */}
       <div 
-        className={`lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 mobile-menu-overlay ${
+        className={`lg:hidden fixed inset-0 bg-black/40 z-[60] transition-opacity duration-200 mobile-menu-overlay ${
           isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={(e) => {
@@ -975,85 +982,34 @@ useEffect(() => {
           }
         }}
       >
-        {/* Mobile Menu Panel - Professional Glassmorphism */}
+        {/* Mobile Menu Panel */}
         <div 
-          className={`fixed right-0 top-0 h-full w-full max-w-sm transform transition-all duration-700 ease-out flex flex-col ${
+          className={`fixed right-0 top-0 h-full w-full max-w-sm transform transition-all duration-300 ease-out flex flex-col ${
             isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
           onClick={(e) => e.stopPropagation()}
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%)',
-            backdropFilter: 'blur(40px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-            borderLeft: '1px solid rgba(255,255,255,0.15)',
-            boxShadow: `
-              -20px 0 60px rgba(0,0,0,0.3),
-              inset 1px 0 1px rgba(255,255,255,0.1),
-              inset 0 1px 1px rgba(255,255,255,0.05)
-            `,
+            background: '#292929',
+            borderLeft: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '-10px 0 24px rgba(0,0,0,0.35)',
             maxHeight: '100vh',
             overflowY: 'hidden'
           }}
         >
-          {/* Animated Background Orbs */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div 
-              className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-20 animate-pulse"
-              style={{
-                background: 'radial-gradient(circle, rgba(24,181,216,0.3) 0%, transparent 70%)',
-                animationDuration: '4s'
-              }}
-            ></div>
-            <div 
-              className="absolute top-1/3 -right-10 w-24 h-24 rounded-full opacity-15 animate-pulse"
-              style={{
-                background: 'radial-gradient(circle, rgba(8,145,178,0.4) 0%, transparent 70%)',
-                animationDuration: '6s',
-                animationDelay: '2s'
-              }}
-            ></div>
-            <div 
-              className="absolute bottom-1/4 -right-16 w-32 h-32 rounded-full opacity-10 animate-pulse"
-              style={{
-                background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)',
-                animationDuration: '8s',
-                animationDelay: '1s'
-              }}
-            ></div>
-          </div>
+          
 
-          {/* Header Section - Enhanced Glassmorphism */}
           <div 
-            className="relative flex justify-between items-center p-6 border-b border-white/15"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)'
-            }}
+            className="relative flex justify-between items-center p-3 border-b border-white/10"
           >
-            <Link to="/" onClick={() => setIsMenuOpen(false)} className="transition-all duration-300 hover:scale-105 hover:drop-shadow-lg">
-  <img src={logo} alt="Logo" className="h-8 w-auto filter drop-shadow-sm" />
+            <Link to="/" onClick={() => setIsMenuOpen(false)} className="transition-all duration-200">
+              <img src={logo} alt="Logo" className="h-7 w-auto" />
             </Link>
             <button 
               onClick={() => setIsMenuOpen(false)} 
-             className="relative text-white p-2 rounded-xl transition-all duration-300 group overflow-hidden"
+              className="text-white p-1.5 rounded-lg hover:bg-white/10 transition-all duration-200"
               aria-label={t('nav.close_menu')}
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.1)'
-              }}
             >
-              <div className="relative z-10 transition-transform duration-300 group-hover:rotate-90">
-                <X size={20} />
-              </div>
-              <div 
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-2xl"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(220,38,38,0.1) 100%)'
-                }}
-              ></div>
+              <X size={18} />
             </button>
           </div>
 
@@ -1217,34 +1173,8 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Search & Settings Section - Mobile */}
-          <div 
-  className="relative p-4 border-b border-white/15"
-  style={{
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)'
-  }}
->
-              {/* Section Header */}
-              <div className="flex items-center mb-4">
-                <div 
-                  className="w-0.5 h-4 rounded-full mr-2"
-                  style={{
-                    background: 'linear-gradient(135deg, #18b5d8 0%, #0891b2 100%)',
-                    boxShadow: '0 0 8px rgba(24,181,216,0.4)'
-                  }}
-                ></div>
-                <h3 className="text-white/70 text-xs font-bold uppercase tracking-wider">{t('nav.search_and_settings')}</h3>
-              </div>
-
-              {/* Search Component */}
-  <div className="mb-3 relative z-10">
-                <LiveSearch />
-              </div>
-
-              {/* Language & Currency Selector */}                            
-  <div className="flex justify-center relative z-10">
+            <div className="p-2 border-b border-white/10">
+              <div className="flex justify-center">
                 <LanguageCurrencySelector />
               </div>
             </div>
@@ -1371,34 +1301,10 @@ useEffect(() => {
                   </Link>
                 ))}
               </div>
+           
             </div>
 
-            {/* Action Buttons Section */}
-            {/* Wishlist Section - Simple Design */}
-            <div className="relative p-4 border-t border-white/10">
-              <Link
-                to="/wishlist"
-                onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-3 py-2 text-white/90 hover:text-white rounded-lg transition-all duration-300 space-x-2 group touch-manipulation"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
-                  backdropFilter: 'blur(15px)',
-                  WebkitBackdropFilter: 'blur(15px)',
-                  border: '1px solid rgba(255,255,255,0.1)'
-                }}
-              >
-                <div className="relative">
-                  <Heart size={16} className="flex-shrink-0" />
-                  {wishlistItemsCount > 0 && (
-  <span className="absolute -top-1 -right-1 bg-pink-500 text-white rounded-full min-w-[14px] h-[14px] flex items-center justify-center text-[9px] font-bold">
-                      {wishlistItemsCount}
-                    </span>
-                  )}
-                </div>
-                <span className="text-sm font-medium">{t('nav.wishlist')}</span>
-                <ChevronLeft size={14} className="mr-auto opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1" />
-              </Link>
-            </div>
+            
           </div>
         </div>
       </div>

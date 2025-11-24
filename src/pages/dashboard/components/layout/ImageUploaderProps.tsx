@@ -12,6 +12,7 @@ import {
 interface ImageUploaderProps {
   value: string | string[];
   onChange: (value: string | string[]) => void;
+  onFileSelect?: (file: File) => void;
   label?: string;
   required?: boolean;
   multiple?: boolean;
@@ -23,6 +24,7 @@ interface ImageUploaderProps {
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   value,
   onChange,
+  onFileSelect,
   label,
   required = false,
   multiple = false,
@@ -62,6 +64,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
   if (file && file.type.startsWith('image/')) {
+    onFileSelect?.(file);
     setSelectedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {

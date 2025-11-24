@@ -325,6 +325,18 @@
       "more_creativity_awaits": "المزيد من الإبداع في انتظارك",
       "quantity": "الكمية",
       "faq": "الأسئلة الشائعة",
+      "autoplay_on": "تشغيل تلقائي",
+      "autoplay_short": "تلقائي",
+      "go_to_image_sr": "الذهاب للصورة",
+      "preview_label": "معاينة:",
+      "devices": {
+        "desktop": "كمبيوتر",
+        "tablet": "جهاز لوحي",
+        "mobile": "جوال"
+      },
+      "get_theme_now": "احصل على الثيم الآن",
+      "video": "فيديو",
+      "no_components": "لا توجد عناصر متاحة حالياً",
       "platform_features": "مصمم خصيصًا لمنصة سلة • محسّن للسرعة • متجاوب مع جميع الأجهزة",
       "features": {
         "advanced_elements": {
@@ -510,7 +522,7 @@
       "visit": "زيارة"
     },
     "modal": {
-      "title": "معاينة العمل",
+      "title": "معاينة المتجر",
       "preview_label": "معاينة:",
       "device": {
         "desktop": "سطح المكتب",
@@ -656,7 +668,7 @@
     "partners_salla": "شركاؤنا - سلة",
     "scroll_to_top": "العودة للأعلى",
     "tax_number": "الرقم الضريبي: 067-347-623",
-    "copyright": "© 2024 AfterAds. جميع الحقوق محفوظة",
+    "copyright": "© 2025 AfterAds. جميع الحقوق محفوظة",
     "location": "الرياض، المملكة العربية السعودية"
   },
   "user_profile": {
@@ -826,6 +838,12 @@
       "phone_label": "رقم الجوال / واتساب:"
     },
     "back_to_home": "العودة للصفحة الرئيسية"
+  },
+  "static_page": {
+    "not_found": "الصفحة غير موجودة أو غير متاحة",
+    "back_to_home": "العودة للصفحة الرئيسية",
+    "last_update": "آخر تحديث",
+    "created_on": "تم الإنشاء"
   },
   "about": {
     "title": "وكالة AfterAds",

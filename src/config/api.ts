@@ -182,7 +182,7 @@ export const API_ENDPOINTS = {
   // Static Pages
   STATIC_PAGES: 'static-pages',
   STATIC_PAGE_BY_ID: (id: string | number) => `static-pages/${id}`,
-  STATIC_PAGE_BY_SLUG: (slug: string) => `static-pages/slug/${encodeURIComponent(slug)}`,
+  STATIC_PAGE_BY_SLUG: (slug: string) => `static-pages/${encodeURIComponent(slug)}`,
   
   // Blog Posts - Simplified
   BLOG_POSTS: 'blog-posts',
