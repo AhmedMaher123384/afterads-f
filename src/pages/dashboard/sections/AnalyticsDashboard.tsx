@@ -221,26 +221,38 @@ const AnalyticsDashboard: React.FC = () => {
     setDailySalesData(data);
   };
 
-  // Generate monthly sales data based on orders (current year)
-  const generateMonthlySalesData = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+// في دالة generateMonthlySalesData، استبدل الكود الحالي بهذه الدالة الجديدة:
+const generateMonthlySalesData = () => {
+  // استخدم سنة معينة أو السنة الحالية
+  const year = new Date().getFullYear(); // يمكنك تغيير هذه القيمة لتحليل سنة مختلفة
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
-    const monthly: { sales: number; orders: number }[] = Array.from({ length: 12 }, () => ({ sales: 0, orders: 0 }));
+  // إنشاء مصفوفة لحساب المبيعات والطلبات لكل شهر (من 0 إلى 11)
+  const monthly: { sales: number; orders: number }[] = Array.from({ length: 12 }, () => ({ sales: 0, orders: 0 }));
 
-    orders.forEach(order => {
-      const d = new Date(order.createdAt);
-      if (d.getFullYear() === year) {
-        const m = d.getMonth();
-        monthly[m].sales += order.total;
-        monthly[m].orders += 1;
+  // تصفية الطلبات حسب السنة وحساب المبيعات والطلبات لكل شهر
+  orders.forEach(order => {
+    const orderDate = new Date(order.createdAt);
+    if (orderDate.getFullYear() === year) { // تأكد من أن السنة تطابق السنة المطلوبة
+      const monthIndex = orderDate.getMonth(); // 0 لليناير، 1 لفبراير، ... 11 لديسمبر
+      
+      // تأكد من أن الحالة تشير إلى طلب مكتمل أو مؤكد لحسابه في المبيعات
+      if (order.status === 'delivered' || order.status === 'confirmed') {
+        monthly[monthIndex].sales += order.total;
+        monthly[monthIndex].orders += 1;
       }
-    });
+    }
+  });
 
-    const data = monthly.map((v, i) => ({ month: months[i], sales: v.sales, orders: v.orders }));
-    setMonthlySalesData(data);
-  };
+  // تحويل البيانات إلى تنسيق مناسب للرسم البياني مع الأسماء العربية
+  const data = monthly.map((value, index) => ({
+    month: months[index], // استخدام اسم الشهر باللغة العربية
+    sales: value.sales,
+    orders: value.orders
+  }));
+
+  setMonthlySalesData(data);
+};
 
   // Calculate metrics
   const calculateMetrics = () => {

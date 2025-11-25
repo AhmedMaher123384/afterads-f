@@ -123,15 +123,35 @@ const calculateStats = (
   const yearOrders = orders.filter(order => new Date(order.createdAt) >= yearStart).length;
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-  const monthRevenue = orders.filter(order => {
-    const orderDate = new Date(order.createdAt);
-    return orderDate >= monthStart;
-  }).reduce((sum, order) => sum + order.total, 0);
+// في دالة calculateStats، استبدل حساب monthRevenue و yearRevenue بالكود التالي:
 
-  const yearRevenue = orders.filter(order => {
-    const orderDate = new Date(order.createdAt);
-    return orderDate >= yearStart;
-  }).reduce((sum, order) => sum + order.total, 0);
+// حساب المبيعات الشهرية (من أول الشهر الحالي إلى آخر الشهر الحالي)
+const monthRevenue = orders.filter(order => {
+  const orderDate = new Date(order.createdAt);
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0); // آخر يوم في الشهر
+  
+  // تأكد من أن الحالة تشير إلى طلب مكتمل أو مؤكد
+  if (order.status === 'delivered' || order.status === 'confirmed') {
+    return orderDate >= monthStart && orderDate <= monthEnd;
+  }
+  return false;
+}).reduce((sum, order) => sum + order.total, 0);
+
+// حساب المبيعات السنوية (من أول الشهر الحالي إلى آخر السنة)
+const yearRevenue = orders.filter(order => {
+  const orderDate = new Date(order.createdAt);
+  const now = new Date();
+  const yearStart = new Date(now.getFullYear(), 0, 1); // أول يوم من السنة الحالية
+  const yearEnd = new Date(now.getFullYear(), 11, 31); // آخر يوم من السنة الحالية
+  
+  // تأكد من أن الحالة تشير إلى طلب مكتمل أو مؤكد
+  if (order.status === 'delivered' || order.status === 'confirmed') {
+    return orderDate >= yearStart && orderDate <= yearEnd;
+  }
+  return false;
+}).reduce((sum, order) => sum + order.total, 0);
 
   const averageOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
 
