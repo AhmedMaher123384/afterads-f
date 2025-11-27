@@ -83,7 +83,7 @@ const Blog: React.FC = () => {
     <div className="min-h-screen bg-[#292929] text-white">
       {/* Hero Section */}
       <div className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 text-center max-w-6xl mx-auto">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-[#48334e] via-[#48334e] to-[#48334e] bg-clip-text text-transparent">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-[#18b5d5] via-[#18b5d5] to-[#18b5d5] bg-clip-text text-transparent">
           {t('blog.hero_title')} {t('blog.hero_highlight')}
         </h1>
         <p className="text-lg sm:text-xl text-white mb-2">{t('blog.hero_description')}</p>
@@ -98,7 +98,7 @@ const Blog: React.FC = () => {
             placeholder={t('blog.search_placeholder') || 'ابحث عن مقالات...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-6 py-4 pr-14 bg-[#333333] border-2 border-[#444444] rounded-2xl text-white placeholder-[#AAAAAA] focus:outline-none focus:border-[#8E24AA] focus:ring-4 focus:ring-[#8E24AA]/30 transition-all duration-300 shadow-lg"
+            className="w-full px-6 py-4 pr-14 bg-[#333333] border-2 border-[#444444] rounded-2xl text-white placeholder-[#AAAAAA] focus:outline-none focus:border-[#18b5d5] focus:ring-4 focus:ring-[#18b5d5]/30 transition-all duration-300 shadow-lg"
           />
         </div>
 
@@ -110,7 +110,7 @@ const Blog: React.FC = () => {
               onClick={() => setSelectedCategory(category)}
               className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 ${
                 selectedCategory === category
-                  ? 'bg-gradient-to-r from-[#48334e] to-[#48334e] text-white'
+                  ? 'bg-gradient-to-r from-[#18b5d5] to-[#18b5d5] text-white'
                   : 'bg-[#333333] text-white hover:bg-[#3a3a3a]'
               }`}
             >
@@ -123,8 +123,8 @@ const Blog: React.FC = () => {
         {filteredPosts.length > 0 ? (
           <div>
             <div className="flex items-center gap-3 mb-8">
-              <h2 className="text-3xl font-bold text-white">{t('blog.latest_articles')}</h2>
-              <span className="bg-[#48334e] text-white px-4 py-2 rounded-full font-semibold">
+              <h2 className="text-3xl font-bold text-[#18b5d5]">{t('blog.latest_articles')}</h2>
+              <span className="bg-[#18b5d5] text-white px-4 py-2 rounded-full font-semibold">
                 {filteredPosts.length}
               </span>
             </div>
@@ -132,7 +132,7 @@ const Blog: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPosts.map((post) => (
                 <Link key={post.id} to={`/blog/${post.slug}`}>
-                  <div className="bg-[#333333]/60 backdrop-blur border border-[#444444] rounded-2xl overflow-hidden hover:border-[#8E24AA] transition-all duration-300 hover:shadow-2xl hover:shadow-[#8E24AA]/25 h-full flex flex-col group">
+                  <div className="bg-[#333333]/60 backdrop-blur border border-[#444444] rounded-2xl overflow-hidden hover:border-[#18b5d5] transition-all duration-300 hover:shadow-2xl hover:shadow-[#18b5d5]/25 h-full flex flex-col group">
                     {/* Image Container */}
                     <div className="relative h-48 overflow-hidden bg-[#3a3a3a]">
                       <img
@@ -144,12 +144,6 @@ const Blog: React.FC = () => {
                         }}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
-                      {post.isPremium && (
-                        <div className="absolute top-3 right-3 bg-gradient-to-r from-[#48334e] to-[#48334e] px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-white" />
-                          {t('blog.premium_badge')}
-                        </div>
-                      )}
                     </div>
 
                     {/* Content */}
@@ -160,7 +154,7 @@ const Blog: React.FC = () => {
                           {post.categories.map((cat, i) => (
                             <span
                               key={i}
-                              className="text-xs bg-[#8E24AA]/30 text-white px-3 py-1 rounded-full"
+                              className="text-xs bg-[#18b5d5]/30 text-white px-3 py-1 rounded-full"
                             >
                               {cat}
                             </span>
@@ -169,7 +163,7 @@ const Blog: React.FC = () => {
                       )}
 
                       {/* Title */}
-                      <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-[#B39DDB] text-white transition-colors">
+                      <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-[#18b5d5] text-white transition-colors">
                         {post.title}
                       </h3>
 
@@ -206,17 +200,16 @@ const Blog: React.FC = () => {
       {/* CTA Section */}
       <div className="bg-[#2a2a2a] border-y border-[#3a3a3a] mt-16 py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('blog.cta_title')}</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#18b5d5] mb-4">{t('blog.cta_title')}</h2>
           <p className="text-white mb-6 max-w-2xl mx-auto">{t('blog.cta_subtitle')}</p>
-          <a
-            href="https://www.afterads.com/"
-            target="_blank"
+          <Link
+            to="/"
             rel="noopener noreferrer"
-            className="bg-gradient-to-r from-[#48334e] to-[#48334e] hover:from-[#48334e] hover:to-[#48334e] px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-[#8E24AA]/50 inline-flex items-center gap-2 mx-auto block w-fit text-white"
+            className="bg-gradient-to-r from-[#18b5d5] to-[#18b5d5] hover:from-[#16a3c0] hover:to-[#16a3c0] px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-[#18b5d5]/50 inline-flex items-center gap-2 mx-auto block w-fit text-white"
           >
             {t('blog.cta_button')}
             <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -214,7 +214,7 @@ const navigate = useNavigate();
                 <div className="flex items-center justify-center gap-2 sm:gap-3">
                   <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                   {t('home.themes.live_preview')}
-                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform duration-200 will-change-transform" />
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform duration-300 will-change-transform" />
                 </div>
               </button>
             </div>

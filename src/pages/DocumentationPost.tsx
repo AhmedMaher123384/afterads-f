@@ -94,6 +94,7 @@ const DocumentationPost: React.FC = () => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const { data: structureResp, isLoading: structureLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.DOCUMENTATION_STRUCTURE, queryKey: ['documentation-structure'] });
+  
   useEffect(() => {
     if (!structureResp) return;
     let mains: MainClassification[] = [];
@@ -333,7 +334,7 @@ const DocumentationPost: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#1e1e1e] via-[#242424] to-[#0f0f0f]" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Top Navigation Bar - Fixed at top */}
       <div className="border-b border-[#3a3a3a] sticky top-0 z-50" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)' }}>
-        <div className="max-w-[1600px] mx-auto px-6 py-3">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between gap-4">
             {/* Navigation Filters */}
             <div className="flex items-center gap-3 flex-1">
@@ -344,17 +345,17 @@ const DocumentationPost: React.FC = () => {
                     setShowMainDropdown(!showMainDropdown);
                     setShowCategoryDropdown(false);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#2a2a2a] hover:bg-[#333333] text-white rounded-lg transition-all duration-200  min-w-[180px]"
+                  className="flex items-center gap-2 px-3 py-2 bg-[#2a2a2a] hover:bg-[#333333] text-white rounded-lg transition-all duration-200 min-w-[140px] sm:min-w-[180px]"
                 >
                   <Layers className="w-4 h-4 text-gray-400" />
-                  <span className={`font-medium flex-1 ${isRTL ? 'text-right' : 'text-left'} truncate text-sm`}>
+                  <span className={`font-medium flex-1 ${isRTL ? 'text-right' : 'text-left'} truncate text-xs sm:text-sm`}>
                     {currentMain?.title || t('documentation.select_main')}
                   </span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${showMainDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showMainDropdown && (
-                  <div className="absolute top-full right-0 mt-2 w-[280px] bg-[#292929] border border-[#3a3a3a] rounded-lg shadow-2xl overflow-hidden z-[80]">
+                  <div className="absolute top-full right-0 mt-2 w-[200px] sm:w-[280px] bg-[#292929] border border-[#3a3a3a] rounded-lg shadow-2xl overflow-hidden z-[80]">
                     <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                       {mainClassifications.map((main) => (
                         <button
@@ -365,13 +366,13 @@ const DocumentationPost: React.FC = () => {
                             const firstCat = (main.categories || [])[0];
                             if (firstCat) navigate(`/documentation/${firstCat.slug}`);
                           }}
-                          className={`w-full text-right px-4 py-2.5 hover:bg-[#2a2a2a] hover:text-white transition-colors duration-200 flex items-center gap-3 ${
+                          className={`w-full text-right px-3 py-2 sm:px-4 sm:py-2.5 hover:bg-[#2a2a2a] hover:text-white transition-colors duration-200 flex items-center gap-3 ${
                             selectedMainId === main.id ? 'bg-[#2a2a2a]' : ''
                           }`}
                         >
                           {main.icon && <span className="text-lg">{main.icon}</span>}
                           <div className="flex-1">
-                            <p className="font-medium text-white text-sm">
+                            <p className="font-medium text-white text-xs sm:text-sm">
                               {main.title}
                             </p>
                           </div>
@@ -389,17 +390,17 @@ const DocumentationPost: React.FC = () => {
                     setShowCategoryDropdown(!showCategoryDropdown);
                     setShowMainDropdown(false);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#2a2a2a] hover:bg-[#333333] text-white rounded-lg transition-all duration-200  min-w-[200px]"
+                  className="flex items-center gap-2 px-3 py-2 bg-[#2a2a2a] hover:bg-[#333333] text-white rounded-lg transition-all duration-200 min-w-[140px] sm:min-w-[200px]"
                 >
                   <BookOpen className="w-4 h-4 text-gray-400" />
-                  <span className={`font-medium flex-1 ${isRTL ? 'text-right' : 'text-left'} truncate text-sm`}>
+                  <span className={`font-medium flex-1 ${isRTL ? 'text-right' : 'text-left'} truncate text-xs sm:text-sm`}>
                     {currentCategory?.title || t('documentation.select_category')}
                   </span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showCategoryDropdown && (
-                  <div className="absolute top-full right-0 mt-2 w-[300px] bg-[#292929] border border-[#3a3a3a] rounded-lg shadow-2xl overflow-hidden z-[80]">
+                  <div className="absolute top-full right-0 mt-2 w-[220px] sm:w-[300px] bg-[#292929] border border-[#3a3a3a] rounded-lg shadow-2xl overflow-hidden z-[80]">
                     <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                       {visibleCategories.length > 0 ? (
                         visibleCategories.map((cat) => (
@@ -407,18 +408,18 @@ const DocumentationPost: React.FC = () => {
                             key={cat.id}
                             to={`/documentation/${cat.slug}`}
                             onClick={() => setShowCategoryDropdown(false)}
-                            className={`block px-4 py-2.5 hover:bg-[#2a2a2a] hover:text-white transition-colors duration-200 ${
+                            className={`block px-3 py-2 sm:px-4 sm:py-2.5 hover:bg-[#2a2a2a] hover:text-white transition-colors duration-200 ${
                               cat.slug === categorySlug ? 'bg-[#2a2a2a]' : ''
                             }`}
                           >
                             <div className="flex items-center gap-3">
                               {cat.icon && <span className="text-lg">{cat.icon}</span>}
                               <div className="flex-1">
-                                <p className="font-medium text-white text-sm">
+                                <p className="font-medium text-white text-xs sm:text-sm">
                                   {cat.title}
                                 </p>
                                 {cat.description && (
-                                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{cat.description}</p>
+                                  <p className="text-xs sm:text-xs text-gray-500 mt-0.5 line-clamp-1">{cat.description}</p>
                                 )}
                               </div>
                             </div>
@@ -434,20 +435,21 @@ const DocumentationPost: React.FC = () => {
                   </div>
                 )}
               </div>
-
-              <Link
-                to="/"
-                className={`flex items-center gap-2 px-4 py-2 bg-[#2a2a2a] hover:bg-[#333333] text-white rounded-lg transition-all duration-200 ${isRTL ? 'mr-auto' : 'ml-auto'}`}
-              >
-                <Home className="w-4 h-4 text-gray-400" />
-                <span className="font-medium text-sm">{t('nav.home')}</span>
-              </Link>
             </div>
+
+            {/* Home Button on Desktop */}
+            <Link
+              to="/"
+              className="hidden lg:flex items-center gap-2 px-4 py-2 bg-[#2a2a2a] hover:bg-[#333333] text-white rounded-lg transition-all duration-200"
+            >
+              <Home className="w-4 h-4 text-gray-400" />
+              <span className="font-medium text-sm">{t('nav.home')}</span>
+            </Link>
 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 text-white/80 hover:bg-[#2a2a2a] rounded-lg transition-all duration-200 "
+              className="lg:hidden p-2 text-white/80 hover:bg-[#2a2a2a] rounded-lg transition-all duration-200"
             >
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -455,25 +457,25 @@ const DocumentationPost: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-6 py-8">
-        <div className="flex gap-8">
-          {/* Right Sidebar - Advanced Filters */}
-          <aside className={`w-80 flex-shrink-0 ${isSidebarOpen ? 'block' : 'hidden lg:block'}`}>
-            <div className="sticky top-20 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
+          {/* Right Sidebar - Advanced Filters (Mobile: Bottom, Desktop: Right) */}
+          <aside className={`w-full lg:w-80 flex-shrink-0 ${isSidebarOpen ? 'block' : 'hidden lg:block'}`}>
+            <div className="space-y-4 sm:space-y-6">
               {/* Search Box */}
-              <div className=" rounded-lg p-5 border border-[#3a3a3a] bg-[#2a2a2a]/60 backdrop-blur-md">
-                <div className="flex items-center gap-2 mb-3 border-[#3a3a3a]">
+              <div className="rounded-lg p-4 sm:p-5 border border-[#3a3a3a] bg-[#2a2a2a]/60 backdrop-blur-md">
+                <div className="flex items-center gap-2 mb-3">
                   <Search className="w-4 h-4 text-gray-400" />
                   <h3 className="text-sm font-semibold text-white">{t('documentation.quick_search')}</h3>
                 </div>
-                <div className="relative border border-[#3a3a3a] ">
+                <div className="relative border border-[#3a3a3a]">
                   <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500`} />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('documentation.search_placeholder')}
-                    className="w-full bg-[#2a2a2a]  rounded-lg pr-10 pl-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-all duration-200"
+                    className="w-full bg-[#2a2a2a] rounded-lg pr-10 pl-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-all duration-200"
                   />
                 </div>
                 {searchQuery && (
@@ -484,7 +486,7 @@ const DocumentationPost: React.FC = () => {
               </div>
 
               {/* Classifications Filter */}
-              <div className=" rounded-lg p-5 bg-[#2a2a2a]/60 backdrop-blur-md">
+              <div className="rounded-lg p-4 sm:p-5 bg-[#2a2a2a]/60 backdrop-blur-md">
                 <div className="flex items-center gap-2 mb-4">
                   <Filter className="w-4 h-4 text-gray-400" />
                   <h3 className="text-sm font-semibold text-white">{t('documentation.subclassifications')}</h3>
@@ -536,12 +538,12 @@ const DocumentationPost: React.FC = () => {
               </div>
 
               {/* Navigation Tree */}
-              <div className=" rounded-lg p-5 bg-[#2a2a2a]/60 backdrop-blur-md">
+              <div className="rounded-lg p-4 sm:p-5 bg-[#2a2a2a]/60 backdrop-blur-md">
                 <div className="flex items-center gap-2 mb-4">
                   <BookOpen className="w-4 h-4 text-gray-400" />
                   <h3 className="text-sm font-semibold text-white">{t('documentation.contents')}</h3>
                 </div>
-                <nav className="space-y-1 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+                <nav className="space-y-1 max-h-[400px] sm:max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
                   {groupedDocs.withoutClassification.map((doc) => (
                     <Link
                       key={doc.id}
@@ -604,17 +606,28 @@ const DocumentationPost: React.FC = () => {
                   })}
                 </nav>
               </div>
+              
+              {/* Home Button on Mobile */}
+              <Link
+                to="/"
+                className="block lg:hidden w-full px-4 py-3 bg-[#2a2a2a] hover:bg-[#333333] text-white rounded-lg transition-all duration-200 text-center"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Home className="w-4 h-4 text-gray-400" />
+                  <span className="font-medium text-sm">{t('nav.home')}</span>
+                </div>
+              </Link>
             </div>
           </aside>
 
           {/* Main Content */}
           <main className="flex-1 min-w-0">
             {currentDoc ? (
-              <article className="max-w-4xl">
+              <article className="max-w-full">
                 {/* Header */}
-                <header className="mb-8">
-                  <h1 className="text-3xl font-bold text-white mb-3 flex items-center gap-3">
-                    {currentDoc.icon && <span className="text-3xl">{currentDoc.icon}</span>}
+                <header className="mb-6 sm:mb-8">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3 flex items-center gap-3">
+                    {currentDoc.icon && <span className="text-2xl sm:text-3xl">{currentDoc.icon}</span>}
                     {currentDoc.title}
                   </h1>
                   {currentDoc.description && (
@@ -624,7 +637,7 @@ const DocumentationPost: React.FC = () => {
 
                 {/* Content */}
                 {Array.isArray(currentDoc.content) && currentDoc.content.length > 0 ? (
-                  <div className="space-y-8">
+                  <div className="space-y-6 sm:space-y-8">
                     {currentDoc.content.map((block: any, idx: number) => {
                       const hasImages = Array.isArray(block.images) && block.images.length > 0;
                       const imageCount = hasImages ? block.images.length : 0;
@@ -635,12 +648,12 @@ const DocumentationPost: React.FC = () => {
                             <div 
                               className="prose prose-invert max-w-none
                                 prose-headings:text-white prose-headings:font-bold prose-headings:mb-4 prose-headings:mt-8
-                                prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
+                                prose-h1:text-xl sm:prose-h1:text-2xl prose-h2:text-lg sm:prose-h2:text-xl prose-h3:text-base sm:prose-h3:text-lg
                                 prose-p:text-white/90 prose-p:leading-relaxed prose-p:mb-4
                                 prose-a:text-[#18b5d8] prose-a:no-underline hover:prose-a:underline
                                 prose-strong:text-white
                                 prose-code:text-[#18b5d8] prose-code:bg-white/5 prose-code:px-2 prose-code:py-1 prose-code:rounded
-                                prose-pre:bg-black/40 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg prose-pre:p-4
+                                prose-pre:bg-black/40 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg prose-pre:p-3 sm:prose-pre:p-4
                                 prose-ul:text-white/90 prose-ol:text-white/90
                                 prose-li:mb-2
                                 prose-blockquote:border-r-4 prose-blockquote:border-[#18b5d8] prose-blockquote:pr-4 prose-blockquote:text-white/70
@@ -650,12 +663,12 @@ const DocumentationPost: React.FC = () => {
                           )}
                           
                           {hasImages && (
-                            <div className={`${imageCount === 1 ? 'flex justify-center' : 'grid grid-cols-2 gap-4'}`}>
+                            <div className={`${imageCount === 1 ? 'flex justify-center' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'}`}>
                               {block.images.map((img: any, i: number) => (
                                 <div 
                                   key={i} 
-                                  className={`rounded-lg overflow-hidden  cursor-zoom-in hover:border-[#4a4a4a] transition-all duration-200 ${
-                                    imageCount === 1 ? 'max-w-3xl' : 'h-64'
+                                  className={`rounded-lg overflow-hidden cursor-zoom-in hover:border-[#4a4a4a] transition-all duration-200 ${
+                                    imageCount === 1 ? 'max-w-full' : 'h-48 sm:h-64'
                                   }`}
                                   onClick={() => setZoomSrc(buildImageUrl(img.url))}
                                 >
@@ -681,7 +694,7 @@ const DocumentationPost: React.FC = () => {
                 )}
 
                 {/* Navigation */}
-                <nav className="flex items-center justify-between mt-16 pt-8 border-t border-[#3a3a3a]">
+                <nav className="flex flex-col sm:flex-row items-center justify-between mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-[#3a3a3a] gap-4 sm:gap-0">
                   {(() => {
                     const allDocs = currentCategory.documentations.sort((a, b) => a.order - b.order);
                     const currentIndex = allDocs.findIndex(d => d.id === currentDoc.id);
@@ -690,7 +703,7 @@ const DocumentationPost: React.FC = () => {
 
                     return (
                       <>
-                        <div>
+                        <div className={`${isRTL ? 'sm:order-2' : ''}`}>
                           {prevDoc && (
                             <Link
                               to={`/documentation/${categorySlug}/${prevDoc.slug}`}
@@ -704,7 +717,8 @@ const DocumentationPost: React.FC = () => {
                             </Link>
                           )}
                         </div>
-                        <div>
+                        <div className="sm:hidden w-full border-t border-[#3a3a3a] my-2"></div>
+                        <div className={`${isRTL ? 'sm:order-1' : ''}`}>
                           {nextDoc && (
                             <Link
                               to={`/documentation/${categorySlug}/${nextDoc.slug}`}
@@ -731,16 +745,16 @@ const DocumentationPost: React.FC = () => {
             )}
           </main>
 
-          {/* Left Sidebar - TOC */}
-          <aside className="w-72 flex-shrink-0 hidden xl:block">
+          {/* Left Sidebar - TOC (Hidden on mobile, shown on desktop) */}
+          <aside className="hidden xl:block w-64 flex-shrink-0">
             <div className="sticky top-20">
-              <div className=" rounded-lg p-5   border-[#3a3a3a] bg-[#2a2a2a]/60 backdrop-blur-md">
+              <div className="rounded-lg p-4 sm:p-5 border-[#3a3a3a] bg-[#2a2a2a]/60 backdrop-blur-md">
                 <div className="flex items-center gap-2 mb-4">
                   <BookOpen className="w-4 h-4 text-gray-400" />
                   <h3 className="text-sm font-semibold text-white">{t('documentation.on_this_page')}</h3>
                 </div>
                 {headings.length > 0 ? (
-                  <nav className="space-y-1 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+                  <nav className="space-y-1 max-h-[400px] sm:max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
                     {headings.map((heading) => (
                       <button
                         key={heading.id}
@@ -750,7 +764,7 @@ const DocumentationPost: React.FC = () => {
                             ? `text-white font-medium bg-[#2a2a2a] ${isRTL ? 'border-r-2' : 'border-l-2'} border-[#18b5d8]`
                             : 'text-white/80 hover:text-white hover:bg-[#2a2a2a]/30'
                         }`}
-                        style={isRTL ? { paddingRight: `${(heading.level - 1) * 12 + 12}px` } : { paddingLeft: `${(heading.level - 1) * 12 + 12}px` }}
+                        style={isRTL ? { paddingRight: `${(heading.level - 1) * 8 + 8}px` } : { paddingLeft: `${(heading.level - 1) * 8 + 8}px` }}
                       >
                         {heading.text}
                       </button>
@@ -784,7 +798,7 @@ const DocumentationPost: React.FC = () => {
                 e.stopPropagation();
                 setZoomSrc(null);
               }}
-              className="absolute top-4 left-4  hover:bg-[#2a2a2a] text-white p-2 rounded-lg transition-all duration-200"
+              className="absolute top-4 left-4 hover:bg-[#2a2a2a] text-white p-2 rounded-lg transition-all duration-200"
             >
               <X className="w-5 h-5" />
             </button>

@@ -804,9 +804,9 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
 
         <div className="p-3">
    <div className={`bg-white/5 rounded-lg overflow-hidden transition-all duration-500 ${
-  mainPreviewDevice === 'desktop' ? 'w-[640px] h-[350px]' :
-  mainPreviewDevice === 'tablet' ? 'w-[300px] h-[400px]' :
-  'w-full max-w-[280px] h-[520px]'
+  mainPreviewDevice === 'desktop' ? 'w-[92vw] max-w-[640px] h-[220px] sm:h-[350px]' :
+  mainPreviewDevice === 'tablet' ? 'w-[88vw] max-w-[420px] h-[360px] sm:h-[400px]' :
+  'w-[85vw] max-w-[280px] h-[520px]'
 }`}>
             <img 
               src={

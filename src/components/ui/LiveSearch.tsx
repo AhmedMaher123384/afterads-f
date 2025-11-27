@@ -10,7 +10,11 @@ import PriceDisplay from './PriceDisplay';
 interface Product {
   id: number;
   name: string;
-  description: string;
+  name_ar?: string;
+  name_en?: string;
+  description: any;
+  description_ar?: string;
+  description_en?: string;
   price: number;
   isAvailable: boolean;
   categoryId: number | null;
@@ -18,6 +22,8 @@ interface Product {
   category?: {
     id: number;
     name: string;
+    name_ar?: string;
+    name_en?: string;
   };
 }
 
@@ -33,6 +39,7 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [categoryMap, setCategoryMap] = useState<Record<number, { id: number; name: string; name_ar?: string; name_en?: string }>>({});
   
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +53,17 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
       try {
         const cachedProducts = JSON.parse(cached);
         setAllProducts(cachedProducts);
+        setIsLoading(false);
+      } catch {}
+    }
+
+    const cats = localStorage.getItem('cachedCategories');
+    if (cats) {
+      try {
+        const parsed = JSON.parse(cats);
+        const map: Record<number, { id: number; name: string; name_ar?: string; name_en?: string }> = {};
+        parsed.forEach((c: any) => { if (c && typeof c.id === 'number') map[c.id] = c; });
+        setCategoryMap(map);
       } catch {}
     }
   }, []);
@@ -58,7 +76,31 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
     setIsLoading(false);
   }, [productsResp]);
 
-  // البحث المحلي البسيط والدقيق
+  const getLocalizedContent = (product: Product, field: 'name' | 'description') => {
+    const currentLang = (localStorage.getItem('i18nextLng') || 'ar');
+    const arField = `${field}_ar` as keyof Product;
+    const enField = `${field}_en` as keyof Product;
+    const baseValue = (product as any)[field];
+    const value = currentLang === 'ar'
+      ? ((product as any)[arField] ?? (product as any)[enField] ?? baseValue)
+      : ((product as any)[enField] ?? (product as any)[arField] ?? baseValue);
+    if (Array.isArray(value)) {
+      return value.map((b: any) => (b && b.text) ? b.text : '').join(' ');
+    }
+    return String(value || '');
+  };
+
+  const getCategoryName = (product: Product) => {
+    const currentLang = (localStorage.getItem('i18nextLng') || 'ar');
+    const pickName = (obj: any) => {
+      if (!obj) return '';
+      return currentLang === 'ar' ? (obj.name_ar ?? obj.name_en ?? obj.name ?? '') : (obj.name_en ?? obj.name_ar ?? obj.name ?? '');
+    };
+    const fromProduct = pickName(product.category);
+    const fromMap = product.categoryId != null ? pickName(categoryMap[product.categoryId]) : '';
+    return fromProduct || fromMap;
+  };
+
   const performSearch = (query: string) => {
     if (!query || query.trim().length < 2) {
       setSearchResults([]);
@@ -66,23 +108,26 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
     }
 
     const searchTerm = query.trim().toLowerCase();
-    
-    // البحث في اسم المنتج أولاً
-    const nameMatches = allProducts.filter(product =>
-      product.name.toLowerCase().includes(searchTerm)
-    );
 
-    // البحث في الوصف إذا لم نجد نتائج كافية في الاسم
-    const descriptionMatches = allProducts.filter(product =>
-      !nameMatches.includes(product) &&
-      product.description && 
-      product.description.toLowerCase().includes(searchTerm)
-    );
+    const nameMatches = allProducts.filter(product => {
+      const nameText = getLocalizedContent(product, 'name').toLowerCase();
+      return nameText.includes(searchTerm);
+    });
 
-    // دمج النتائج (الاسم أولاً ثم الوصف)
-    const combinedResults = [...nameMatches, ...descriptionMatches];
-    
-    // تحديد النتائج إلى 6 منتجات فقط
+    const categoryMatches = allProducts.filter(product => {
+      if (nameMatches.includes(product)) return false;
+      const categoryText = getCategoryName(product).toLowerCase();
+      return categoryText && categoryText.includes(searchTerm);
+    });
+
+    const descriptionMatches = allProducts.filter(product => {
+      if (nameMatches.includes(product) || categoryMatches.includes(product)) return false;
+      const descText = getLocalizedContent(product, 'description').toLowerCase();
+      return descText.includes(searchTerm);
+    });
+
+    const combinedResults = [...nameMatches, ...categoryMatches, ...descriptionMatches];
+
     setSearchResults(combinedResults.slice(0, 6));
   };
 
@@ -91,7 +136,7 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
     const value = e.target.value;
     setSearchQuery(value);
     performSearch(value);
-    setIsOpen(value.length > 0);
+    setIsOpen(true);
   };
 
   // إغلاق البحث
@@ -104,7 +149,8 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
 
   // الانتقال إلى صفحة المنتج
   const handleProductClick = (product: Product) => {
-    const slug = createProductSlug(product.id, product.name);
+    const localizedName = getLocalizedContent(product, 'name');
+    const slug = createProductSlug(product.id, localizedName);
     navigate(`/product/${slug}`);
     handleClose();
   };
@@ -238,11 +284,11 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
                              {/* معلومات المنتج المحسنة */}
                              <div className="flex-1 min-w-0">
                                <h4 className="font-semibold text-white truncate text-right mb-1 group-hover/item:text-white/90 transition-colors duration-200 text-sm">
-                                 {product.name}
+                                 {getLocalizedContent(product, 'name')}
                                </h4>
-                               {product.category?.name && (
+                               {getCategoryName(product) && (
                                  <p className="text-xs text-white/60 truncate text-right mb-1">
-                                   {product.category.name}
+                                   {getCategoryName(product)}
                                  </p>
                                )}
                                <div className="flex items-center justify-end">
@@ -270,11 +316,10 @@ const LiveSearch: React.FC<LiveSearchProps> = ({ onClose, className = '' }) => {
                        <div className="p-3 border-t border-white/10">
                          <button
                            onClick={handleViewAll}
-                           className="w-full py-2.5 px-4 rounded-xl font-semibold text-white transition-all duration-300 relative overflow-hidden group/btn text-sm"
+                           className="w-full py-2.5 px-4 rounded-xl font-semibold text-white transition-all duration-300 relative overflow-hidden group/btn text-sm bg-[#18b5d8] hover:bg-[#0891b2] focus:ring-2 focus:ring-white/30"
                            style={{
-                             background: 'linear-gradient(135deg, rgba(24,181,216,0.8) 0%, rgba(8,145,178,0.8) 100%)',
-                             border: '1px solid rgba(255,255,255,0.2)',
-                             boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.2), 0 4px 15px rgba(0,0,0,0.1)'
+                             border: '1px solid rgba(255,255,255,0.35)',
+                             boxShadow: '0 6px 18px rgba(0,0,0,0.25)'
                            }}
                          >
                            {/* تأثير الإضاءة عند التمرير */}

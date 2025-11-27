@@ -259,7 +259,7 @@ const CategoriesSection: React.FC<CategoriesSectionProps> = ({ categoryProducts,
                   <Link
                     to={`/category/${createCategorySlug(getLocalizedContent(categoryProduct.category, 'name'), categoryProduct.category.id)}`}
                     aria-label={`${t('home.categories.discover_category')} ${getLocalizedContent(categoryProduct.category, 'name')}`}
-                    className="group relative overflow-hidden rounded-lg md:rounded-2xl h-48 sm:h-56 md:h-72 w-full block bg-[#1f1f1f]/60 border border-[#18b5d5]/20 ultra-smooth hover:bg-[#1f1f1f]/80 hover:border-[#18b5d5]/40 hover:shadow-2xl hover:shadow-[#18b5d5]/10 hover:scale-[1.01] gpu-accelerate"
+                    className="group relative overflow-hidden rounded-lg md:rounded-2xl h-48 sm:h-56 md:h-72 w-full block bg-[#1f1f1f]/60 border border-[#18b5d5]/20 ultra-smooth hover:bg-[#1f1f1f]/80 hover:border-[#18b5d5]/40 hover:shadow-2xl  hover:scale-[1.01] gpu-accelerate"
                   >
                     <div className={`relative z-20 h-full flex flex-col md:${isEven ? 'flex-row-reverse' : 'flex-row'}`}>
                       {/* Image Section */}

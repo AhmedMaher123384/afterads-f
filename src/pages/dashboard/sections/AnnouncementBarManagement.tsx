@@ -33,6 +33,9 @@ interface ApiResponse<T> {
 
 const AnnouncementBarManagement: React.FC = () => {
   const queryClient = useQueryClient();
+  const fetchAnnouncements = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['announcement-bar-list'] });
+  };
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<string>('');

@@ -477,9 +477,6 @@ const handlePasswordChange = async (e: React.FormEvent) => {
     filterUsers();
   }, [users, userSearchTerm, userRoleFilter]);
 
-  if (isLoadingUsers && !showPinModal) {
-    return <div className="p-6">جاري التحميل...</div>;
-  }
 
 return (
   <div className="p-6 space-y-6">

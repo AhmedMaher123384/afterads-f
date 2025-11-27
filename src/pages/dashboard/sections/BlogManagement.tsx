@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { buildImageUrl, apiCall, API_ENDPOINTS } from '../../../config/api';
 import { smartToast } from '../../../utils/toastConfig';
 import { useApiQuery } from '../../../hooks/useApiQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
 import { Plus, Edit2, Trash2, AlertCircle, X, FileText, Calendar, User } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
@@ -32,7 +33,11 @@ interface BlogPost {
 const BlogManagement: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const { data: postsData, isLoading: postsLoading } = useApiQuery<any>({ endpoint: API_ENDPOINTS.BLOG_POSTS, queryKey: ['blog-posts'] });
+  const queryClient = useQueryClient();
   const loading = postsLoading;
+  const fetchPosts = () => {
+    queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
+  };
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
