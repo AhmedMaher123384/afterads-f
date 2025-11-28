@@ -123,7 +123,7 @@ const BlogPost: React.FC = () => {
       <div className="min-h-screen bg-[#292929]" dir={isRTL ? 'rtl' : 'ltr'}>
         
         {/* Main Content Grid */}
-        <section className="pt-20 pb-20">
+        <section className="mt-[70px] pt-20 pb-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className={`grid grid-cols-1 lg:grid-cols-4 gap-6 ${isRTL ? 'lg:grid-flow-col-dense' : ''}`}>
               

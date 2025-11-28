@@ -82,7 +82,7 @@ const Blog: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#292929] text-white">
       {/* Hero Section */}
-      <div className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 text-center max-w-6xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 text-center max-w-6xl mx-auto mt-[70px]">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-[#18b5d5] via-[#18b5d5] to-[#18b5d5] bg-clip-text text-transparent">
           {t('blog.hero_title')} {t('blog.hero_highlight')}
         </h1>

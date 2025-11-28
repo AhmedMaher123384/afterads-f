@@ -359,9 +359,7 @@ const App: React.FC = () => {
           <MemoizedAboutUsSection />
         </section>
  
-        <section data-section="clients">
-          <MemoizedClientsSection clients={clients} />
-        </section>
+
 
         <section data-section="categories">
           <MemoizedCategoriesSection 
@@ -372,6 +370,10 @@ const App: React.FC = () => {
      
         <section data-section="testimonials">
           <MemoizedTestimonialsSection testimonials={testimonials} />
+        </section>
+
+        <section data-section="clients">
+          <MemoizedClientsSection clients={clients} />
         </section>
 
         <section data-section="faq">

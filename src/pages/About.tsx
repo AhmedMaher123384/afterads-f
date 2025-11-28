@@ -137,7 +137,7 @@ const About: React.FC = () => {
         ))}
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 mt-[70px] sm:mt-[80px]">
         {/* Enhanced Header */}
         <div className="text-center mb-12 sm:mb-16 lg:mb-20">
           <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -152,7 +152,7 @@ const About: React.FC = () => {
                 <Heart className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-[#7a7a7a] filter drop-shadow-[0_0_10px_rgba(122,122,122,0.8)] flex-shrink-0" />
               </div>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold bg-gradient-to-r from-[#18b5d5] via-[#7a7a7a] to-[#18b5d5] bg-clip-text text-transparent mobile-text-3xl ultra-mobile-text-2xl animate-fadeInUp">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mobile-text-3xl ultra-mobile-text-2xl animate-fadeInUp">
               {t('about.title')}
             </h1>
             <div className="relative w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 hidden sm:block">

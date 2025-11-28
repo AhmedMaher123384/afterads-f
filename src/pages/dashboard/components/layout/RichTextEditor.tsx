@@ -123,7 +123,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const rows = editorRef.current.querySelectorAll('.row-item');
     if (!rows || rows.length === 0) {
       const row = document.createElement('div');
-      row.className = 'row-item my-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50';
+      row.className = 'row-item relative my-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50';
       row.innerHTML = `
         <div class="row-grid grid md:grid-cols-2 gap-4">
           <div class="block-item text-block" contenteditable="true" data-type="text" style="min-height: 3rem; padding: 0.75rem; border: 2px dashed #e5e7eb; border-radius: 0.5rem;">
@@ -140,6 +140,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </div>
           </div>
         </div>
+        <button type="button" class="delete-row-btn absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-lg hover:bg-red-600">حذف الصف</button>
       `;
       editorRef.current.appendChild(row);
       // Move existing standalone text-block (outside rows) into the new row
@@ -257,6 +258,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
             handleContentChange();
           });
+        }
+
+        const delRowBtn = row.querySelector('.delete-row-btn');
+        if (delRowBtn && !delRowBtn.hasAttribute('data-listener')) {
+          delRowBtn.setAttribute('data-listener', 'true');
+          delRowBtn.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            row.remove();
+            handleContentChange();
+          });
+        }
+
+        if (!row.querySelector('.delete-row-btn')) {
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'delete-row-btn absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-lg hover:bg-red-600';
+          del.textContent = 'حذف الصف';
+          row.appendChild(del);
         }
 
         const grid = row.querySelector('.images-grid') as HTMLElement | null;
@@ -584,7 +604,7 @@ function example() {
             onClick={() => {
               if (!editorRef.current) return;
               const row = document.createElement('div');
-              row.className = 'row-item my-4 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50';
+              row.className = 'row-item relative my-4 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50';
               row.innerHTML = `
                 <div class="row-grid grid md:grid-cols-2 gap-4">
                   <div class="block-item text-block" contenteditable="true" data-type="text" style="min-height: 3rem; padding: 0.75rem; border: 2px dashed #93c5fd; border-radius: 0.5rem;"><p><br></p></div>
@@ -599,6 +619,7 @@ function example() {
                     </div>
                   </div>
                 </div>
+                <button type="button" class="delete-row-btn absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-lg hover:bg-red-600">حذف الصف</button>
               `;
               editorRef.current.appendChild(row);
               attachImageRowListeners();
@@ -775,6 +796,7 @@ function example() {
         /* Row styling */
         [contenteditable] .row-item {
           margin: 1rem 0;
+          position: relative;
         }
         
         [contenteditable] .row-item:hover {

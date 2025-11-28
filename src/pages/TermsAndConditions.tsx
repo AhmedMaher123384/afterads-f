@@ -223,11 +223,11 @@ const TermsAndConditions: React.FC = () => {
       </div>
 
       <div className="relative z-10">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 mt-[70px] sm:mt-[80px]">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="text-center mb-8 sm:mb-12 lg:mb-16 animate-fadeInUp">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-[#18b5d5] to-[#7a7a7a] bg-clip-text text-transparent mb-4 sm:mb-6 mobile-text-responsive ultra-mobile-text" style={{ textShadow: '0 0 20px rgba(24, 181, 213, 0.5)' }}>
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6 mobile-text-responsive ultra-mobile-text">
                 {t('terms_and_conditions.title')}
               </h1>
               <div className="flex items-center justify-center gap-2 sm:gap-3 text-gray-300 text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 mobile-text-responsive">

@@ -71,7 +71,7 @@ const { data: pagesResp } = useApiQuery<any>({
 
   const quickLinks = [
     { name: t('footer.home'), to: "/" },
-    { name: t('footer.our_work'), to: "/portfolio" },
+    { name: t('nav.documentation'), to: "/documentation" },
     { name: t('footer.blog'), to: "/blog" },
     { name: t('footer.about_us'), to: "/about" },
   ];
@@ -110,9 +110,13 @@ const { data: pagesResp } = useApiQuery<any>({
                     className="w-32 h-auto object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </a>
-                <p className="text-gray-400 text-sm leading-relaxed mb-4 max-w-xs mx-auto lg:mx-0">
+                <p className="text-gray-400 text-sm leading-relaxed mb-2 max-w-xs mx-auto lg:mx-0">
                   {t('footer.company_description')}
                 </p>
+                <div className="flex justify-center lg:justify-start gap-2 mb-4">
+                  <span className="px-2 py-1 text-xs bg-white/5 text-[#18b5d5] rounded">التسويق Marketing</span>
+                  <span className="px-2 py-1 text-xs bg-white/5 text-[#18b5d5] rounded">التصميم Design</span>
+                </div>
 
                 {/* Newsletter - Compact Version */}
                 <div className="mb-4 bg-white/5 backdrop-blur-sm rounded-lg p-3 max-w-xs mx-auto lg:mx-0">

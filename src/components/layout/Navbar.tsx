@@ -1027,7 +1027,7 @@ useEffect(() => {
               >
                 {/* User Info Card */}
                 <div 
-                 className="relative flex items-center p-4 text-white rounded-xl mb-4 overflow-hidden group"
+                 className="relative flex items-center gap-3 p-4 text-white rounded-xl mb-4 overflow-hidden group"
                   style={{
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
                     backdropFilter: 'blur(25px)',
@@ -1044,28 +1044,39 @@ useEffect(() => {
                     }}
                   ></div>
                   
-                  {/* Avatar */}
+                  {/* Avatar (show client image on mobile if available) */}
                   <div 
-                    className="relative w-11 h-11 rounded-xl flex items-center justify-center mr-3 overflow-hidden"
+                    className="relative w-11 h-11 rounded-xl flex items-center justify-center overflow-hidden"
                     style={{
                       background: 'linear-gradient(135deg, #18b5d8 0%, #0891b2 100%)',
                       boxShadow: '0 8px 32px rgba(24,181,216,0.3), inset 0 1px 1px rgba(255,255,255,0.2)'
                     }}
                   >
-  <span className="text-white font-bold text-lg relative z-10">
-                      {getInitials(user.name || user.firstName || t('nav.profile'))}
-                    </span>
-                    <div 
-                      className="absolute inset-0 opacity-50"
-                      style={{
-                        background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 70%)'
-                      }}
-                    ></div>
+                    { (user.avatar || user.storeLogo || user.storeImage) ? (
+                      <img
+                        src={buildImageUrl(user.avatar || user.storeLogo || user.storeImage || '')}
+                        alt={user.name || user.firstName || 'User'}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <>
+                        <span className="text-white font-bold text-lg relative z-10">
+                          {getInitials(user.name || user.firstName || t('nav.profile'))}
+                        </span>
+                        <div 
+                          className="absolute inset-0 opacity-50"
+                          style={{
+                            background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 70%)'
+                          }}
+                        ></div>
+                      </>
+                    )}
                   </div>
                   
                   {/* User Details */}
                   <div className="flex-1 relative z-10">
-  <div className="text-base font-bold text-white mb-0.5">
+  <div className="text-base font-bold text-white mb-1.5">
                       {user.name?.split(' ')[0] || user.firstName || t('nav.profile')}
                     </div>
                     <div className="text-sm text-white/80 font-medium">
@@ -1204,11 +1215,11 @@ useEffect(() => {
               <div className="space-y-2">
                 {[
                   { name: t('nav.home'), href: '/', icon: Home, color: '#18b5d8' },
-                  { name: t('nav.products'), href: '/products', icon: Grid3X3, color: '#0891b2' },
+                  // { name: t('nav.products'), href: '/products', icon: Grid3X3, color: '#0891b2' },
                   { name: t('nav.theme_malak'), href: '/theme/55', icon: Crown, color: '#f59e0b' },
                   { name: t('nav.blog'), href: '/blog', icon: BookOpen, color: '#10b981' },
                   { name: t('nav.documentation', { defaultValue: 'التوثيق' }), href: '/documentation', icon: FileText, color: '#60a5fa' },
-                  { name: t('nav.categories'), href: '/categories', icon: Package, color: '#f97316' },
+                  { name: t('nav.products'), href: '/categories', icon: Package, color: '#f97316' },
                   { name: t('nav.contact'), href: '/contact', icon: Phone, color: '#ef4444' }
                 ].map((link, index) => (
                   <Link

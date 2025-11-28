@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ConfirmationModal from '../../../components/modals/ConfirmationModal';
-import { Plus, Edit2, Trash2, AlertCircle, X, User, Mail, Phone, MapPin, Lock, Users, UserX, UserCheck, Calendar, Shield, UserPlus } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, X, User, Mail, Phone, MapPin, Lock, Users, UserX, UserCheck, Calendar, Shield, UserPlus, Award } from 'lucide-react';
 import Spinner from '../../../components/ui/Spinner';
 import { apiCall, API_ENDPOINTS } from '../../../config/api';
 import { smartToast } from '../../../utils/toastConfig';
@@ -23,6 +23,7 @@ interface Customer {
   lastLogin?: string;
   createdAt?: string;
   updatedAt?: string;
+  loyaltyPoints?: number;
 }
 const CustomersManagement: React.FC = () => {
   const queryClient = useQueryClient();
@@ -45,7 +46,8 @@ const [formData, setFormData] = useState<Partial<Customer>>({
   city: '',
   address: '',
   status: 'active',
-  customerGroup: 'regular' // ✅ إضافة
+  customerGroup: 'regular', // ✅ إضافة
+  loyaltyPoints: 0
 });
 
         console.log("customerGroup", formData.customerGroup)
@@ -71,7 +73,8 @@ const [formData, setFormData] = useState<Partial<Customer>>({
       address: customer.address,
       status: customer.status,
       customerGroup: customer.customerGroup || 'regular', // ✅ إضافة
-      password: ''
+      password: '',
+      loyaltyPoints: customer.loyaltyPoints ?? 0
     });
   } else {
     setEditingCustomer(null);
@@ -85,7 +88,8 @@ const [formData, setFormData] = useState<Partial<Customer>>({
       city: '',
       address: '',
       status: 'active',
-      customerGroup: 'regular' // ✅ إضافة
+      customerGroup: 'regular', // ✅ إضافة
+      loyaltyPoints: 0
     });
   }
   setIsModalOpen(true);
@@ -317,9 +321,9 @@ const handleSubmit = async (e: React.MouseEvent) => {
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">الاسم</th>
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">البريد الإلكتروني</th>
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">الهاتف</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-white">المدينة</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-white">الحالة</th>
+                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">الحالة</th>
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">المجموعة</th>
+                <th className="text-right py-4 px-6 text-sm font-semibold text-white">نقاط الولاء</th>
 
                 <th className="text-right py-4 px-6 text-sm font-semibold text-white">تاريخ التسجيل</th>
                 <th className="text-center py-4 px-6 text-sm font-semibold text-white">الإجراءات</th>
@@ -356,12 +360,7 @@ const handleSubmit = async (e: React.MouseEvent) => {
                       <span className="font-medium">{customer.phone}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-900">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium">{customer.city || '-'}</span>
-                    </div>
-                  </td>
+               
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
                       customer.status === 'active' 
@@ -387,6 +386,12 @@ const handleSubmit = async (e: React.MouseEvent) => {
      '👤 عادي'}
   </span>
 </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-900">
+                      <span className="font-bold text-[#203f61]">{customer.loyaltyPoints ?? 0}</span>
+                      <span className="text-gray-500">نقطة</span>
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-sm text-gray-900">
                       <Calendar className="w-4 h-4 text-gray-400" />
@@ -629,6 +634,31 @@ const handleSubmit = async (e: React.MouseEvent) => {
     </div>
   </div>
 </div>
+
+              {/* Loyalty Points */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-[#203f61]" />
+                  نقاط الولاء
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      النقاط الحالية
+                    </label>
+                    <input
+                      type="number"
+                      name="loyaltyPoints"
+                      value={Number(formData.loyaltyPoints ?? 0)}
+                      onChange={(e) => setFormData(prev => ({ ...prev, loyaltyPoints: Number(e.target.value || 0) }))}
+                      min={0}
+                      step={1}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#203f61] focus:border-[#203f61] transition-all"
+                      placeholder="أدخل عدد النقاط"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Form Actions */}

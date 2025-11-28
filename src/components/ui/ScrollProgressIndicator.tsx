@@ -15,9 +15,9 @@ const ScrollProgressIndicator: React.FC = () => {
     { id: "hero", name: t('scroll_progress.beginning') },
     { id: "themes", name: t('scroll_progress.theme_malak') },
     { id: "services", name: t('scroll_progress.why_us') },
-    { id: "clients", name: t('scroll_progress.our_clients') },
     { id: "categories", name: t('scroll_progress.our_products') },
     { id: "testimonials", name: t('scroll_progress.client_reviews') },
+    { id: "clients", name: t('scroll_progress.our_clients') },
     { id: "faq", name: t('scroll_progress.faq') },
     { id: "contact", name: t('scroll_progress.contact_us') },
   ];

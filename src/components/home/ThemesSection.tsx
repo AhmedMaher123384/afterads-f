@@ -363,7 +363,7 @@ const ThemesSection: React.FC<ThemesSectionProps> = ({ themes }) => {
             </div>
             <div className="mt-6 sm:mt-8">
               <button
-                onClick={() => navigate(`/theme/${themes[0]?.id ?? 55}`)}
+                onClick={() => navigate(`/contact`)}
                 className="inline-flex items-center gap-2 bg-[#292929] text-white px-6 py-3 rounded-xl hover:bg-[#1f1f1f] transition-all font-semibold shadow-lg"
               >
                 <Headphones className="w-5 h-5" />

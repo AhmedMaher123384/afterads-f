@@ -352,6 +352,7 @@ const AllProducts: React.FC = () => {
                 <ProductCard
                   product={product}
                   viewMode={viewMode}
+                  variant="blog"
                 />
               </div>
             ))}

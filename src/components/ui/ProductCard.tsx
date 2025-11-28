@@ -31,9 +31,10 @@ interface Product {
 interface ProductCardProps {
   product: Product;
   viewMode?: 'grid' | 'list';
+  variant?: 'default' | 'blog';
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid', variant = 'default' }) => {
   const { t, i18n } = useTranslation(['product_card', 'product', 'common']);
   const isRTL = i18n.language === 'ar';
   const [quantity, setQuantity] = useState(1);
@@ -156,7 +157,69 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
     navigate(productPath);
   };
 
-  // ---- LIST VIEW ----
+  // ---- BLOG VARIANT LIST VIEW ----
+  if (variant === 'blog' && viewMode === 'list') {
+    return (
+      <div className="relative w-full mb-6">
+        <Link
+          to={`/product/${createProductSlug(product.id, getLocalizedContent('name'))}`}
+          className="block bg-[#333333]/60 backdrop-blur border border-[#444444] rounded-2xl overflow-hidden hover:border-[#18b5d5] transition-all duration-300 hover:shadow-2xl hover:shadow-[#18b5d5]/25 group"
+          onClick={handleProductClick}
+          aria-label={t('product:view_product_details', { name: getLocalizedContent('name') })}
+        >
+          <div className="flex items-center p-6 gap-6">
+            <div className="relative w-24 h-24 flex-shrink-0">
+              <div className="relative w-full h-full rounded-xl overflow-hidden border border-[#444444] bg-[#3a3a3a]">
+                <img
+                  src={product.mainImage ? buildImageUrl(product.mainImage) : fallbackImg}
+                  alt={getLocalizedContent('name')}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 will-change-transform"
+                  loading="lazy"
+                  onError={(e) => { e.currentTarget.src = fallbackImg; }}
+                />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap gap-2 mb-2">
+                <span className="text-xs bg-[#18b5d5]/30 text-white px-3 py-1 rounded-full">
+                  {product.isAvailable ? t('available') : t('unavailable')}
+                </span>
+              </div>
+              <h3 dir="rtl" className="text-xl font-bold text-white mb-2 group-hover:text-[#18b5d5] transition-colors duration-300 line-clamp-2">
+                {getLocalizedContent('name')}
+              </h3>
+              <p className="text-[#CCCCCC] text-sm leading-relaxed line-clamp-2 mb-3">
+                {truncateDescription(getLocalizedContent('description'))}
+              </p>
+              <div className="flex items-center justify-between text-xs text-[#BBBBBB] border-t border-[#444444] pt-3 mt-auto">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-[#18b5d5]" />
+                  <PriceDisplay 
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    size="md"
+                    variant="card"
+                    className="min-h-[28px]"
+                  />
+                </div>
+                {product.isAvailable && (
+                  <button
+                    onClick={addToCart}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#18b5d5]/40 text-white hover:bg-[#18b5d5]/20 transition-all"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    <span className="font-medium text-sm">{t('addToCart')}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
+  // ---- LIST VIEW (DEFAULT) ----
   if (viewMode === 'list') {
     return (
       <div className="relative w-full mb-6">
@@ -293,7 +356,67 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
     );
   }
 
-  // ---- GRID VIEW ----
+  // ---- BLOG VARIANT GRID VIEW ----
+  if (variant === 'blog') {
+    return (
+      <div className="relative w-full px-2 py-3">
+        <Link
+          to={`/product/${createProductSlug(product.id, getLocalizedContent('name'))}`}
+          className="block bg-[#333333]/60 backdrop-blur border border-[#444444] rounded-2xl overflow-hidden hover:border-[#18b5d5] transition-all duration-300 hover:shadow-2xl hover:shadow-[#18b5d5]/25 h-full flex flex-col group"
+          onClick={handleProductClick}
+          aria-label={t('product:view_product_details', { name: getLocalizedContent('name') })}
+        >
+          <div className="relative h-48 overflow-hidden bg-[#3a3a3a]">
+            <img
+              src={product.mainImage ? buildImageUrl(product.mainImage) : fallbackImg}
+              alt={getLocalizedContent('name')}
+              onError={(e) => { e.currentTarget.src = fallbackImg; }}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+          </div>
+
+          <div className="p-6 flex flex-col flex-grow">
+            <div className="flex flex-wrap gap-2 mb-3">
+              <span className="text-xs bg-[#18b5d5]/30 text-white px-3 py-1 rounded-full">
+                {product.isAvailable ? t('available') : t('unavailable')}
+              </span>
+            </div>
+
+            <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-[#18b5d5] text-white transition-colors">
+              {getLocalizedContent('name')}
+            </h3>
+
+            <p className="text-[#CCCCCC] text-sm mb-4 line-clamp-2 flex-grow">
+              {truncateDescription(getLocalizedContent('description'))}
+            </p>
+
+            <div className="flex items-center justify-between text-xs text-[#BBBBBB] border-t border-[#444444] pt-4 mt-auto">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-[#18b5d5]" />
+                <PriceDisplay 
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  size="md"
+                  variant="card"
+                />
+              </div>
+              {product.isAvailable && (
+                <button
+                  onClick={addToCart}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#18b5d5]/40 text-white hover:bg-[#18b5d5]/20 transition-all"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="font-medium text-sm">{t('addToCart')}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
+  // ---- GRID VIEW (DEFAULT) ----
   return (
     <div className="relative w-full px-2 py-3">
       {/* Sale Badge - خارج الكارت تماماً */}

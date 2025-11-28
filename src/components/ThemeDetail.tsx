@@ -49,10 +49,14 @@ import { addToCartUnified, addToWishlistUnified } from '../utils/cartUtils';
 import WhatsAppButton from './ui/WhatsAppButton';
 import AuthModal from './modals/AuthModal';
 import PriceDisplay from './ui/PriceDisplay';
-import theme1 from '../assets/d.jpeg';
-import theme2 from '../assets/t.jpeg';
-import theme3 from '../assets/m.jpeg';
+import theme1 from '../assets/themecover.webp';
+import theme2 from '../assets/111.webp';
+import theme3 from '../assets/112.webp';
 import theme4 from '../assets/113.webp';
+import theme5 from '../assets/d.jpeg';
+import theme6 from '../assets/t.jpeg';
+import theme7 from '../assets/m.jpeg';
+import theme8 from '../assets/113.webp';
 import angel from '../assets/angel.webp';
 import LoadingSpinner from './ui/LoadingSpinner';
 import { FeatureCounter } from './ui/FeatureCounter';
@@ -195,18 +199,15 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
     <div className="space-y-4">
      
       {/* الكارت مع التصميم المتجاوب */}
-      <div className={`transition-all duration-500 ${deviceStyles[currentDevice]}`}>
-        <div className="group relative overflow-hidden">
+<div className={`transition-all duration-500 scale-90 sm:scale-95 ${deviceStyles[currentDevice]}`}>        <div className="group relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-[#18b5d5]/5 via-transparent to-[#18b5d5]/5 rounded-xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-700 blur-xl"></div>
           
           <div className="relative bg-gradient-to-br from-[#292929]/60 via-[#1a1a1a]/80 to-[#292929]/60 rounded-xl sm:rounded-3xl border border-[#18b5d5]/20 group-hover:border-[#18b5d5]/40 transition-all duration-500 overflow-hidden group-hover:shadow-2xl group-hover:shadow-[#18b5d5]/10">
             
             <div className={`flex ${currentDevice === 'mobile' ? 'flex-col' : 'flex-col xl:flex-row'}`}>
-              {/* قسم الصورة مع الخلفية البيضاء والشريط الأصفر */}
-              <div className={`${currentDevice === 'mobile' ? 'w-full' : 'w-full xl:w-56'} flex-shrink-0 relative`}>
-                <div className="relative overflow-hidden rounded-t-xl sm:rounded-t-3xl xl:rounded-l-3xl xl:rounded-tr-none bg-white">
-                  {/* ارتفاع ثابت للخلفية البيضاء */}
-                  <div className="relative h-48 sm:h-60 lg:h-72">
+          <div className={`${currentDevice === 'mobile' ? 'w-full' : 'w-full xl:w-40'} flex-shrink-0 relative`}>
+  <div className="relative overflow-hidden rounded-t-xl sm:rounded-t-3xl xl:rounded-l-3xl xl:rounded-tr-none bg-white">
+    <div className="relative h-32 sm:h-40 lg:h-48">
                     
                     {/* الشريط الأصفر مع النجمة */}
                     <div className="absolute top-0 left-0 w-16 h-16 bg-[#fec72d] transform -rotate-0 origin-top-left z-10">
@@ -231,13 +232,12 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
 ) : (
   <div className="absolute inset-0 flex flex-col items-center justify-center p-6 gap-4">
     {/* ✅ الأيقونة */}
-    {component.icon && (() => {
-      const IconComponent = getIconComponent(component.icon);
-      return <IconComponent className="w-16 h-16 text-gray-600" />;
-    })()}
-    
-    {/* النص */}
-    <p className="text-gray-800 text-lg font-semibold text-center">
+{component.icon && (() => {
+  const IconComponent = getIconComponent(component.icon);
+  return <IconComponent className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600" />;
+})()}
+
+<p className="text-gray-800 text-sm sm:text-base font-semibold text-center">
       {component.overlayText || component.title}
     </p>
   </div>
@@ -255,19 +255,18 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
               </div>
               
               {/* قسم المحتوى */}
-              <div className={`flex-1 ${currentDevice === 'mobile' ? 'p-4' : 'p-4 sm:p-6 lg:p-8'} flex flex-col justify-center`}>
-                <div className="flex items-center gap-3 mb-4">
+<div className={`flex-1 ${currentDevice === 'mobile' ? 'p-3' : 'p-3 sm:p-4 lg:p-6'} flex flex-col justify-center`}>                <div className="flex items-center gap-3 mb-4">
                   <div className="bg-gradient-to-r from-[#18b5d5]/20 to-[#18b5d5]/10 px-4 py-2 rounded-full border border-[#18b5d5]/30">
                     <span className="text-[#18b5d5] text-sm font-semibold">{component.category}</span>
                   </div>
                   <div className="h-px flex-1 bg-gradient-to-r from-[#18b5d5]/30 to-transparent"></div>
                 </div>
                 
-                <h3 className={`${currentDevice === 'mobile' ? 'text-lg' : 'text-lg sm:text-xl lg:text-2xl'} font-black text-white mb-3 leading-tight group-hover:text-[#18b5d5] transition-colors duration-300`}>
+<h3 className={`${currentDevice === 'mobile' ? 'text-sm' : 'text-base sm:text-lg lg:text-xl'} font-black text-white mb-2 leading-tight group-hover:text-[#18b5d5] transition-colors duration-300`}>
                   {component.title}
                 </h3>
                 
-                <p className={`text-[#a1a1a1] ${currentDevice === 'mobile' ? 'text-sm' : 'text-sm lg:text-base'} leading-relaxed mb-4`}>
+<p className={`text-[#a1a1a1] ${currentDevice === 'mobile' ? 'text-xs' : 'text-xs sm:text-sm'} leading-relaxed mb-3`}>
                   {component.description}
                 </p>
                 
@@ -752,70 +751,72 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
       </div>
 
 {/* Device Preview Section */}
-<div className="mt-6 mb-6 animate-section flex justify-center">
-  <div className="   shadow-2xl p-3 w-fit">
+<div className="mt-6 mb-6 animate-section flex justify-center px-2 sm:px-0">
+  <div className="shadow-2xl p-2 sm:p-3 w-full sm:w-fit max-w-full">
     
- 
-
     {/* شريط الأزرار */}
-    <div className="flex justify-center items-center gap-2 mb-3 bg-gradient-to-r from-[#18b5d8]/10 to-transparent px-3 py-1.5 rounded-lg border border-[#18b5d8]/20 w-fit mx-auto">
-      <span className="text-[#18b5d8] text-xs font-medium">{t('home.themes.preview_label')}</span>
+    <div className="flex justify-center items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 bg-gradient-to-r from-[#18b5d8]/10 to-transparent px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-[#18b5d8]/20 w-fit mx-auto">
+      <span className="text-[#18b5d8] text-[10px] sm:text-xs font-medium">{t('home.themes.preview_label')}</span>
       <button
         onClick={() => setMainPreviewDevice('desktop')}
-        className={`p-1 rounded-lg transition-all ${
+        className={`p-0.5 sm:p-1 rounded-lg transition-all ${
           mainPreviewDevice === 'desktop' 
             ? 'bg-[#18b5d8] text-white shadow-lg' 
             : 'bg-white/10 text-[#18b5d8] hover:bg-white/20'
         }`}
       >
-        <Monitor className="w-3.5 h-3.5" />
+        <Monitor className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       </button>
       <button
         onClick={() => setMainPreviewDevice('tablet')}
-        className={`p-1 rounded-lg transition-all ${
+        className={`p-0.5 sm:p-1 rounded-lg transition-all ${
           mainPreviewDevice === 'tablet' 
             ? 'bg-[#18b5d8] text-white shadow-lg' 
             : 'bg-white/10 text-[#18b5d8] hover:bg-white/20'
         }`}
       >
-        <Tablet className="w-3.5 h-3.5" />
+        <Tablet className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       </button>
       <button
         onClick={() => setMainPreviewDevice('mobile')}
-        className={`p-1 rounded-lg transition-all ${
+        className={`p-0.5 sm:p-1 rounded-lg transition-all ${
           mainPreviewDevice === 'mobile' 
             ? 'bg-[#18b5d8] text-white shadow-lg' 
             : 'bg-white/10 text-[#18b5d8] hover:bg-white/20'
         }`}
       >
-        <Smartphone className="w-3.5 h-3.5" />
+        <Smartphone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       </button>
     </div>
 
     {/* عرض الصورة */}
-    <div className="relative w-fit mx-auto">
+    <div className="relative w-full sm:w-fit mx-auto">
       <div className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-[#292929]/60 to-[#1a1a1a]/80 border border-[#18b5d8]/30">
         
-        <div className="absolute top-2 right-2 bg-[#18b5d8]/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-white text-xs font-semibold z-10 flex items-center gap-1">
-          {mainPreviewDevice === 'desktop' && <><Monitor className="w-2.5 h-2.5" /> Desktop</>}
-          {mainPreviewDevice === 'tablet' && <><Tablet className="w-2.5 h-2.5" /> Tablet</>}
-          {mainPreviewDevice === 'mobile' && <><Smartphone className="w-2.5 h-2.5" /> Mobile</>}
+        <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 bg-[#18b5d8]/90 backdrop-blur-sm px-1.5 sm:px-2 py-0.5 rounded-full text-white text-[10px] sm:text-xs font-semibold z-10 flex items-center gap-1">
+          {mainPreviewDevice === 'desktop' && <><Monitor className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> <span className="hidden sm:inline">Desktop</span></>}
+          {mainPreviewDevice === 'tablet' && <><Tablet className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> <span className="hidden sm:inline">Tablet</span></>}
+          {mainPreviewDevice === 'mobile' && <><Smartphone className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> <span className="hidden sm:inline">Mobile</span></>}
         </div>
 
-        <div className="p-3">
-   <div className={`bg-white/5 rounded-lg overflow-hidden transition-all duration-500 ${
-  mainPreviewDevice === 'desktop' ? 'w-[92vw] max-w-[640px] h-[220px] sm:h-[350px]' :
-  mainPreviewDevice === 'tablet' ? 'w-[88vw] max-w-[420px] h-[360px] sm:h-[400px]' :
-  'w-[85vw] max-w-[280px] h-[520px]'
-}`}>
+        <div className="p-2 sm:p-3">
+          <div 
+            className={`bg-white/5 rounded-lg overflow-hidden transition-all duration-500 ${
+              mainPreviewDevice === 'desktop' 
+                ? 'w-full max-w-[95vw] sm:max-w-[640px] h-[200px] sm:h-[220px] md:h-[350px]' 
+                : mainPreviewDevice === 'tablet' 
+                  ? 'w-full max-w-[90vw] sm:max-w-[420px] aspect-[3/4]' 
+                  : 'w-full max-w-[280px] aspect-[9/20]'
+            } flex items-center justify-center mx-auto`}
+          >
             <img 
               src={
-                mainPreviewDevice === 'desktop' ? theme1 :
-                mainPreviewDevice === 'tablet' ? theme2 :
-                theme3
+                mainPreviewDevice === 'desktop' ? theme5 :
+                mainPreviewDevice === 'tablet' ? theme6 :
+                theme7
               }
               alt={`${mainPreviewDevice} Preview`}
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700"
+              className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-700"
             />
           </div>
         </div>
@@ -904,8 +905,7 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
                 <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-[#18b5d5] rounded-full animate-pulse"></div>
                 <span className="text-[#18b5d5] font-medium text-xs sm:text-sm">{t('home.themes.features.advanced_elements.title')}</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#18b5d5] to-white mb-4 sm:mb-6 leading-tight px-2">
-                {t('home.themes.features.homepage_elements.title')}
+<h2 className="text-xl sm:text-2xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#18b5d5] to-white mb-4 sm:mb-6 leading-tight px-4">                {t('home.themes.features.homepage_elements.title')}
               </h2>
               <p className="text-sm sm:text-lg lg:text-xl text-[#a1a1a1] max-w-4xl mx-auto leading-relaxed px-4">
                 {t('home.themes.features.professional_elements.desc')}
@@ -942,16 +942,16 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
         </div>
       </div>
 
-  {/* CTA Section - Fixed Horizontal Bar */}
+ {/* CTA Section - Fixed Horizontal Bar */}
 <div className="fixed bottom-0 left-0 right-0 bg-[#292929] z-[9999] animate-section">
   <div ref={purchaseSectionRef} className="bg-[#292929] backdrop-blur-2xl border-t border-[#18b5d8]/30 shadow-2xl">
     
-    <div className="max-w-7xl mx-auto px-4 py-3">
-      <div className="flex items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
         
         {/* الجزء الأيمن: الصورة + الاسم + السعر */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-[#18b5d8]/20 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-lg overflow-hidden border border-[#18b5d8]/20 flex-shrink-0">
             <img 
               src={buildImageUrl(theme.mainImage)}
               alt={theme.name}
@@ -963,53 +963,56 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
             />
           </div>
 
-          <div className="flex flex-col">
-            <h3 className="text-sm font-bold text-[#18b5d8] mb-1">{theme.name}</h3>
+          <div className="flex flex-col flex-1 min-w-0">
+            <h3 className="text-xs sm:text-sm font-bold text-[#18b5d8] mb-1 truncate">{theme.name}</h3>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {theme.originalPrice && theme.originalPrice > theme.price ? (
                 <>
-                  <PriceDisplay price={theme.price} className="text-base font-bold text-[#18b5d8]" />
+                  <PriceDisplay price={theme.price} className="text-sm sm:text-base font-bold text-[#18b5d8]" />
                   <PriceDisplay price={theme.originalPrice} className="text-xs text-gray-400 line-through" />
-                  <span className="bg-red-500/20 text-red-600 px-1.5 py-0.5 rounded-full text-xs font-bold">
+                  <span className="bg-red-500/20 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold">
                     -{Math.round(((theme.originalPrice - theme.price) / theme.originalPrice) * 100)}%
                   </span>
                 </>
               ) : (
-                <PriceDisplay price={theme.price} className="text-base font-bold text-[#18b5d8]" />
+                <PriceDisplay price={theme.price} className="text-sm sm:text-base font-bold text-[#18b5d8]" />
               )}
             </div>
           </div>
         </div>
 
         {/* الجزء الأيسر: الأزرار */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto justify-center">
           <button
             onClick={() => window.open('https://salla.com/themes/1499917793', '_blank')}
-            className="flex items-center gap-2 bg-gradient-to-r from-[#041a20] to-[#051c20] text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:from-[#16a8cc] hover:to-[#18b5d8] transition-all duration-300 shadow-lg hover:shadow-xl group"
+            className="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-[#041a20] to-[#051c20] text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold hover:from-[#16a8cc] hover:to-[#18b5d8] transition-all duration-300 shadow-lg hover:shadow-xl group flex-1 sm:flex-initial justify-center"
           >
-            <ShoppingCart className="w-4 h-4 group-hover:animate-bounce" />
-            <span>{t('home.themes.get_theme_now')}</span>
+            <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 group-hover:animate-bounce" />
+            <span className="hidden sm:inline">{t('home.themes.get_theme_now')}</span>
+            <span className="sm:hidden">{t('home.themes.buy')}</span>
           </button>
           
           <a
+
             href="https://drive.google.com/drive/folders/1TuMasEWd5kB6_DzDN9OVhj8afVS6w9zb"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 border border-gray-200"
+            className="flex items-center gap-1 sm:gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 border border-gray-200"
           >
-            <Play className="w-4 h-4" />
-            <span>{t('home.themes.video')}</span>
+            <Play className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">{t('home.themes.video')}</span>
           </a>
-          
           <a
+
+          
             href="https://salla.sa/dev-etmlwprywtygjjcy"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 border border-gray-200"
+            className="flex items-center gap-1 sm:gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 border border-gray-200"
           >
-            <Eye className="w-4 h-4" />
-            <span>{t('home.themes.preview_theme')}</span>
+            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">{t('home.themes.preview')}</span>
           </a>
         </div>
 
@@ -1018,8 +1021,9 @@ const DynamicComponentCard: React.FC<{ component: any; index: number }> = ({ com
   </div>
 </div>
 
-      <ThemeWorks />
-
+<div className="scale-90 sm:scale-95 lg:scale-100">
+  <ThemeWorks />
+</div>
       {/* FAQ Section */}
       {theme?.faqs && theme.faqs.length > 0 && (
         <div className="mt-12 sm:mt-16 animate-section">

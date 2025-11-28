@@ -200,16 +200,7 @@ const FAQSection: React.FC = () => {
           </p>
         </div>
 
-        {/* الصورة */}
-        <div className="mb-6 sm:mb-8 md:mb-12 flex justify-center">
-          <div className="relative">
-            <img
-              src={faq}
-              alt="Theme Cover"
-              className="w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] mx-auto rounded-2xl sm:rounded-3xl shadow-lg hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-        </div>
+     
 
         {/* قسم الفئات */}
         <div className="max-w-6xl mx-auto grid sm:grid-cols-2 gap-4 sm:gap-6">

@@ -262,7 +262,7 @@ const ThemeWorks: React.FC = () => {
               <div className="w-2 h-2 bg-[#18b5d8] rounded-full animate-pulse"></div>
                 <span className="text-[#18b5d8] font-medium text-sm">{t('theme_works.header.badge')}</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white mb-4 sm:mb-6 leading-snug">
+<h2 className="text-xl sm:text-2xl lg:text-4xl font-black text-white mb-4 sm:mb-6 leading-snug">
               {t('theme_works.header.title')}
             </h2>
             <p className="text-lg sm:text-xl text-[#a1a1a1] max-w-3xl mx-auto leading-relaxed">
@@ -273,15 +273,14 @@ const ThemeWorks: React.FC = () => {
 
         {/* Works Grid */}
         <div className="relative px-4 sm:px-12 pb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {works.map((work, index) => (
-              <div 
-                key={work._id || work.id || index}
-                className="bg-[#1e1e1e]/95 backdrop-blur-lg border border-gray-700/20 rounded-2xl overflow-hidden hover:border-[#18b5d8]/30 transition-all duration-300 group h-full flex flex-col"
-              >
+           <div 
+  key={work._id || work.id || index}
+  className="bg-[#1e1e1e]/95 backdrop-blur-lg border border-gray-700/20 rounded-xl sm:rounded-2xl overflow-hidden hover:border-[#18b5d8]/30 transition-all duration-300 group h-full flex flex-col scale-95 sm:scale-100"
+>
                 {/* Image Container */}
-                <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden bg-white/5">
-                  <img 
+<div className="relative aspect-[16/9] sm:aspect-[16/10] lg:aspect-[4/3] overflow-hidden bg-white/5">                  <img 
                     src={getImageUrl(work.imageDesktop)}
                     alt="Work Preview"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -292,33 +291,31 @@ const ThemeWorks: React.FC = () => {
                   
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3">
-                    <button
-                      onClick={() => handlePreview(work)}
-                      className="bg-gradient-to-r from-[#18b5d8] to-[#16a8cc] text-white px-4 py-2 rounded-lg font-semibold hover:from-[#16a8cc] hover:to-[#18b5d8] transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>{t('theme_works.overlay.preview')}</span>
-                    </button>
+                 <button
+  onClick={() => handlePreview(work)}
+  className="bg-gradient-to-r from-[#18b5d8] to-[#16a8cc] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold hover:from-[#16a8cc] hover:to-[#18b5d8] transition-all duration-300 transform hover:scale-105 flex items-center gap-1.5 sm:gap-2"
+>
+  <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+  <span>{t('theme_works.overlay.preview')}</span>
+</button>
                     <a
-                      href={work.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg font-semibold hover:bg-white/30 transition-all duration-300 flex items-center gap-2"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      <span>{t('theme_works.overlay.visit')}</span>
-                    </a>
+                  href={work.link}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="bg-white/20 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/30 transition-all duration-300 flex items-center gap-1.5 sm:gap-2"
+>
+  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+  <span>{t('theme_works.overlay.visit')}</span>
+</a>
                   </div>
 
                
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex-1 flex flex-col justify-end">
-                  {work.clientOpinion && (
+<div className="p-3 sm:p-5 flex-1 flex flex-col justify-end">                  {work.clientOpinion && (
                     <div className="mb-4">
-                      <p className="text-gray-300 text-sm leading-relaxed italic text-center line-clamp-3">
-                        "{work.clientOpinion}"
+<p className="text-gray-300 text-xs sm:text-sm leading-relaxed italic text-center line-clamp-2 sm:line-clamp-3">                        "{work.clientOpinion}"
                       </p>
                     </div>
                   )}
@@ -326,26 +323,26 @@ const ThemeWorks: React.FC = () => {
                   {/* Client Info */}
                   <div className="relative">
                     <div className="h-px bg-gradient-to-r from-transparent via-[#18b5d8]/20 to-transparent mb-4"></div>
-                    <div className="flex items-center gap-3">
-                      {work.clientImage ? (
-                        <img
-                          src={getImageUrl(work.clientImage)}
-                          alt={work.clientName || 'Client'}
-                          className="w-12 h-12 rounded-xl object-cover border-2 border-[#18b5d8]/20 shadow-lg group-hover:border-[#18b5d8]/60 transition-all duration-500"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#18b5d8] to-[#0f8aa3] rounded-xl flex items-center justify-center shadow-lg">
+        <div className="flex items-center gap-2 sm:gap-3">
+  {work.clientImage ? (
+    <img
+      src={getImageUrl(work.clientImage)}
+      alt={work.clientName || 'Client'}
+      className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl object-cover border-2 border-[#18b5d8]/20 shadow-lg group-hover:border-[#18b5d8]/60 transition-all duration-500"
+    />
+  ) : (
+    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18b5d8] to-[#0f8aa3] rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
                           <span className="text-white font-bold text-lg">
                             {work.clientName ? work.clientName.charAt(0).toUpperCase() : '?'}
                           </span>
                         </div>
                       )}
-                      <div className="flex-1">
-                        <h3 className="font-bold text-white text-base group-hover:text-[#18b5d8]/90 transition-colors">
-                          {work.clientName || 'اسم العميل'}
-                        </h3>
-                        {work.workDate && (
-                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+               <div className="flex-1">
+  <h3 className="font-bold text-white text-sm sm:text-base group-hover:text-[#18b5d8]/90 transition-colors">
+    {work.clientName || 'اسم العميل'}
+  </h3>
+  {work.workDate && (
+    <p className="text-[10px] sm:text-xs text-gray-400 flex items-center gap-1 mt-0.5 sm:mt-1">
                             <Calendar className="w-3 h-3" />
                             {new Date(work.workDate).toLocaleDateString('ar-SA')}
                           </p>

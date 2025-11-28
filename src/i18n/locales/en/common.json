@@ -96,7 +96,7 @@
   },
   "nav": {
     "home": "Home",
-    "products": "Products",
+    "products": "Services",
     "about": "About",
     "contact": "Contact",
     "login": "Login",
@@ -153,7 +153,7 @@
   },
   "home": {
     "hero_title": "Welcome to Our Store",
-    "hero_subtitle": "Discover the best products at amazing prices",
+    "hero_subtitle": "Discover the best Services at amazing prices",
     "hero_cta": "Shop Now",
     "hero": {
       "title": "AfterAds",
@@ -167,8 +167,8 @@
       "title": "Frequently Asked Questions",
       "subtitle": "Answers to the most common questions"
     },
-    "featured_products": "Featured Products",
-    "latest_products": "Latest Products",
+    "featured_products": "Featured Services",
+    "latest_products": "Latest Services",
     "categories": "Categories",
     "testimonials": "Testimonials",
     "newsletter": "Newsletter",
@@ -207,17 +207,17 @@
       "no_testimonials": "No testimonials available at the moment"
     },
     "categories": {
-      "featured_products": "Featured Products",
+      "featured_products": "Featured Services",
       "title": "Categories",
-      "subtitle": "Browse our products by category",
+      "subtitle": "Browse our Services by category",
       "discover_product": "Discover Product",
       "discover_category": "Discover Category"
     },
     "about": {
       "main_title": "About Us",
-      "main_description": "We are a specialized team dedicated to providing the best services and products to our valued customers",
+      "main_description": "We are a specialized team dedicated to providing the best services and Services to our valued customers",
       "what_we_offer": "What We Offer",
-      "what_we_offer_description": "We provide a diverse range of high-quality services and products",
+      "what_we_offer_description": "We provide a diverse range of high-quality services and Services",
       "start_now": "Start Now",
       "services": [
         "Website Design and Development",
@@ -423,7 +423,7 @@
         },
         "faq": {
           "title": "FAQ Element (Malak)",
-          "desc": "Share with your store visitors answers to the most frequently asked questions from customers about the store, products, ordering method or others. You can add a brief answer with a link to an introductory page or a button for direct communication."
+          "desc": "Share with your store visitors answers to the most frequently asked questions from customers about the store, Services, ordering method or others. You can add a brief answer with a link to an introductory page or a button for direct communication."
         },
         "animated_articles": {
           "title": "Animated Articles Element (Malak)",
@@ -500,8 +500,8 @@
   },
   "categories": {
     "title": "Our Categories",
-    "subtitle": "Discover a wide range of products and services",
-    "featured_products": "Featured Products",
+    "subtitle": "Discover a wide range of Services and services",
+    "featured_products": "Featured Services",
     "discover_product": "Discover Product",
     "discover_category": "Discover Category",
     "all_categories": "All Categories",
@@ -523,19 +523,19 @@
     "no_categories": "No Categories",
     "no_search_results": "No search results found",
     "no_categories_available": "No categories available at the moment",
-    "default_description": "Discover our featured products in this category",
-    "explore_products": "Explore Products",
+    "default_description": "Discover our featured Services in this category",
+    "explore_products": "Explore Services",
     "themes": "Themes",
     "error_loading": "Error loading categories",
     "view_all": "View All",
-    "products_count": "Products Count",
+    "products_count": "Services Count",
     "count": "{{count}} categories"
   },
   "all_products": {
     "title": "All Products",
     "title_highlight": "Available",
-    "description": "Discover our complete collection of high-quality products",
-    "search_placeholder": "Search products...",
+    "description": "Discover our complete collection of high-quality Services",
+    "search_placeholder": "Search Services...",
     "all_categories": "All Categories",
     "sort_by_name": "Name",
     "sort_by_price_low": "Price: Low to High",
@@ -545,11 +545,11 @@
   "products": {
     "grid_view": "Grid View",
     "list_view": "List View",
-    "no_products": "No Products",
-    "no_products_search": "No products match your search",
-    "no_products_available": "No products available at the moment",
+    "no_products": "No Services",
+    "no_products_search": "No Services match your search",
+    "no_products_available": "No Services available at the moment",
     "clear_filters": "Clear Filters",
-    "product_count": "{{count}} products",
+    "product_count": "{{count}} Services",
     "description_unavailable": "Product description not available"
   },
   "footer": {
@@ -582,8 +582,8 @@
   "price_low_to_high": "Price: Low to High",
   "price_high_to_low": "Price: High to Low",
   "product": "Product",
-  "no_products_in_category": "No products in this category",
-  "products_coming_soon": "New products will be added to this category soon",
+  "no_products_in_category": "No Services in this category",
+  "products_coming_soon": "New Services will be added to this category soon",
   "back_to_home": "Back to Home",
   "search_placeholder": "Search...",
   "addons": "Add-ons",
@@ -599,20 +599,20 @@
     "theme_malak": "Theme Malak",
     "why_us": "More Details",
     "our_clients": "Our Clients",
-    "our_products": "Our Products",
+    "our_products": "Services",
     "client_reviews": "Client Reviews",
     "faq": "FAQ",
     "contact_us": "Contact Us"
   },
   "footer": {
-    "company_description": "We are a company specialized in providing innovative and advanced advertising solutions for our clients",
+    "company_description": "We are an agency specialized in developing e-commerce stores",
     "stay_connected": "Stay connected with us",
     "email_placeholder": "Enter your email",
     "subscribe_now": "Subscribe Now",
     "important_links": "Important Links",
     "quick_links": "Quick Links",
     "home": "Home",
-    "products": "Products",
+    "products": "Services",
     "about_us": "About Us",
     "contact_us": "Contact Us",
     "privacy_policy": "Privacy Policy",
@@ -667,13 +667,13 @@
     "order": "Order",
     "unspecified_product": "Unspecified product",
     "and_more_products": "and {{count}} more product(s)...",
-    "additional_products": "Additional Products",
+    "additional_products": "Additional Services",
     "total": "Total",
     "track_order": "Track Order",
     "view_all_orders": "View All Orders",
     "no_orders_yet": "No orders yet",
-    "start_shopping": "Start shopping and order your favorite products",
-    "browse_products": "Browse Products",
+    "start_shopping": "Start shopping and order your favorite Services",
+    "browse_products": "Browse Services",
     "change_password": "Change Password",
     "hide": "Hide",
     "change": "Change",
@@ -711,13 +711,13 @@
     "title_part1": "Privacy",
     "title_part2": "& Usage Policy",
     "last_updated": "Last updated: August 25, 2025",
-    "introduction": "Welcome to AfterAds Agency, specialized in providing distinguished digital products. We are committed to protecting your privacy and providing a safe user experience that complies with the regulations in force in the Kingdom of Saudi Arabia, including the E-commerce System and the Personal Data Protection Law (PDPL).",
+    "introduction": "Welcome to AfterAds Agency, specialized in providing distinguished digital Services. We are committed to protecting your privacy and providing a safe user experience that complies with the regulations in force in the Kingdom of Saudi Arabia, including the E-commerce System and the Personal Data Protection Law (PDPL).",
     "definitions_title": "First: General Definitions",
     "definitions": {
       "agency_label": "Agency:",
       "agency_text": "afterads.com, including the website and all its digital services.",
       "user_label": "User/Customer:",
-      "user_text": "Any natural or legal person who uses the store to browse or purchase digital products.",
+      "user_text": "Any natural or legal person who uses the store to browse or purchase digital Services.",
       "personal_data_label": "Personal Data:",
       "personal_data_text": "Information that identifies the user such as name, mobile number, email."
     },
@@ -802,7 +802,7 @@
   },
   "contact": {
     "title": "Contact Us",
-    "description": "We're here to support you! Contact us for any inquiries about our products or to get help.",
+    "description": "We're here to support you! Contact us for any inquiries about our Services or to get help.",
     "whatsapp": {
       "title": "For Faster Communication",
       "subtitle": "WhatsApp - Instant Response",
@@ -845,7 +845,7 @@
     },
     "social": {
       "title": "Follow Us on Social Media",
-      "description": "We provide the best services and products for our valued customers",
+      "description": "We provide the best services and Services for our valued customers",
       "tagline": "Your partner in success and excellence"
     }
   },
@@ -853,7 +853,7 @@
     "title": "AfterAds Agency",
     "description": "We specialize in providing comprehensive and innovative digital solutions that help companies grow and thrive in the digital age",
     "services": {
-      "title": "Our Distinguished Products",
+      "title": "Our Distinguished Services",
       "digital_marketing": {
         "title": "Digital Marketing",
         "description": "Advanced marketing strategies to increase sales and reach your target audience"
@@ -971,33 +971,33 @@
     "others": "others",
     "addons": "Add-ons",
     "addons_short": "Add-ons",
-    "total_products_in_cart": "Total products in cart",
+    "total_products_in_cart": "Total Services in cart",
     "product": "product",
     "view_cart": "View Cart",
     "cart": "Cart",
     "checkout": "Checkout",
     "order": "Order",
-    "cart_empty_error": "Cart is empty! Please add products first",
+    "cart_empty_error": "Cart is empty! Please add Services first",
     "success_message": "Product added successfully!",
     "error_message": "Error occurred while adding product"
   },
   "terms_and_conditions": {
     "title": "Terms and Conditions",
     "last_updated": "Last Updated",
-    "introduction": "Welcome to AfterAds Digital Advertising Agency. By using our website or purchasing our digital products, you agree to comply with the following terms and conditions. Please read these terms carefully before using our products.",
+    "introduction": "Welcome to AfterAds Digital Advertising Agency. By using our website or purchasing our digital Services, you agree to comply with the following terms and conditions. Please read these terms carefully before using our products.",
     "definitions": {
       "title": "First: Definitions",
       "agency": "Agency:",
-      "agency_text": "afterads.com, including the website and all its digital products.",
+      "agency_text": "afterads.com, including the website and all its digital Services.",
       "user": "User/Client:",
-      "user_text": "Any natural or legal person who uses the agency to browse or purchase products or digital products.",
-      "products": "Products:",
-      "products_text": "Digital products and products offered through the site such as digital advertisements or subscriptions."
+      "user_text": "Any natural or legal person who uses the agency to browse or purchase Services or digital Services.",
+      "products": "Services:",
+      "products_text": "Digital Services and Services offered through the site such as digital advertisements or subscriptions."
     },
     "agreement": {
       "title": "Second: Agreement to Terms",
       "point1": "By using the site or purchasing through it, you acknowledge your complete agreement to these terms and conditions.",
-      "point2": "If you do not agree to any part of these terms, please do not use the site or its products."
+      "point2": "If you do not agree to any part of these terms, please do not use the site or its Services."
     },
     "user_responsibilities": {
       "title": "Third: User Responsibilities",
@@ -1014,20 +1014,20 @@
     },
     "cancellation_refunds": {
       "title": "Fifth: Cancellation and Refunds",
-      "point1": "Digital products are non-returnable or refundable after electronic delivery, according to their nature.",
+      "point1": "Digital Services are non-returnable or refundable after electronic delivery, according to their nature.",
       "point2": "Order cancellation can be requested before digital product delivery, by contacting support@afterads.com.",
       "point3": "In case of a technical problem with the product, technical support or refund can be requested within 7 days."
     },
     "intellectual_property": {
       "title": "Sixth: Intellectual Property",
-      "point1": "All content displayed on the site (images, texts, designs, logos, digital products) is owned by AfterAds Agency.",
+      "point1": "All content displayed on the site (images, texts, designs, logos, digital Services) is owned by AfterAds Agency.",
       "point2": "Using any of this content or redistributing it without prior written permission from the agency is prohibited."
     },
     "limitation_liability": {
       "title": "Seventh: Limitation of Liability",
-      "point1": "The agency is not responsible for any direct or indirect damages resulting from using the site or products.",
-      "point2": "We reserve the right to suspend or terminate products at any time without prior notice.",
-      "point3": "The user is responsible for ensuring the suitability of products for their needs before purchase."
+      "point1": "The agency is not responsible for any direct or indirect damages resulting from using the site or Services.",
+      "point2": "We reserve the right to suspend or terminate Services at any time without prior notice.",
+      "point3": "The user is responsible for ensuring the suitability of Services for their needs before purchase."
     },
     "modifications": {
       "title": "Eighth: Modifications to Terms",
@@ -1051,14 +1051,14 @@
     "cart": "Cart",
     "product": "product",
     "cart_empty": "Your cart is empty",
-    "cart_empty_error": "Cart is empty! Add products first",
+    "cart_empty_error": "Cart is empty! Add Services first",
     "product_removed": "Product removed from cart",
     "other_options": "other options",
-    "added_products": "Added Products",
-    "products": "Products",
+    "added_products": "Added Services",
+    "products": "Services",
     "others": "others",
     "available_to_add": "Available to add",
-    "other_products": "other products",
+    "other_products": "other Services",
     "total": "Total",
     "view_cart": "View Cart",
     "checkout": "Checkout",
@@ -1067,19 +1067,19 @@
   "cart": {
     "title": "Shopping Cart",
     "yourCart": "Your Cart",
-    "description": "Review your selected products before placing your order",
+    "description": "Review your selected Services before placing your order",
     "clearCart": "Clear Cart",
-    "clearCartAriaLabel": "Clear all products from cart",
+    "clearCartAriaLabel": "Clear all Services from cart",
     "loading": "Loading...",
     "emptyTitle": "Shopping Cart is Empty",
-    "emptyDescription": "You haven't added any products to your cart yet. Start shopping now!",
-    "browseProducts": "Browse Products",
+    "emptyDescription": "You haven't added any Services to your cart yet. Start shopping now!",
+    "browseProducts": "Browse Services",
     "backToHome": "Back to Home",
-    "additionalProducts": "Additional Products",
+    "additionalProducts": "Additional Services",
     "selectedOptions": "Selected Options",
     "productOptions": "Product Options",
     "basePrice": "Base Price",
-    "additionalProductsPrice": "Additional Products Price",
+    "additionalProductsPrice": "Additional Services Price",
     "quantity": "Quantity",
     "decreaseQuantity": "Decrease quantity",
     "increaseQuantity": "Increase quantity",
@@ -1188,7 +1188,7 @@
     "additionalFeatures": "Get additional benefits",
     "accountFeatures": "Account Benefits",
     "orderTracking": "Order Tracking",
-    "favoriteProducts": "Favorite Products",
+    "favoriteProducts": "Favorite Services",
     "saveAddresses": "Save Addresses"
     
   },
@@ -1255,10 +1255,10 @@
     "orderNumber": "Order Number",
     "orderProcessing": "Your order is being processed",
     "orderDetails": "Order Details",
-    "products": "products",
+    "products": "Services",
     "product": "product",
     "total": "Total",
-    "additionalProducts": "Additional Products",
+    "additionalProducts": "Additional Services",
     "productOptions": "Product Options",
     "attachments": "Attachments",
     "attachedImages": "Attached Images",
@@ -1310,9 +1310,9 @@
     "messageUs": "Message Us",
     "continueShopping": "Continue Shopping",
     "thankYouForChoosing": "Thank You for Choosing Us!",
-    "footerMessage": "Thank you for trusting our products. Our team has received your order and will contact you soon to provide the best digital solutions that meet your needs.",
+    "footerMessage": "Thank you for trusting our Services. Our team has received your order and will contact you soon to provide the best digital solutions that meet your needs.",
     "qualityGuarantee": "Quality Guarantee",
-    "fastProducts": "Fast Products",
+    "fastProducts": "Fast Services",
     "customerSatisfaction": "Customer Satisfaction",
     "required_option_missing": "Please select {{option}}",
     "required_option_empty": "Please fill in {{option}}",
@@ -1365,6 +1365,9 @@
       "control_option": "Control Option",
       "technical_support": "Technical Support",
       "active_store": "Active Store",
+      "preview": "Preview",
+       "video": "Video",
+      "buy": "Buy",
       "designed_for_salla": "Specially designed for Salla platform • Speed optimized • Responsive on all devices",
       "live_preview": "Live Preview",
       "salla_themes": "Salla Themes",

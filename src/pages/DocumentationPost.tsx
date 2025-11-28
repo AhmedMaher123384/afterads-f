@@ -312,7 +312,7 @@ const DocumentationPost: React.FC = () => {
 
   if (error || !currentCategory) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1e1e1e] via-[#242424] to-[#0f0f0f] flex items-center justify-center" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="min-h-screen bg-gradient-to-br from-[#1e1e1e] via-[#242424] to-[#0f0f0f] flex items-center justify-center mt-[70px]" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="text-center">
           <p className="text-xl text-red-400">{error || t('documentation.content_missing')}</p>
           <Link
@@ -331,7 +331,7 @@ const DocumentationPost: React.FC = () => {
   const visibleCategories = currentMain?.categories || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e1e1e] via-[#242424] to-[#0f0f0f]" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-gradient-to-br from-[#1e1e1e] via-[#242424] to-[#0f0f0f]  " dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Top Navigation Bar - Fixed at top */}
       <div className="border-b border-[#3a3a3a] sticky top-0 z-50" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)' }}>
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3">

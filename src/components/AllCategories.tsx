@@ -115,40 +115,34 @@ const AllCategories: React.FC = () => {
       return (
         <Link
           to={`/category/${categorySlug}`}
-          className="block bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] group overflow-hidden"
+          className="block bg-[#333333]/60 backdrop-blur border border-[#444444] rounded-2xl overflow-hidden hover:border-[#18b5d5] transition-all duration-300 hover:shadow-2xl hover:shadow-[#18b5d5]/25 group"
           aria-label={t('common.categories.explore_category', { name: getLocalizedContent(category, 'name') })}
         >
           <div className="flex items-center p-6 gap-6">
             <div className="relative w-24 h-24 flex-shrink-0">
-              <div className="absolute -inset-2 bg-gradient-to-br from-[#7a7a7a]/30 to-[#292929]/30 blur-sm rounded-2xl group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative w-full h-full rounded-xl overflow-hidden border border-[#7a7a7a]/30">
+              <div className="relative w-full h-full rounded-xl overflow-hidden border border-[#444444] bg-[#3a3a3a]">
                 <img
                   src={buildImageUrl(category.image)}
                   alt={getLocalizedContent(category, 'name')}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 will-change-transform"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 will-change-transform"
                   loading="lazy"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop';
                   }}
                 />
-                <div className="absolute top-2 right-2 w-6 h-6 bg-[#7a7a7a]/50 rounded-full flex items-center justify-center">
-                  <FolderOpen className="w-4 h-4 text-white" />
-                </div>
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-[#18b5d8] transition-colors duration-300">
+              <div className="flex flex-wrap gap-2 mb-2">
+                <span className="text-xs bg-[#18b5d5]/30 text-white px-3 py-1 rounded-full">{t('categories.title')}</span>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#18b5d5] transition-colors duration-300 line-clamp-2">
                 {getLocalizedContent(category, 'name')}
               </h3>
-              <p className="text-gray-100 text-base leading-relaxed line-clamp-2">
+              <p className="text-[#CCCCCC] text-sm leading-relaxed line-clamp-2">
                 {getLocalizedContent(category, 'description') || t('categories.default_description')}
               </p>
-            </div>
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <ArrowUpDown className="w-4 h-4 text-white transform -rotate-90" />
-              </div>
             </div>
           </div>
         </Link>
@@ -158,40 +152,34 @@ const AllCategories: React.FC = () => {
     return (
       <Link
         to={`/category/${categorySlug}`}
-        className="block bg-gradient-to-br from-[#292929]/95 via-[#7a7a7a]/30 to-[#292929]/90 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 group overflow-hidden"
+        className="block bg-[#333333]/60 backdrop-blur border border-[#444444] rounded-2xl overflow-hidden hover:border-[#18b5d5] transition-all duration-300 hover:shadow-2xl hover:shadow-[#18b5d5]/25 h-full flex flex-col group"
         aria-label={t('categories.explore_category', { name: getLocalizedContent(category, 'name') })}
       >
-        <div className="relative">
-          <div className="absolute -inset-2 bg-gradient-to-br from-[#7a7a7a]/30 to-[#292929]/30 blur-sm rounded-3xl group-hover:blur-md transition-all duration-500"></div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
-            <img
-              src={buildImageUrl(category.image)}
-              alt={getLocalizedContent(category, 'name')}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 will-change-transform"
-              loading="lazy"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop';
-              }}
-            />
-            <div className="absolute top-4 right-4 w-8 h-8 bg-[#7a7a7a]/50 rounded-full flex items-center justify-center">
-              <FolderOpen className="w-5 h-5 text-white" />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#292929]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="relative h-48 overflow-hidden bg-[#3a3a3a]">
+          <img
+            src={buildImageUrl(category.image)}
+            alt={getLocalizedContent(category, 'name')}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop';
+            }}
+          />
+        </div>
+        <div className="p-6 flex flex-col flex-grow">
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className="text-xs bg-[#18b5d5]/30 text-white px-3 py-1 rounded-full">{t('categories.title')}</span>
           </div>
-          <div className="relative p-6">
-            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#18b5d8] transition-colors duration-300">
-              {getLocalizedContent(category, 'name')}
-            </h3>
-            <p className="text-gray-100 text-sm leading-relaxed line-clamp-5 mb-4">
-              {getLocalizedContent(category, 'description') || t('categories.default_description')}
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-[#18b5d8] text-sm font-medium">{t('categories.explore_products')}</span>
-              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#7a7a7a]/30 to-[#292929]/30 backdrop-blur-sm border border-[#7a7a7a]/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <ArrowUpDown className="w-3 h-3 text-white transform -rotate-90" />
-              </div>
-            </div>
+          <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-[#18b5d5] text-white transition-colors">
+            {getLocalizedContent(category, 'name')}
+          </h3>
+          <p className="text-[#CCCCCC] text-sm mb-4 line-clamp-3 flex-grow">
+            {getLocalizedContent(category, 'description') || t('categories.default_description')}
+          </p>
+          <div className="flex items-center justify-between text-xs text-[#BBBBBB] border-t border-[#444444] pt-4 mt-auto">
+            <span className="text-[#18b5d5] text-sm font-medium">{t('categories.explore_products')}</span>
+            <span className="text-white/80">{t('view_all')}</span>
           </div>
         </div>
       </Link>
